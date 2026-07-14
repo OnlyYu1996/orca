@@ -5,6 +5,9 @@ Keep this folder for versioned reference docs that are meant to survive past a s
 ## What Goes Here
 
 - Stable reference material.
+- Orca 二次开发的系统边界、扩展落点和验证约束。参见 [Orca 二次开发架构基线](./secondary-development-architecture-baseline.md)。
+- Fork 上游节点、同步边界和执行前检查。参见 [`$sync-orca-upstream` Skill](../../skills/sync-orca-upstream/SKILL.md) 与 [上游同步基线](../../skills/sync-orca-upstream/references/repository-baseline.md)。
+- “赛博包工头”中文化、品牌、仓库更新、兼容迁移和发布边界。参见 [中文化与品牌迁移设计基线](./cyber-foreman-localization-brand-migration.md)。
 - Public-facing docs that are not part of the root README.
 - Docs that other checked-in files link to.
 - Telemetry availability notes that dashboard authors need after the original design or implementation branch is gone. See [Telemetry Availability](./telemetry-availability.md).
