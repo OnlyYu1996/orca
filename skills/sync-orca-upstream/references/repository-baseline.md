@@ -113,3 +113,19 @@ API 返回的最近提交序列中，本地 HEAD 位于该观测 SHA 之后第 2
 - 未覆盖风险：
 - Push 状态及目标：
 ```
+
+### 2026-07-15：同步到 6ee2af357b82c8717ad633f1251b6b310486dd7d
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`dfe6118533b749795b34f9dee3096e8e0cacd4af`
+- 上游目标 SHA：`6ee2af357b82c8717ad633f1251b6b310486dd7d`
+- Merge Base：`6e1aa8503c688f85d16b4c72981e2f5e862e491f`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`32d3ba5fcaa20012a9103b52374d8410371266f2`
+- 备份引用：`refs/backup/upstream-sync/2026-07-15-dfe6118533b7`
+- 冲突文件：共 21 个：`mobile/app.json`、`mobile/app/_layout.tsx`、`mobile/app/index.tsx`、`mobile/app/pair-confirm.tsx`、`mobile/app/pair-scan.tsx`、`package.json`、`src/cli/help.ts`、`src/cli/runtime/client.ts`、`src/main/hooks.ts`、`src/main/ipc/worktrees.ts`、`src/main/orca-profiles/profile-cloud-auth-config.test.ts`、`src/main/orca-profiles/profile-cloud-auth-config.ts`、`src/main/runtime/device-registry.ts`、`src/main/startup/single-instance-lock.ts`、`src/renderer/src/components/tab-bar/TerminalTabLeadingIcon.tsx`、五个 Renderer Locale 目录以及 `src/shared/pairing.ts`。
+- 关键取舍：保留上游 Relay、E2EE v2、Mobile 0.0.30、Terminal 和 CLI Skill Guides；继续使用“赛博包工头”产品名及 `sbbgt` CLI、Scheme、新存储键；旧 `orca` 仅用于兼容读取、测试 Fixture 或上游证据；Cloud/Relay 不回退 `onorca.dev` 官方端点；产品仓库、下载和发布链接继续指向 `OnlyYu1996/orca`；Worktree IPC 保留上游 `ExecutionHostId` 路由，并维持远端 `.sbbgt` / `.orca` 双读。
+- 验证：根 TypeScript 类型检查通过；完整 Lint 通过（含 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界）；根 Vitest 单 Worker 全量 `29,926 passed / 44 skipped`；Mobile 类型检查通过，Mobile Vitest `1,680 passed / 2 skipped`；冲突及超时专项 `69 passed / 1 skipped`；SSH 系统传输独立 `2 passed`；`git diff --check` 通过；品牌边界检查覆盖 5,035 个产品文本文件。
+- 未覆盖风险：未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调。根测试在 4 Worker 高并发下曾有两项固定时限用例超时，相关文件隔离运行及单 Worker 全量均通过。
+- Push 状态及目标：未 Push；`origin/main` 未变更。
