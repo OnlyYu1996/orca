@@ -8,16 +8,22 @@ export type WorkspaceCreateErrorDisplay = {
 const MISSING_BASE_REF_ANCHOR = 'could not resolve a default base ref'
 
 export function formatWorkspaceCreateError(error: unknown): WorkspaceCreateErrorDisplay {
-  const message = error instanceof Error ? error.message : 'Failed to create worktree.'
+  const message =
+    error instanceof Error
+      ? error.message
+      : translate('auto.lib.workspace.create.error.format.3e4d4f67b9', 'Failed to create worktree.')
 
   if (message.toLowerCase().includes(MISSING_BASE_REF_ANCHOR)) {
     return {
       title: translate('auto.lib.workspace.create.error.format.64555d0014', 'No base branch found'),
       message: translate(
         'auto.lib.workspace.create.error.format.37cf0bc991',
-        'Orca could not resolve a usable base ref for this workspace.'
+        '赛博包工头 could not resolve a usable base ref for this workspace.'
       ),
-      help: 'Create an initial commit (for example on main), or select an existing branch in Create From, then try again.'
+      help: translate(
+        'auto.lib.workspace.create.error.format.e0aaf7c2b1',
+        'Create an initial commit (for example on main), or select an existing branch in Create From, then try again.'
+      )
     }
   }
 

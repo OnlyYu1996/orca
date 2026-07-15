@@ -190,7 +190,7 @@ describe('Orca cloud profile service', () => {
       state: 'unconfigured',
       persistence: 'encrypted',
       cloud: cloudSummary,
-      setupMessage: 'Orca Cloud sign-in is not configured for this build.'
+      setupMessage: '当前构建未配置赛博包工头云服务登录。'
     })
     expect(getCurrentOrcaProfileAuthStatus(userDataPath).organizations).toBeUndefined()
     expect(getCurrentOrcaProfileAuthStatus(userDataPath).capabilities).toBeUndefined()

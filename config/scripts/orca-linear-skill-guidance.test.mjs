@@ -6,7 +6,7 @@ const projectDir = resolve(import.meta.dirname, '../..')
 const canonicalSkillPath = join(projectDir, 'skills', 'orca-linear', 'SKILL.md')
 const legacySkillPath = join(projectDir, 'skills', 'linear-tickets', 'SKILL.md')
 const legacyIntro =
-  '`linear-tickets` is the legacy bundled name for `orca-linear`. This copy remains complete; its CLI commands are identical to `orca-linear` and always use `orca linear ...`.'
+  '`linear-tickets` is the legacy bundled name for `orca-linear`. This copy remains complete; its CLI commands are identical to `orca-linear` and always use `sbbgt linear ...`.'
 
 function skillBody(skill) {
   return skill.replace(/^---\n[\s\S]*?\n---\n\n/, '')
@@ -15,7 +15,7 @@ function skillBody(skill) {
 function normalizeLegacyBody(skill) {
   return skillBody(skill).replace(
     `# Linear Tickets (Legacy Name)\n\n${legacyIntro}\n\n`,
-    '# Orca Linear\n\n'
+    '# 赛博包工头 Linear\n\n'
   )
 }
 

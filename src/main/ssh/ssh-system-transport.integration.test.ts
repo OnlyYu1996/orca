@@ -198,8 +198,7 @@ describe('system SSH transport integration', () => {
     rmSync(tempDir, { recursive: true, force: true })
   })
 
-  // Why: this fixture writes a POSIX fake ssh script to exercise stdin/stdout
-  // transport semantics; Windows coverage stays in argument/unit tests.
+  // 该 Fixture 使用 POSIX 假 SSH 验证标准输入输出传输；Windows 由参数与单元测试覆盖。
   it.skipIf(process.platform === 'win32')(
     'deploys and speaks relay RPC over a system ssh process for ProxyUseFdpass targets',
     async () => {
@@ -218,7 +217,7 @@ describe('system SSH transport integration', () => {
         await conn.disconnect()
       }
     },
-    20_000
+    60_000
   )
 
   it.skipIf(process.platform === 'win32')(

@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   formatWorkspaceCreateError,
   getWorkspaceCreateErrorToastMessage
 } from './workspace-create-error-format'
+
+vi.mock('@/i18n/i18n', () => ({
+  translate: (_key: string, fallback: string) => fallback
+}))
 
 describe('formatWorkspaceCreateError', () => {
   it('returns guidance for missing default base ref failures', () => {

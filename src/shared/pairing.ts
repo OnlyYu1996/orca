@@ -1,24 +1,14 @@
-import { z } from 'zod'
 import { LEGACY_PRODUCT_IDENTITY, PRODUCT_URL_SCHEME } from './product-identity'
-
-export const PAIRING_OFFER_VERSION = 2
 export const PAIRING_URL_SCHEMES = [PRODUCT_URL_SCHEME, LEGACY_PRODUCT_IDENTITY.urlScheme] as const
 const PAIRING_URL_PROTOCOLS = new Set(PAIRING_URL_SCHEMES.map((scheme) => `${scheme}:`))
-const PairingScopeSchema = z.enum(['mobile', 'runtime'])
+import {
+  PAIRING_OFFER_VERSION,
+  PairingOfferSchema,
+  type PairingOffer
+} from './mobile-relay-pairing-offer'
 
-export const PairingOfferSchema = z.object({
-  v: z.literal(PAIRING_OFFER_VERSION),
-  endpoint: z.string().min(1),
-  deviceToken: z.string().min(1),
-  // Why: the desktop's Curve25519 public key, base64-encoded. The mobile client
-  // uses this to derive a shared secret via ECDH for end-to-end encryption.
-  publicKeyB64: z.string().min(1),
-  // Why: advisory UI metadata lets the web client reject phone-QR offers before
-  // opening a socket; the runtime still authorizes solely from deviceToken.
-  scope: PairingScopeSchema.optional()
-})
-
-export type PairingOffer = z.infer<typeof PairingOfferSchema>
+export { PAIRING_OFFER_VERSION, PairingOfferSchema }
+export type { PairingOffer }
 
 export function encodePairingOffer(offer: PairingOffer): string {
   const json = JSON.stringify(offer)

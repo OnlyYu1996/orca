@@ -9,6 +9,8 @@ export type OrcaCloudAuthConfig = {
   profileEndpoint: string
   orgEndpoint: string
   logoutEndpoint: string
+  relayTokenEndpoint: string
+  relayDirectorUrl: string
   clientId: string
   scope: string
 }
@@ -53,6 +55,19 @@ function cloudEnv(env: NodeJS.ProcessEnv, suffix: string): string | undefined {
   return env[`SBBGT_CLOUD_${suffix}`] ?? env[`ORCA_CLOUD_${suffix}`]
 }
 
+function relayEnv(env: NodeJS.ProcessEnv): string | undefined {
+  return env.SBBGT_RELAY_URL ?? env.ORCA_RELAY_URL
+}
+
+function cleanOrigin(value: string | undefined, allowLoopbackHttp: boolean): string | null {
+  const cleaned = cleanUrl(value, allowLoopbackHttp)
+  if (!cleaned) {
+    return null
+  }
+  const parsed = new URL(cleaned)
+  return parsed.pathname === '/' && !parsed.search && !parsed.hash ? parsed.origin : null
+}
+
 export function getOrcaCloudAuthConfig(
   env: NodeJS.ProcessEnv = process.env,
   packaged: boolean = isPackagedOrcaBuild()
@@ -67,7 +82,7 @@ export function getOrcaCloudAuthConfig(
   if (!apiBaseUrl || !clientId) {
     return {
       configured: false,
-      setupMessage: 'Orca Cloud sign-in is not configured for this build.'
+      setupMessage: '当前构建未配置赛博包工头云服务登录。'
     }
   }
 
@@ -96,6 +111,11 @@ export function getOrcaCloudAuthConfig(
       logoutEndpoint:
         cleanEndpointUrl(cloudEnv(env, 'LOGOUT_URL')) ??
         endpoint(apiBaseUrl, '/v1/desktop/auth/logout'),
+      relayTokenEndpoint:
+        cleanEndpointUrl(cloudEnv(env, 'RELAY_TOKEN_URL')) ??
+        endpoint(apiBaseUrl, '/v1/desktop/auth/relay-token'),
+      // 未配置自有 Relay 时仅回退到同一自有 Cloud 源，禁止连接上游在线服务。
+      relayDirectorUrl: cleanOrigin(relayEnv(env), allowLoopbackHttp) ?? new URL(apiBaseUrl).origin,
       clientId,
       scope: cloudEnv(env, 'AUTH_SCOPE')?.trim() || DEFAULT_SCOPE
     }

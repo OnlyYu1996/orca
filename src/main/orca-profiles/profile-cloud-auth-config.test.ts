@@ -15,7 +15,7 @@ describe('Orca cloud auth config', () => {
   it('reports unconfigured without both API URL and client ID', () => {
     expect(getOrcaCloudAuthConfig({})).toEqual({
       configured: false,
-      setupMessage: 'Orca Cloud sign-in is not configured for this build.'
+      setupMessage: '当前构建未配置赛博包工头云服务登录。'
     })
   })
 
@@ -36,6 +36,8 @@ describe('Orca cloud auth config', () => {
         profileEndpoint: 'https://orca-cloud.example/v1/desktop/auth/profile',
         orgEndpoint: 'https://orca-cloud.example/v1/desktop/auth/org',
         logoutEndpoint: 'https://orca-cloud.example/v1/desktop/auth/logout',
+        relayTokenEndpoint: 'https://orca-cloud.example/v1/desktop/auth/relay-token',
+        relayDirectorUrl: 'https://orca-cloud.example',
         clientId: 'desktop-client',
         scope: 'openid profile email offline_access'
       }
@@ -46,16 +48,26 @@ describe('Orca cloud auth config', () => {
     const state = getOrcaCloudAuthConfig({
       SBBGT_CLOUD_API_URL: 'https://sbbgt-cloud.example',
       SBBGT_CLOUD_CLIENT_ID: 'sbbgt-client',
+      SBBGT_RELAY_URL: 'https://relay.sbbgt.example',
       ORCA_CLOUD_API_URL: 'https://legacy-cloud.example',
-      ORCA_CLOUD_CLIENT_ID: 'legacy-client'
+      ORCA_CLOUD_CLIENT_ID: 'legacy-client',
+      ORCA_RELAY_URL: 'https://relay.legacy.example'
     })
 
     expect(state).toMatchObject({
       configured: true,
       config: {
         apiBaseUrl: 'https://sbbgt-cloud.example',
-        clientId: 'sbbgt-client'
+        clientId: 'sbbgt-client',
+        relayDirectorUrl: 'https://relay.sbbgt.example'
       }
+    })
+  })
+
+  it('keeps packaged builds unconfigured without self-hosted endpoints', () => {
+    expect(getOrcaCloudAuthConfig({}, true)).toEqual({
+      configured: false,
+      setupMessage: '当前构建未配置赛博包工头云服务登录。'
     })
   })
 

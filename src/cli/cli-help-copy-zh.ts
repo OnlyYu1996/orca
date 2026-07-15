@@ -215,6 +215,7 @@ export const CLI_GROUP_TITLES_ZH: Readonly<Record<string, string>> = {
   'claude-teams': '启动',
   diagnostics: '诊断',
   'agent-context': '智能体发现',
+  skills: 'Skill 指南',
   environment: '远程环境',
   vm: '环境配方',
   automations: '自动化',

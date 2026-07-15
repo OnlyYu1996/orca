@@ -2,7 +2,7 @@ import type { CliStatusResult, RuntimeStatus } from '../../shared/runtime-types'
 import { parsePairingCode, type PairingOffer } from '../../shared/pairing'
 import { launchOrcaApp } from './launch'
 import { getDefaultUserDataPath, readMetadata } from './metadata'
-import { getCliStatus } from './status'
+import { getCliStatus, resolveDesktopWindowStatus } from './status'
 import { sendRequest } from './transport'
 import { RuntimeClientError, RuntimeRpcFailureError, type RuntimeRpcSuccess } from './types'
 import { sendWebSocketRequest } from './websocket-transport'
@@ -119,7 +119,13 @@ export class RuntimeClient {
           // that this client machine has a local Orca desktop process.
           app: {
             running: false,
-            pid: null
+            pid: null,
+            // Why: reuse the shared resolver so remote status honors the same
+            // authoritativeWindowId fallback as local status for old runtimes.
+            ...(() => {
+              const desktopWindowStatus = resolveDesktopWindowStatus(response.result)
+              return desktopWindowStatus ? { desktopWindowStatus } : {}
+            })()
           },
           runtime: {
             state: graphState === 'ready' ? 'ready' : 'graph_not_ready',
@@ -173,15 +179,27 @@ export class RuntimeClient {
 
   async openOrca(timeoutMs = 15_000): Promise<RuntimeRpcSuccess<CliStatusResult>> {
     const initial = await this.getCliStatus()
-    if (initial.result.runtime.reachable) {
+    if (this.remotePairing) {
       return initial
     }
 
+    // Why: a blocked runtime can't open a window, so spawning the app would
+    // only hit the single-instance lock and exit — bail before launching.
+    if (initial.result.app.desktopWindowStatus === 'blocked') {
+      throwDesktopActivationBlocked()
+    }
     launchOrcaApp()
+    if (initial.result.app.desktopWindowStatus === 'available') {
+      return initial
+    }
+
     const startedAt = Date.now()
     while (Date.now() - startedAt < timeoutMs) {
       const status = await this.getCliStatus()
-      if (status.result.runtime.reachable) {
+      if (status.result.app.desktopWindowStatus === 'blocked') {
+        throwDesktopActivationBlocked()
+      }
+      if (status.result.app.desktopWindowStatus === 'available') {
         return status
       }
       await delay(250)
@@ -189,9 +207,16 @@ export class RuntimeClient {
 
     throw new RuntimeClientError(
       'runtime_open_timeout',
-      '等待赛博包工头启动超时。请手动启动赛博包工头应用后重试。'
+      '等待赛博包工头桌面窗口超时，运行时可能仍在无界面模式运行。'
     )
   }
+}
+
+function throwDesktopActivationBlocked(): never {
+  throw new RuntimeClientError(
+    'desktop_activation_blocked',
+    '赛博包工头正在无界面模式运行，但持久终端提供程序不可用，无法安全打开桌面窗口。请正常退出后重新启动应用，不要使用 open -n。'
+  )
 }
 
 function resolveRemotePairing(

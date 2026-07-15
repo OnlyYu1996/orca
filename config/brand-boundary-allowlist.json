@@ -463,6 +463,36 @@
       "path": "src/main/startup/dev-instance-identity.ts",
       "contains": "?? env.ORCA_DEV_",
       "reason": "开发实例身份使用 SBBGT_DEV_* 优先，并在兼容周期内回退旧变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/reliability-gates.jsonc",
+      "contains": "ORCA_E2E_SSH_DOCKER=1",
+      "reason": "可靠性门禁保留上游 SSH Docker E2E 的历史执行证据，运行入口尚需兼容旧测试变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/orca-profiles/profile-cloud-auth-config.ts",
+      "contains": "env.ORCA_RELAY_URL",
+      "reason": "自有 Relay 地址使用 SBBGT_RELAY_URL 优先，并在兼容周期内回退旧变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/startup/single-instance-lock.ts",
+      "contains": "ORCA_E2E_ENFORCE_SINGLE_INSTANCE_LOCK",
+      "reason": "单实例 E2E 开关使用新变量优先，同时兼容已存在的旧自动化环境。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/relay/pty-handler.ts",
+      "contains": "process.env.ORCA_APP_VERSION",
+      "reason": "SSH Relay 启动环境使用 SBBGT_APP_VERSION 优先，并兼容旧桌面端传入的版本变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/shared/terminal-git-credential-guard.ts",
+      "contains": "ORCA_INTERNAL_TERMINAL_GIT_CREDENTIAL_GUARD_POLICY",
+      "reason": "跨进程 Git 凭据保护协议写入新变量，并兼容读取升级前子进程携带的旧变量。"
     }
   ]
 }

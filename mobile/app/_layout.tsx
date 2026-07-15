@@ -12,6 +12,7 @@ import { getNotificationNavigationPath } from '../src/notifications/notification
 import { loadHosts } from '../src/transport/host-store'
 import { extractPairingCodeFromUrl } from '../src/transport/pairing'
 import { MobileLocaleProvider } from '../src/i18n/mobile-locale-context'
+import { recoverMobileRelayPairing } from '../src/transport/mobile-relay-pairing-recovery'
 
 // Why: keeps the native splash screen visible until the React tree is mounted
 // and ready to render. Without this the user sees a blank white/black frame
@@ -35,6 +36,12 @@ Notifications.setNotificationHandler({
 export default function RootLayout() {
   const router = useRouter()
   const handledNotificationIdsRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    // Why: pairing publication is journaled across process death; startup must
+    // reconcile the server result before another scan can replace that journal.
+    void recoverMobileRelayPairing()
+  }, [])
 
   // Why: route `orca://pair?...` deep links to the confirm screen so
   // the same pairing flow runs whether the link arrived via QR scan,

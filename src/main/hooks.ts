@@ -6,13 +6,14 @@ import { getDefaultRepoHookSettings } from '../shared/constants'
 import { getRuntimePathBasename } from '../shared/cross-platform-path'
 import { resolveHookCommandSourcePolicy } from '../shared/hook-command-source-policy'
 import { shouldWaitForSetupBeforeAgentStartup } from '../shared/setup-agent-startup-policy'
+import { TERMINAL_GIT_CREDENTIAL_GUARD_POLICY_ENV } from '../shared/terminal-git-credential-guard'
 import { parseOrcaYaml } from '../shared/orca-yaml'
 import {
   LEGACY_PRODUCT_IDENTITY,
   PRODUCT_PRIVATE_DIRECTORY,
   PRODUCT_PROJECT_CONFIG_FILE
 } from '../shared/product-identity'
-import { gitExecFileSync } from './git/runner'
+import { gitExecFileSync, promptGuardShellEnv } from './git/runner'
 import { isWslPath, parseWslPath, toWindowsWslPath, toLinuxPath } from './wsl'
 import type {
   HookCommandSourcePolicy,
@@ -491,7 +492,12 @@ export function createSetupRunnerScript(
 }
 
 export function getSetupRunnerEnvVars(repo: Repo, worktreePath: string): Record<string, string> {
-  return getSetupEnvVars(repo, worktreePath)
+  return {
+    ...getSetupEnvVars(repo, worktreePath),
+    // Why: the visible Setup terminal is still unattended automation; user
+    // terminal opt-out must not let its git commands open credential UI.
+    [TERMINAL_GIT_CREDENTIAL_GUARD_POLICY_ENV]: 'guard'
+  }
 }
 
 export function buildPosixRunnerScript(script: string): string {
@@ -547,7 +553,7 @@ function createWorktreeRunnerScript(
   runtimeTarget?: HookRuntimeTarget,
   waitForAgentStartup?: boolean
 ): WorktreeSetupLaunch {
-  const envVars = getSetupEnvVars(repo, worktreePath)
+  const envVars = getSetupRunnerEnvVars(repo, worktreePath)
   // Why: WSL worktrees run on a Linux filesystem even though process.platform
   // is 'win32'. Use bash scripts for WSL, .cmd for native Windows.
   const wslWorktree = isWslPath(worktreePath) || Boolean(runtimeTarget?.wslDistro)
@@ -672,7 +678,11 @@ export function runHook(
           {
             timeout: HOOK_TIMEOUT,
             encoding: 'utf-8',
-            env: { ...process.env, ...wslEnv }
+            // Why: same unattended-git guard as the non-WSL branch below
+            // (issue #7652) — WSL repos are the likeliest to hit the GCM
+            // popup, and the guard's WSLENV registration is what carries it
+            // across the wsl.exe boundary into the distro.
+            env: promptGuardShellEnv({ ...process.env, ...wslEnv })
           },
           (error, stdout, stderr) => {
             finish(error ?? null, stdout, stderr)
@@ -691,10 +701,15 @@ export function runHook(
         cwd,
         timeout: HOOK_TIMEOUT,
         shell: getHookShell(),
-        env: {
+        // Why: setup/archive hooks run unattended, so a `git fetch`/`submodule
+        // update` inside one must never make Git Credential Manager pop its
+        // "Connect to GitHub" OAuth window on Windows and loop when the network
+        // can't complete it (issue #7652). The guard keeps the credential
+        // helper, so cached auth still works; only the interactive prompt dies.
+        env: promptGuardShellEnv({
           ...process.env,
           ...getSetupEnvVars(repo, cwd)
-        }
+        })
       },
       (error, stdout, stderr) => {
         if (error) {
