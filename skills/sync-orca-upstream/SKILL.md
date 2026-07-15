@@ -13,8 +13,9 @@ description: 为“赛博包工头”Fork 审计、规划并安全同步官方 s
 
 1. 仓库根目录的 `AGENTS.md`。
 2. [references/repository-baseline.md](references/repository-baseline.md) 中的初始节点。
-3. [docs/reference/secondary-development-architecture-baseline.md](../../docs/reference/secondary-development-architecture-baseline.md) 中与改动相关的运行域。
-4. [docs/reference/cyber-foreman-localization-brand-migration.md](../../docs/reference/cyber-foreman-localization-brand-migration.md) 中的品牌与兼容边界。
+3. [references/upstream-integration-state.json](references/upstream-integration-state.json) 中最后成功集成的机器状态。
+4. [docs/reference/secondary-development-architecture-baseline.md](../../docs/reference/secondary-development-architecture-baseline.md) 中与改动相关的运行域。
+5. [docs/reference/cyber-foreman-localization-brand-migration.md](../../docs/reference/cyber-foreman-localization-brand-migration.md) 中的品牌与兼容边界。
 
 ## 固定身份
 
@@ -26,6 +27,14 @@ description: 为“赛博包工头”Fork 审计、规划并安全同步官方 s
 
 GitHub API 返回的 SHA 只是“远端观测节点”。只有 `refs/remotes/upstream/main` 存在且 Fetch 成功后，才能将它称为“本地已获取上游节点”，并用于 Merge Base、Ahead/Behind、Diff 或同步。
 
+必须区分三个节点：
+
+- 已获取上游节点：最近一次成功 Fetch 后的 `refs/remotes/upstream/main`。
+- 最后成功集成节点：状态文件中的 `upstreamTargetSha`，必须是二开同步节点的祖先。
+- 产品节点：冲突解决并验证通过后的 Merge/Rebase/FF 节点，以及其后的二开提交。
+
+状态文件只是 Git 提交图的机器索引，不能覆盖祖先关系的验证结果。
+
 ## 工作模式
 
 ### 1. 审计模式（默认）
@@ -35,6 +44,7 @@ GitHub API 返回的 SHA 只是“远端观测节点”。只有 `refs/remotes/u
 ```bash
 rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs
 rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --json
+rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --verify-integration-state
 ```
 
 报告必须明确：
@@ -44,6 +54,8 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --json
 - `origin/main`、`upstream/main` 是否已存在于本地。
 - 本地上游存在时的 Merge Base、Ahead/Behind 和祖先关系。
 - API 观测节点与本地 Fetch 节点的区别。
+- 最后成功集成的上游 SHA、二开同步节点及二者的祖先关系。
+- 已获取上游相对最后成功集成节点的待同步提交数。
 - 阻止同步的前置条件。
 
 审计模式不得执行 Fetch、Stash、Reset、Checkout、Clean、Merge、Rebase、Commit、Push，也不得删除或覆盖用户文件。
@@ -70,10 +82,11 @@ rtk git -c http.version=HTTP/1.1 fetch --progress upstream +refs/heads/main:refs
 Fetch 成功后重新运行：
 
 ```bash
-rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
+rtk git rev-parse refs/remotes/upstream/main
+rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready --expected-upstream-sha=<target-sha>
 ```
 
-`--sync-ready` 非零退出代表前置条件未满足，不代表脚本故障。
+第一条命令输出的完整 SHA 是本次冻结目标。`--sync-ready` 非零退出代表前置条件未满足，不代表脚本故障。若再次 Fetch 后目标变化，必须停止并重新确认目标，不得静默追赶移动中的上游 HEAD。
 
 ### 3. 形成同步方案
 
@@ -99,8 +112,10 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 - 非 Detached HEAD。
 - `upstream` URL 与固定官方 URL 一致。
 - `refs/remotes/upstream/main` 已存在。
+- 机器状态与 Git 提交图一致。
 - 工作区干净，包括未跟踪文件。
 - 已记录同步前 HEAD、目标 SHA 与 Merge Base。
+- 再次 Fetch 后，冻结目标仍与 `refs/remotes/upstream/main` 完全一致。
 - 用户已确认分支角色和同步策略。
 
 在任何 Merge/Rebase 前，创建带时间和原 HEAD 的备份引用，并验证引用可解析。备份命名应体现日期和同步前 SHA，不能覆盖已有引用。
@@ -111,6 +126,27 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 - 不替用户猜测冲突取舍；涉及协议、持久化、权限和跨运行域行为时先停止并说明。
 - Git 命令以 2.25 为核心工作流基线；新增参数必须确认兼容性。
 - 所有路径处理、脚本与命令兼顾 macOS、Linux、Windows、WSL 和 SSH Host。
+
+### 5. 完成同步并固化状态
+
+冲突解决和约定验证全部通过后，再次 Fetch `upstream`。上游若已前进，不修改本次冻结目标；把新增提交记为下一轮待同步范围。
+
+工作区干净时运行记录脚本：
+
+```bash
+rtk node skills/sync-orca-upstream/scripts/record-upstream-integration.mjs --pre-sync-head=<pre-sync-sha> --upstream-sha=<target-sha> --integration-commit=<integration-sha> --strategy=<merge|rebase|fast-forward> --verification-status=passed
+rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --verify-integration-state
+```
+
+记录脚本必须验证：
+
+- 上游目标、同步前节点和二开同步节点都是完整且存在的 Git Commit。
+- 上游目标是二开同步节点的祖先，二开同步节点是当前产品 HEAD 的祖先。
+- Merge Base 与提交图一致；Merge 和 Fast-forward 结构符合所声明策略。
+- 同步后获取的上游仍包含本次目标，并记录当时尚未集成的提交数。
+- `verificationStatus` 只能在约定验证全部通过后写为 `passed`。
+
+随后在 `references/repository-baseline.md` 追加人工审计记录。机器状态与 Markdown 历史应在同一笔元数据提交中持久化；未获得 Commit/Push 授权时保留改动并明确报告，不能把未提交状态宣称为已持久化。
 
 ## 风险分区
 
@@ -157,7 +193,7 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 6. `pnpm run verify:brand-boundaries`，确认上游改动没有恢复旧品牌和上游服务入口。
 7. Desktop Release、Mobile、CLI 和存储迁移的专项测试。
 
-同步成功后，在 [references/repository-baseline.md](references/repository-baseline.md) 的“同步历史”追加一条记录，至少包含：
+同步成功后，先使用记录脚本更新 [references/upstream-integration-state.json](references/upstream-integration-state.json)，再在 [references/repository-baseline.md](references/repository-baseline.md) 的“同步历史”追加一条记录，至少包含：
 
 - 同步日期与执行者。
 - 同步前 HEAD、上游目标 SHA、Merge Base。
@@ -177,3 +213,4 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 - 不只验证本地 Electron 路径而忽略 SSH、WSL、Relay、Mobile、Web 和 CLI。
 - 不自动 Commit 或 Push，除非用户明确授权对应动作。
 - 不在 Fetch 失败后手工创建或伪造 `refs/remotes/upstream/main`。
+- 不把陈旧的 `upstream/main`、API 观测 SHA 或未提交的状态文件宣称为最后成功集成节点。

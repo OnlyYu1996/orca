@@ -10,6 +10,11 @@ import type {
   CodexUsageSummary
 } from '../../../../shared/codex-usage-types'
 import type {
+  CodeBuddyUsageDailyPoint,
+  CodeBuddyUsageScanState,
+  CodeBuddyUsageSummary
+} from '../../../../shared/codebuddy-usage-types'
+import type {
   OpenCodeUsageDailyPoint,
   OpenCodeUsageScanState,
   OpenCodeUsageSummary
@@ -51,6 +56,17 @@ function enabledOpenCodeScanState(): OpenCodeUsageScanState {
     lastScanCompletedAt: 600,
     lastScanError: null,
     hasAnyOpenCodeData: true
+  }
+}
+
+function enabledCodeBuddyScanState(): CodeBuddyUsageScanState {
+  return {
+    enabled: true,
+    isScanning: false,
+    lastScanStartedAt: 450,
+    lastScanCompletedAt: 500,
+    lastScanError: null,
+    hasAnyCodeBuddyData: true
   }
 }
 
@@ -102,6 +118,21 @@ describe('usage overview model', () => {
       topProject: 'orca-third',
       hasAnyOpenCodeData: true
     }
+    const codeBuddySummary: CodeBuddyUsageSummary = {
+      scope: 'worktrees',
+      range: '30d',
+      sessions: 1,
+      events: 2,
+      inputTokens: 600,
+      cachedInputTokens: 200,
+      outputTokens: 400,
+      reasoningOutputTokens: 50,
+      totalTokens: 1_000,
+      estimatedCostUsd: null,
+      topModel: 'GLM-5.1',
+      topProject: 'orca-codebuddy',
+      hasAnyCodeBuddyData: true
+    }
     const claudeDaily: ClaudeUsageDailyPoint[] = [
       {
         day: '2026-05-13',
@@ -146,6 +177,16 @@ describe('usage overview model', () => {
         totalTokens: 1_600
       }
     ]
+    const codeBuddyDaily: CodeBuddyUsageDailyPoint[] = [
+      {
+        day: '2026-05-15',
+        inputTokens: 600,
+        cachedInputTokens: 200,
+        outputTokens: 400,
+        reasoningOutputTokens: 50,
+        totalTokens: 1_000
+      }
+    ]
 
     const overview = buildUsageOverview({
       claude: {
@@ -158,6 +199,11 @@ describe('usage overview model', () => {
         summary: codexSummary,
         daily: codexDaily
       },
+      codebuddy: {
+        scanState: enabledCodeBuddyScanState(),
+        summary: codeBuddySummary,
+        daily: codeBuddyDaily
+      },
       opencode: {
         scanState: enabledOpenCodeScanState(),
         summary: openCodeSummary,
@@ -165,21 +211,22 @@ describe('usage overview model', () => {
       }
     })
 
-    expect(overview.totalTokens).toBe(10_800)
-    expect(overview.newInputTokens).toBe(2_950)
-    expect(overview.cacheTokens).toBe(5_550)
-    expect(overview.outputTokens).toBe(2_200)
-    expect(overview.reasoningTokens).toBe(400)
-    expect(overview.sessions).toBe(4)
-    expect(overview.activityCount).toBe(9)
+    expect(overview.totalTokens).toBe(11_800)
+    expect(overview.newInputTokens).toBe(3_350)
+    expect(overview.cacheTokens).toBe(5_750)
+    expect(overview.outputTokens).toBe(2_600)
+    expect(overview.reasoningTokens).toBe(450)
+    expect(overview.sessions).toBe(5)
+    expect(overview.activityCount).toBe(11)
     expect(overview.activeDays).toBe(3)
     expect(overview.estimatedCostUsd).toBeCloseTo(0.09)
-    expect(overview.cacheShare).toBeCloseTo(5_550 / 8_500)
+    expect(overview.cacheShare).toBeCloseTo(5_750 / 9_100)
     expect(overview.bestDay).toMatchObject({
       day: '2026-05-14',
       totalTokens: 4_500,
       claudeTokens: 2_500,
       codexTokens: 2_000,
+      codeBuddyTokens: 0,
       openCodeTokens: 0,
       intensity: 4
     })
@@ -193,6 +240,12 @@ describe('usage overview model', () => {
       cacheTokens: 250,
       totalTokens: 1_600
     })
+    expect(overview.providers.find((provider) => provider.id === 'codebuddy')).toMatchObject({
+      newInputTokens: 400,
+      cacheTokens: 200,
+      totalTokens: 1_000,
+      estimatedCostUsd: null
+    })
   })
 
   it('pads recent usage days with zero-token cells', () => {
@@ -203,6 +256,7 @@ describe('usage overview model', () => {
           totalTokens: 4_500,
           claudeTokens: 2_500,
           codexTokens: 2_000,
+          codeBuddyTokens: 0,
           openCodeTokens: 0,
           intensity: 4
         }
@@ -217,6 +271,7 @@ describe('usage overview model', () => {
         totalTokens: 0,
         claudeTokens: 0,
         codexTokens: 0,
+        codeBuddyTokens: 0,
         openCodeTokens: 0,
         intensity: 0
       },
@@ -225,6 +280,7 @@ describe('usage overview model', () => {
         totalTokens: 4_500,
         claudeTokens: 2_500,
         codexTokens: 2_000,
+        codeBuddyTokens: 0,
         openCodeTokens: 0,
         intensity: 4
       },
@@ -233,6 +289,7 @@ describe('usage overview model', () => {
         totalTokens: 0,
         claudeTokens: 0,
         codexTokens: 0,
+        codeBuddyTokens: 0,
         openCodeTokens: 0,
         intensity: 0
       }
@@ -243,6 +300,7 @@ describe('usage overview model', () => {
     const overview = buildUsageOverview({
       claude: { scanState: null, summary: null, daily: [] },
       codex: { scanState: null, summary: null, daily: [] },
+      codebuddy: { scanState: null, summary: null, daily: [] },
       opencode: { scanState: null, summary: null, daily: [] }
     })
 
@@ -273,6 +331,7 @@ describe('usage overview model', () => {
         summary: null,
         daily: codexDaily
       },
+      codebuddy: { scanState: null, summary: null, daily: [] },
       opencode: { scanState: null, summary: null, daily: [] }
     })
 

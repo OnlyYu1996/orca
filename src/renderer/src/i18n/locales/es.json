@@ -3423,14 +3423,15 @@
           "908c470587": "codex",
           "eb6a066185": "claude",
           "eee19cfade": "resumen",
-          "grokUsageTab": "Grok"
+          "grokUsageTab": "Grok",
+          "codeBuddyUsageTab": "CodeBuddy"
         },
         "UsageOverviewPane": {
           "22ed1b7669": "sesiones",
           "444585cb41": "con datos",
           "ecb0cd8a4c": "habilitado -",
           "33f7b043d2": "Proveedores",
-          "60002bb22f": "Aún no se encontró uso local de Claude, Codex u OpenCode. El resumen se completará después de que la siguiente sesión de agente escriba logs de tokens.",
+          "60002bb22f": "Aún no se encontró uso local de Claude, Codex, OpenCode o CodeBuddy. El resumen se completará después de que la siguiente sesión de agente escriba logs de tokens.",
           "70f36452d4": "Porcentaje de caché",
           "327603fe8b": "Días activos",
           "0eaf937335": "Est. costo",
@@ -3443,7 +3444,8 @@
           "ca6bc5fded": "Actualizar",
           "e06d1baf5c": "Actualizar resumen de uso",
           "c760c481c5": "Resumen de uso",
-          "55c910f4f1": "- algunos precios de modelos no están disponibles"
+          "55c910f4f1": "- algunos precios de modelos no están disponibles",
+          "enableCodeBuddy": "Activar CodeBuddy"
         },
         "share": {
           "card": {
@@ -3488,7 +3490,8 @@
             "model": {
               "bc474051e5": "OpenCode",
               "eb220d193b": "Codex",
-              "544d6d4c16": "Claude"
+              "544d6d4c16": "Claude",
+              "codeBuddy": "CodeBuddy"
             },
             "sections": {
               "9564a3b21b": "sesiones -",
@@ -3498,7 +3501,7 @@
               "1dd166c920": "Menos",
               "52d9221dc0": "Heatmap de actividad reciente de tokens",
               "c424eb3f8e": "Mejor:",
-              "f28ff1f852": "Actividad reciente de tokens combinados de Claude, Codex y OpenCode.",
+              "f28ff1f852": "Actividad reciente combinada de tokens de Claude, Codex, OpenCode y CodeBuddy.",
               "69e2b50427": "Intensidad diaria",
               "3a795542fa": "Mix combinado de tokens",
               "e65084cb4b": "razonamiento",
@@ -3541,6 +3544,31 @@
           "e5a6b7c8d9": "Créditos semanales usados",
           "f6b7c8d9e0": "Restablecimiento del periodo de facturación",
           "a7b8c9d0e1": "Configuración de la cuenta de Grok"
+        },
+        "CodeBuddyUsagePane": {
+          "range7d": "Last 7 days",
+          "range30d": "Last 30 days",
+          "range90d": "Last 90 days",
+          "rangeAll": "All time",
+          "scopeWorktrees": "Cyber Contractor worktrees only",
+          "scopeAll": "All local CodeBuddy usage",
+          "options": "CodeBuddy usage options",
+          "filters": "Filters",
+          "scope": "Scope",
+          "range": "Range",
+          "refresh": "Refresh CodeBuddy usage",
+          "refreshLabel": "Refresh",
+          "enableAnalytics": "Enable CodeBuddy usage analytics",
+          "title": "CodeBuddy Usage Tracking",
+          "description": "Reads local CodeBuddy session logs to show token, model, and session stats.",
+          "scanError": " - Last scan error: {{value0}}",
+          "empty": "No local CodeBuddy usage found yet for this scope.",
+          "total": "Total tokens",
+          "input": "Input tokens",
+          "output": "Output tokens",
+          "cache": "Cached input",
+          "reasoning": "Reasoning output",
+          "sessions": "Sessions / Events"
         }
       },
       "sparse": {

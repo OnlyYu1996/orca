@@ -4,6 +4,7 @@ import { useAppStore } from '../../store'
 import { StatCard } from './StatCard'
 import { ClaudeUsagePane } from './ClaudeUsagePane'
 import { CodexUsagePane } from './CodexUsagePane'
+import { CodeBuddyUsagePane } from './CodeBuddyUsagePane'
 import { GrokUsagePane } from './GrokUsagePane'
 import { OpenCodeUsagePane } from './OpenCodeUsagePane'
 import { UsageOverviewPane } from './UsageOverviewPane'
@@ -46,7 +47,7 @@ function formatTrackingSince(timestamp: number | null): string {
   return `Tracking since ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
 }
 
-type UsageTab = 'overview' | 'claude' | 'codex' | 'opencode' | 'grok'
+type UsageTab = 'overview' | 'claude' | 'codex' | 'codebuddy' | 'opencode' | 'grok'
 
 const USAGE_ANALYTICS_OPTIONS = [
   {
@@ -65,6 +66,12 @@ const USAGE_ANALYTICS_OPTIONS = [
     id: 'codex',
     get label() {
       return translate('auto.components.stats.StatsPane.7d26110cea', 'Codex')
+    }
+  },
+  {
+    id: 'codebuddy',
+    get label() {
+      return translate('auto.components.stats.StatsPane.codeBuddyUsageTab', 'CodeBuddy')
     }
   },
   {
@@ -200,6 +207,8 @@ export function StatsPane(): React.JSX.Element {
             <ClaudeUsagePane />
           ) : activeUsageTab === 'codex' ? (
             <CodexUsagePane />
+          ) : activeUsageTab === 'codebuddy' ? (
+            <CodeBuddyUsagePane />
           ) : activeUsageTab === 'opencode' ? (
             <OpenCodeUsagePane />
           ) : (

@@ -141,7 +141,7 @@ export function DailyIntensityGrid({
           <p className="text-xs text-muted-foreground">
             {translate(
               'auto.components.stats.usage.overview.sections.f28ff1f852',
-              'Recent combined Claude, Codex, and OpenCode token activity.'
+              'Recent combined Claude, Codex, CodeBuddy, and OpenCode token activity.'
             )}
           </p>
         </div>

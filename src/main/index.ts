@@ -22,6 +22,7 @@ import { applyAppIcon } from './app-icon'
 import { StatsCollector, initStatsPath } from './stats/collector'
 import { ClaudeUsageStore, initClaudeUsagePath } from './claude-usage/store'
 import { CodexUsageStore, initCodexUsagePath } from './codex-usage/store'
+import { CodeBuddyUsageStore, initCodeBuddyUsagePath } from './codebuddy-usage/store'
 import { OpenCodeUsageStore, initOpenCodeUsagePath } from './opencode-usage/store'
 import { killAllPty } from './ipc/pty'
 import { initDaemonPtyProvider, disconnectDaemon, shutdownDaemon } from './daemon/daemon-init'
@@ -213,6 +214,7 @@ let store: Store | null = null
 let stats: StatsCollector | null = null
 let claudeUsage: ClaudeUsageStore | null = null
 let codexUsage: CodexUsageStore | null = null
+let codeBuddyUsage: CodeBuddyUsageStore | null = null
 let openCodeUsage: OpenCodeUsageStore | null = null
 let codexAccounts: CodexAccountService | null = null
 let codexRuntimeHome: CodexRuntimeHomeService | null = null
@@ -645,6 +647,7 @@ if (hasSingleInstanceLock) {
   initStatsPath()
   initClaudeUsagePath()
   initCodexUsagePath()
+  initCodeBuddyUsagePath()
   initOpenCodeUsagePath()
   crashReports = CrashReportStore.fromUserData()
   recordCrashBreadcrumb('app_started', {
@@ -808,6 +811,9 @@ function openMainWindow(): BrowserWindow {
   if (!codexUsage) {
     throw new Error('Codex usage store must be initialized before opening the main window')
   }
+  if (!codeBuddyUsage) {
+    throw new Error('CodeBuddy usage store must be initialized before opening the main window')
+  }
   if (!openCodeUsage) {
     throw new Error('OpenCode usage store must be initialized before opening the main window')
   }
@@ -968,6 +974,7 @@ function openMainWindow(): BrowserWindow {
     stats,
     claudeUsage,
     codexUsage,
+    codeBuddyUsage,
     openCodeUsage,
     codexAccounts,
     claudeAccounts,
@@ -1748,6 +1755,7 @@ app.whenReady().then(async () => {
   stats = new StatsCollector()
   claudeUsage = new ClaudeUsageStore(store)
   codexUsage = new CodexUsageStore(store)
+  codeBuddyUsage = new CodeBuddyUsageStore(store)
   openCodeUsage = new OpenCodeUsageStore(store)
   rateLimits = new RateLimitService()
   codexRuntimeHome = new CodexRuntimeHomeService(store)

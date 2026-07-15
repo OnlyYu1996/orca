@@ -14,7 +14,7 @@ type OpenCodeUsageDetailsProps = {
   modelBreakdown: OpenCodeUsageBreakdownRow[]
   projectBreakdown: OpenCodeUsageBreakdownRow[]
   recentSessions: OpenCodeUsageSessionRow[]
-  summary: OpenCodeUsageSummary | null | undefined
+  summary: Pick<OpenCodeUsageSummary, 'topModel' | 'topProject'> | null | undefined
 }
 
 export function OpenCodeUsageDetails({

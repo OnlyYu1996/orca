@@ -3857,6 +3857,24 @@ const api = {
       ipcRenderer.invoke('codexUsage:getRecentSessions', args)
   },
 
+  codeBuddyUsage: {
+    getScanState: (): Promise<unknown> => ipcRenderer.invoke('codeBuddyUsage:getScanState'),
+    setEnabled: (args: { enabled: boolean }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:setEnabled', args),
+    refresh: (args?: { force?: boolean }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:refresh', args),
+    getSnapshot: (args: { scope: string; range: string; limit?: number }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:getSnapshot', args),
+    getSummary: (args: { scope: string; range: string }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:getSummary', args),
+    getDaily: (args: { scope: string; range: string }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:getDaily', args),
+    getBreakdown: (args: { scope: string; range: string; kind: string }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:getBreakdown', args),
+    getRecentSessions: (args: { scope: string; range: string; limit?: number }): Promise<unknown> =>
+      ipcRenderer.invoke('codeBuddyUsage:getRecentSessions', args)
+  },
+
   openCodeUsage: {
     getScanState: (): Promise<unknown> => ipcRenderer.invoke('openCodeUsage:getScanState'),
     setEnabled: (args: { enabled: boolean }): Promise<unknown> =>

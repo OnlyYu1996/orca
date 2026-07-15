@@ -11,13 +11,18 @@ import type {
   CodexUsageSummary
 } from '../../../../shared/codex-usage-types'
 import type {
+  CodeBuddyUsageDailyPoint,
+  CodeBuddyUsageScanState,
+  CodeBuddyUsageSummary
+} from '../../../../shared/codebuddy-usage-types'
+import type {
   OpenCodeUsageDailyPoint,
   OpenCodeUsageScanState,
   OpenCodeUsageSummary
 } from '../../../../shared/opencode-usage-types'
 import { translate } from '@/i18n/i18n'
 
-export type UsageProviderId = 'claude' | 'codex' | 'opencode'
+export type UsageProviderId = 'claude' | 'codex' | 'codebuddy' | 'opencode'
 
 export type UsageProviderOverview = {
   id: UsageProviderId
@@ -46,6 +51,7 @@ export type UsageOverviewDailyPoint = {
   totalTokens: number
   claudeTokens: number
   codexTokens: number
+  codeBuddyTokens: number
   openCodeTokens: number
   intensity: 0 | 1 | 2 | 3 | 4
 }
@@ -83,6 +89,11 @@ export type UsageOverviewInput = {
     summary: CodexUsageSummary | null
     daily: CodexUsageDailyPoint[]
   }
+  codebuddy: {
+    scanState: CodeBuddyUsageScanState | null
+    summary: CodeBuddyUsageSummary | null
+    daily: CodeBuddyUsageDailyPoint[]
+  }
   opencode: {
     scanState: OpenCodeUsageScanState | null
     summary: OpenCodeUsageSummary | null
@@ -102,6 +113,13 @@ function getCodexNewInputTokens(summary: CodexUsageSummary | null): number {
 }
 
 function getOpenCodeNewInputTokens(summary: OpenCodeUsageSummary | null): number {
+  if (!summary) {
+    return 0
+  }
+  return Math.max(summary.inputTokens - summary.cachedInputTokens, 0)
+}
+
+function getCodeBuddyNewInputTokens(summary: CodeBuddyUsageSummary | null): number {
   if (!summary) {
     return 0
   }
@@ -218,6 +236,34 @@ function createOpenCodeProvider(input: UsageOverviewInput['opencode']): UsagePro
   }
 }
 
+function createCodeBuddyProvider(input: UsageOverviewInput['codebuddy']): UsageProviderOverview {
+  const summary = input.summary
+  const dailyActiveDays = input.daily
+    .filter((entry) => entry.totalTokens > 0)
+    .map((entry) => entry.day)
+  return {
+    id: 'codebuddy',
+    label: translate('auto.components.stats.usage.overview.model.codeBuddy', 'CodeBuddy'),
+    enabled: input.scanState?.enabled ?? false,
+    isScanning: input.scanState?.isScanning ?? false,
+    hasData: summary?.hasAnyCodeBuddyData ?? input.scanState?.hasAnyCodeBuddyData ?? false,
+    lastScanCompletedAt: input.scanState?.lastScanCompletedAt ?? null,
+    lastScanError: input.scanState?.lastScanError ?? null,
+    sessions: summary?.sessions ?? 0,
+    activityLabel: 'events',
+    activityCount: summary?.events ?? 0,
+    totalTokens: summary?.totalTokens ?? 0,
+    newInputTokens: getCodeBuddyNewInputTokens(summary),
+    outputTokens: summary?.outputTokens ?? 0,
+    cacheTokens: summary?.cachedInputTokens ?? 0,
+    reasoningTokens: summary?.reasoningOutputTokens ?? 0,
+    estimatedCostUsd: null,
+    topModel: summary?.topModel ?? null,
+    topProject: summary?.topProject ?? null,
+    activeDays: countActiveDays(dailyActiveDays)
+  }
+}
+
 function buildDailyOverview(input: UsageOverviewInput): UsageOverviewDailyPoint[] {
   const byDay = new Map<string, Omit<UsageOverviewDailyPoint, 'intensity'>>()
 
@@ -227,6 +273,7 @@ function buildDailyOverview(input: UsageOverviewInput): UsageOverviewDailyPoint[
       totalTokens: 0,
       claudeTokens: 0,
       codexTokens: 0,
+      codeBuddyTokens: 0,
       openCodeTokens: 0
     }
     const total = getClaudeDailyTotal(entry)
@@ -241,10 +288,25 @@ function buildDailyOverview(input: UsageOverviewInput): UsageOverviewDailyPoint[
       totalTokens: 0,
       claudeTokens: 0,
       codexTokens: 0,
+      codeBuddyTokens: 0,
       openCodeTokens: 0
     }
     current.totalTokens += entry.totalTokens
     current.codexTokens += entry.totalTokens
+    byDay.set(entry.day, current)
+  }
+
+  for (const entry of input.codebuddy.daily) {
+    const current = byDay.get(entry.day) ?? {
+      day: entry.day,
+      totalTokens: 0,
+      claudeTokens: 0,
+      codexTokens: 0,
+      codeBuddyTokens: 0,
+      openCodeTokens: 0
+    }
+    current.totalTokens += entry.totalTokens
+    current.codeBuddyTokens += entry.totalTokens
     byDay.set(entry.day, current)
   }
 
@@ -254,6 +316,7 @@ function buildDailyOverview(input: UsageOverviewInput): UsageOverviewDailyPoint[
       totalTokens: 0,
       claudeTokens: 0,
       codexTokens: 0,
+      codeBuddyTokens: 0,
       openCodeTokens: 0
     }
     current.totalTokens += entry.totalTokens
@@ -303,6 +366,7 @@ export function getRecentUsageDays(
         totalTokens: 0,
         claudeTokens: 0,
         codexTokens: 0,
+        codeBuddyTokens: 0,
         openCodeTokens: 0,
         intensity: 0
       }
@@ -315,6 +379,7 @@ export function buildUsageOverview(input: UsageOverviewInput): UsageOverviewMode
   const providers = [
     createClaudeProvider(input.claude),
     createCodexProvider(input.codex),
+    createCodeBuddyProvider(input.codebuddy),
     createOpenCodeProvider(input.opencode)
   ]
   const daily = buildDailyOverview(input)

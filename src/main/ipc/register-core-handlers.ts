@@ -10,6 +10,7 @@ import type { CommitMessageAgentEnvironmentResolvers } from '../text-generation/
 import { registerFilesystemWatcherHandlers } from './filesystem-watcher'
 import { registerClaudeUsageHandlers } from './claude-usage'
 import { registerCodexUsageHandlers } from './codex-usage'
+import { registerCodeBuddyUsageHandlers } from './codebuddy-usage'
 import { registerOpenCodeUsageHandlers } from './opencode-usage'
 import { registerGitHubHandlers } from './github'
 import { registerGitLabHandlers } from './gitlab'
@@ -65,6 +66,7 @@ import {
 } from '../window/clipboard-ipc-handlers'
 import type { ClaudeUsageStore } from '../claude-usage/store'
 import type { CodexUsageStore } from '../codex-usage/store'
+import type { CodeBuddyUsageStore } from '../codebuddy-usage/store'
 import type { OpenCodeUsageStore } from '../opencode-usage/store'
 import type { RateLimitService } from '../rate-limits/service'
 import type { CodexAccountService } from '../codex-accounts/service'
@@ -93,6 +95,7 @@ export function registerCoreHandlers(
   stats: StatsCollector,
   claudeUsage: ClaudeUsageStore,
   codexUsage: CodexUsageStore,
+  codeBuddyUsage: CodeBuddyUsageStore,
   openCodeUsage: OpenCodeUsageStore,
   codexAccounts: CodexAccountService,
   claudeAccounts: ClaudeAccountService,
@@ -123,6 +126,7 @@ export function registerCoreHandlers(
   registerPreflightHandlers()
   registerClaudeUsageHandlers(claudeUsage)
   registerCodexUsageHandlers(codexUsage)
+  registerCodeBuddyUsageHandlers(codeBuddyUsage)
   registerOpenCodeUsageHandlers(openCodeUsage)
   registerCodexAccountHandlers(codexAccounts)
   registerAgentHookHandlers(runtime, { getPtyIdForPaneKey })

@@ -95,6 +95,22 @@ API 返回的最近提交序列中，本地 HEAD 位于该观测 SHA 之后第 2
 
 初始记录时尚未执行上游同步。成功同步后按时间顺序追加，禁止覆盖前面的记录。
 
+### 机器状态
+
+当前最后成功集成节点同时保存在
+[`upstream-integration-state.json`](./upstream-integration-state.json)。该文件供审计脚本稳定读取，
+Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
+
+机器状态必须满足：
+
+- `upstreamTargetSha` 是 `integrationCommit` 的祖先。
+- `integrationCommit` 是当前产品 HEAD 的祖先。
+- `mergeBase` 与同步前 HEAD、上游目标的真实 Merge Base 一致。
+- `postSyncFetchedSha` 来自同步完成后的 Fetch；若上游继续前进，新增提交只计入下一轮待同步范围。
+- 只有约定验证全部通过后才能更新最后成功集成节点。
+
+状态文件不是独立事实来源。文件内容与 Git 提交图冲突时，以 Git 对象关系为准并阻止后续同步。
+
 ### 追加模板
 
 ```markdown
@@ -107,6 +123,7 @@ API 返回的最近提交序列中，本地 HEAD 位于该观测 SHA 之后第 2
 - Merge Base：
 - 策略：Merge / Rebase / Fast-forward
 - 同步后节点：
+- 同步后 Fetch 节点及待同步提交数：
 - 备份引用：
 - 冲突与关键取舍：
 - 验证：

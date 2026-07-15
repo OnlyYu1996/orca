@@ -3423,14 +3423,15 @@
           "908c470587": "codex",
           "eb6a066185": "claude",
           "eee19cfade": "概览",
-          "grokUsageTab": "Grok"
+          "grokUsageTab": "Grok",
+          "codeBuddyUsageTab": "CodeBuddy"
         },
         "UsageOverviewPane": {
           "22ed1b7669": "会话",
           "444585cb41": "有数据",
           "ecb0cd8a4c": "已启用 -",
           "33f7b043d2": "供应商",
-          "60002bb22f": "尚未找到本地 Claude、Codex 或 OpenCode 使用情况。概览将在下一个智能体会话写入token日志后填充。",
+          "60002bb22f": "尚未找到本地 Claude、Codex、OpenCode 或 CodeBuddy 使用记录。下次智能体会话写入 token 日志后，概览将自动显示数据。",
           "70f36452d4": "缓存共享",
           "327603fe8b": "活跃天数",
           "0eaf937335": "预计成本",
@@ -3443,7 +3444,8 @@
           "ca6bc5fded": "刷新",
           "e06d1baf5c": "刷新使用概览",
           "c760c481c5": "使用概述",
-          "55c910f4f1": "- 部分型号价格不详"
+          "55c910f4f1": "- 部分型号价格不详",
+          "enableCodeBuddy": "启用 CodeBuddy"
         },
         "share": {
           "card": {
@@ -3488,7 +3490,8 @@
             "model": {
               "bc474051e5": "OpenCode",
               "eb220d193b": "Codex",
-              "544d6d4c16": "Claude"
+              "544d6d4c16": "Claude",
+              "codeBuddy": "CodeBuddy"
             },
             "sections": {
               "9564a3b21b": "会话 -",
@@ -3498,7 +3501,7 @@
               "1dd166c920": "较少的",
               "52d9221dc0": "近期token活动热图",
               "c424eb3f8e": "最好的：",
-              "f28ff1f852": "近期 Claude、Codex 和 OpenCode 的综合token活动。",
+              "f28ff1f852": "Claude、Codex、OpenCode 和 CodeBuddy 近期的综合 token 活动。",
               "69e2b50427": "每日强度",
               "3a795542fa": "综合token分布",
               "e65084cb4b": "推理",
@@ -3541,6 +3544,31 @@
           "e5a6b7c8d9": "已用每周额度",
           "f6b7c8d9e0": "计费周期重置",
           "a7b8c9d0e1": "Grok 账户设置"
+        },
+        "CodeBuddyUsagePane": {
+          "range7d": "最近 7 天",
+          "range30d": "最近 30 天",
+          "range90d": "最近 90 天",
+          "rangeAll": "全部时间",
+          "scopeWorktrees": "仅赛博包工头工作树",
+          "scopeAll": "全部本地 CodeBuddy 使用记录",
+          "options": "CodeBuddy 使用统计选项",
+          "filters": "筛选",
+          "scope": "统计范围",
+          "range": "时间范围",
+          "refresh": "刷新 CodeBuddy 使用统计",
+          "refreshLabel": "刷新",
+          "enableAnalytics": "启用 CodeBuddy 使用统计",
+          "title": "CodeBuddy 使用情况",
+          "description": "读取本地 CodeBuddy 会话日志，统计 token、模型和会话使用情况。",
+          "scanError": " - 上次扫描错误：{{value0}}",
+          "empty": "当前范围内尚未找到本地 CodeBuddy 使用记录。",
+          "total": "Token 总量",
+          "input": "输入 Token",
+          "output": "输出 Token",
+          "cache": "缓存输入",
+          "reasoning": "推理输出",
+          "sessions": "会话数 / 事件数"
         }
       },
       "sparse": {

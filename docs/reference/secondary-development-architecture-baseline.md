@@ -1294,6 +1294,8 @@ https://github.com/stablyai/orca.git
 
 仓库级 [`$sync-orca-upstream` Skill](../../skills/sync-orca-upstream/SKILL.md) 负责只读审计、同步前置检查、策略确认、风险分区和同步历史记录。默认审计不得自动执行 Merge、Rebase、Stash、Reset 或工作区清理。
 
+持续同步必须分别记录已获取上游节点、最后成功集成的上游 SHA 和二开产品节点。Git 提交图是事实来源，机器状态文件用于自动审计，追加式同步历史用于保留冲突取舍和验证证据；三者不一致时阻止下一轮同步。
+
 推荐长期分支模型：
 
 - `vendor/upstream`：只跟踪 Canonical Upstream，不放二开提交。

@@ -404,6 +404,17 @@ import type {
   CodexUsageSummary
 } from '../shared/codex-usage-types'
 import type {
+  CodeBuddyUsageBreakdownKind,
+  CodeBuddyUsageBreakdownRow,
+  CodeBuddyUsageDailyPoint,
+  CodeBuddyUsageRange,
+  CodeBuddyUsageScanState,
+  CodeBuddyUsageScope,
+  CodeBuddyUsageSessionRow,
+  CodeBuddyUsageSnapshot,
+  CodeBuddyUsageSummary
+} from '../shared/codebuddy-usage-types'
+import type {
   OpenCodeUsageBreakdownKind,
   OpenCodeUsageBreakdownRow,
   OpenCodeUsageDailyPoint,
@@ -780,6 +791,35 @@ export type CodexUsageApi = {
     range: CodexUsageRange
     limit?: number
   }) => Promise<CodexUsageSessionRow[]>
+}
+
+export type CodeBuddyUsageApi = {
+  getScanState: () => Promise<CodeBuddyUsageScanState>
+  setEnabled: (args: { enabled: boolean }) => Promise<CodeBuddyUsageScanState>
+  refresh: (args?: { force?: boolean }) => Promise<CodeBuddyUsageScanState>
+  getSnapshot: (args: {
+    scope: CodeBuddyUsageScope
+    range: CodeBuddyUsageRange
+    limit?: number
+  }) => Promise<CodeBuddyUsageSnapshot>
+  getSummary: (args: {
+    scope: CodeBuddyUsageScope
+    range: CodeBuddyUsageRange
+  }) => Promise<CodeBuddyUsageSummary>
+  getDaily: (args: {
+    scope: CodeBuddyUsageScope
+    range: CodeBuddyUsageRange
+  }) => Promise<CodeBuddyUsageDailyPoint[]>
+  getBreakdown: (args: {
+    scope: CodeBuddyUsageScope
+    range: CodeBuddyUsageRange
+    kind: CodeBuddyUsageBreakdownKind
+  }) => Promise<CodeBuddyUsageBreakdownRow[]>
+  getRecentSessions: (args: {
+    scope: CodeBuddyUsageScope
+    range: CodeBuddyUsageRange
+    limit?: number
+  }) => Promise<CodeBuddyUsageSessionRow[]>
 }
 
 export type OpenCodeUsageApi = {
@@ -2387,6 +2427,7 @@ export type PreloadApi = {
   memory: MemoryApi
   claudeUsage: ClaudeUsageApi
   codexUsage: CodexUsageApi
+  codeBuddyUsage: CodeBuddyUsageApi
   openCodeUsage: OpenCodeUsageApi
   aiVault: AiVaultApi
   nativeChat: NativeChatApi

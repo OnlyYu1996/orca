@@ -124,6 +124,7 @@ import { createMemorySlice } from './memory'
 import { createWorkspaceSpaceSlice } from './workspace-space'
 import { createClaudeUsageSlice } from './claude-usage'
 import { createCodexUsageSlice } from './codex-usage'
+import { createCodeBuddyUsageSlice } from './codebuddy-usage'
 import { createOpenCodeUsageSlice } from './opencode-usage'
 import { createBrowserSlice } from './browser'
 import { createRateLimitSlice } from './rate-limits'
@@ -164,6 +165,7 @@ function createTestStore() {
     ...createWorkspaceSpaceSlice(...a),
     ...createClaudeUsageSlice(...a),
     ...createCodexUsageSlice(...a),
+    ...createCodeBuddyUsageSlice(...a),
     ...createOpenCodeUsageSlice(...a),
     ...createBrowserSlice(...a),
     ...createRateLimitSlice(...a),
