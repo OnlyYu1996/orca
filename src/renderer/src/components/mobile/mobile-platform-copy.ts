@@ -1,5 +1,6 @@
 import type { Platform } from './MobileHero'
 import { translate } from '@/i18n/i18n'
+import { getProductReleaseAssetUrl } from '../../../../shared/product-links'
 
 // iOS ships two App Store tracks: the public App Store build (slower, ~weekly)
 // and the TestFlight preview build (daily). Android only ships one APK track.
@@ -20,7 +21,7 @@ const IOS_CHANNEL_COPY: Record<IosChannel, InstallCopy> = {
 
 const ANDROID_COPY: InstallCopy = {
   ctaLabel: 'Download APK',
-  url: 'https://github.com/OnlyYu1996/orca/releases/download/mobile-android-v0.0.27/app-release.apk'
+  url: getProductReleaseAssetUrl('mobile-android-v0.0.31', 'app-release.apk')
 }
 
 export function getInstallCopy(platform: Platform, iosChannel: IosChannel): InstallCopy {

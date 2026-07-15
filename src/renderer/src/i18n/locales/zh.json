@@ -10730,15 +10730,19 @@
           "add-custom": "添加自定义地址…"
         },
         "WindowsFirewallNotice": {
-          "repair-success": "Windows Firewall now allows 赛博包工头 Mobile on private networks",
-          "repair-failed": "Could not add the Windows Firewall rule",
-          "public-title": "Windows marks this network as public",
-          "missing-title": "Allow phone connections through Windows Firewall",
-          "public-description": "Change this trusted Wi-Fi network to Private before allowing 赛博包工头 Mobile connections.",
-          "missing-description": "Windows may block the pairing server. Add a rule for this 赛博包工头 app and TCP port {{port}} on Private networks.",
-          "open-settings": "Open network settings",
-          "waiting": "Waiting for Windows…",
-          "allow": "Allow phone connections"
+          "repair-success": "Windows 防火墙现已允许赛博包工头移动端访问专用网络",
+          "repair-failed": "无法更新 Windows 防火墙规则",
+          "public-title": "Windows 将此网络标记为公用网络",
+          "missing-title": "允许手机通过 Windows 防火墙连接",
+          "public-description": "允许赛博包工头移动端连接前，请先将这个可信的 Wi-Fi 网络改为专用网络。",
+          "missing-description": "Windows 可能会阻止配对服务器。请为赛博包工头应用和 TCP 端口 {{port}} 添加仅限专用网络的规则。",
+          "open-settings": "打开网络设置",
+          "waiting": "正在等待 Windows…",
+          "allow": "允许手机连接",
+          "repair-unverified": "无法验证 Windows 防火墙访问状态",
+          "blocked-title": "Windows 可能正在阻止赛博包工头移动端",
+          "blocked-description": "现有入站阻止规则可能会覆盖配对例外。修复操作会移除与赛博包工头应用冲突的 TCP 规则，然后允许专用网络访问端口 {{port}}。",
+          "repair": "修复防火墙访问"
         }
       },
       "gitlab": {
@@ -11875,7 +11879,13 @@
                 "5f9a0ed7c4": "标题 4",
                 "01a71dbbdd": "嵌套小节标题。",
                 "8440fa4acf": "标题 5",
-                "b287b93c66": "深层小节标题。"
+                "b287b93c66": "深层小节标题。",
+                "7a2c1f9b04": "切换标题 2",
+                "b3e5d8a1c6": "创建一个带有中等标题摘要的可折叠部分。",
+                "2f9d6b4e10": "切换标题 3",
+                "8c1a3e7d52": "创建一个带有小标题摘要的可折叠部分。",
+                "5e0b9c2a71": "切换标题 4",
+                "d4f16a8b39": "创建一个带有嵌套标题摘要的可折叠部分。"
               }
             }
           }
@@ -13092,7 +13102,10 @@
           "copiedToast": "已复制标注 — 粘贴到你的智能体（{{value0}}）",
           "copy": "复制标注",
           "drawButton": "在截图上绘制",
-          "drawHint": "新功能 — 在页面上绘制，然后复制到你的智能体",
+          "drawHint": "在页面上绘制，然后复制标记并粘贴到你的智能体。",
+          "drawHintBadge": "新功能",
+          "drawHintDismiss": "知道了",
+          "drawHintTry": "试一试",
           "errorAttach": "无法附加标注后的截图。",
           "errorCapture": "无法捕获页面进行绘制。",
           "errorUnavailable": "此页面无法使用截图标注。",

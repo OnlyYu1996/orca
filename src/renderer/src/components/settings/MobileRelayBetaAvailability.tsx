@@ -2,7 +2,7 @@ import { translate } from '@/i18n/i18n'
 import { getProductReleaseAssetUrl } from '../../../../shared/product-links'
 
 const TESTFLIGHT_URL = 'https://testflight.apple.com/join/YjeGMQBA'
-const ANDROID_APK_URL = getProductReleaseAssetUrl('mobile-android-v0.0.30', 'app-release.apk')
+const ANDROID_APK_URL = getProductReleaseAssetUrl('mobile-android-v0.0.31', 'app-release.apk')
 
 export function MobileRelayBetaAvailability(): React.JSX.Element {
   return (

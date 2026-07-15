@@ -108,7 +108,7 @@ describe('MobilePairingConnectionOptions', () => {
 
     await user.click(screen.getByRole('button', { name: 'Android APK' }))
     expect(window.api.shell.openUrl).toHaveBeenCalledWith(
-      'https://github.com/OnlyYu1996/orca/releases/download/mobile-android-v0.0.30/app-release.apk'
+      'https://github.com/OnlyYu1996/orca/releases/download/mobile-android-v0.0.31/app-release.apk'
     )
   })
 

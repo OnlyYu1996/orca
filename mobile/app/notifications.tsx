@@ -18,7 +18,8 @@ import { useMobileLocale } from '../src/i18n/mobile-locale-context'
 const DEFAULT_PERMISSION_STATE: NotificationPermissionState = {
   granted: false,
   status: 'undetermined',
-  canAskAgain: true
+  canAskAgain: true,
+  authorizationReflectsUserChoice: false
 }
 
 export default function NotificationsScreen() {
