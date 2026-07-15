@@ -42,7 +42,7 @@ describe('mobile session startup', () => {
       startupEffect.indexOf('await fetchSessionTabs()')
     )
     expect(startupEffect).toContain('headlessActivationNeedsHostRenderer(response.result)')
-    expect(startupEffect).toContain("showToast('Open Orca on the host to wake sleeping agents.'")
+    expect(startupEffect).toContain("showToast('请在主机上打开赛博包工头，以唤醒休眠中的智能体。'")
   })
 
   it('activates an already-selected pending terminal tab after hydration', () => {

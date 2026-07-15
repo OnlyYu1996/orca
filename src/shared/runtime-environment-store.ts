@@ -43,7 +43,7 @@ export function addEnvironmentFromPairingCode(
   if (!offer) {
     throw new RuntimeEnvironmentStoreError(
       'invalid_argument',
-      'Invalid pairing code. Expected an orca://pair?... URL or bare pairing payload.'
+      '配对码无效。应提供 sbbgt://pair?... 或兼容的 orca://pair?... URL，也可提供裸配对载荷。'
     )
   }
   const store = readEnvironmentStore(userDataPath)
@@ -93,7 +93,7 @@ export function updateEnvironmentFromPairingCode(
   if (!offer) {
     throw new RuntimeEnvironmentStoreError(
       'invalid_argument',
-      'Invalid pairing code. Expected an orca://pair?... URL or bare pairing payload.'
+      '配对码无效。应提供 sbbgt://pair?... 或兼容的 orca://pair?... URL，也可提供裸配对载荷。'
     )
   }
   const store = readEnvironmentStore(userDataPath)

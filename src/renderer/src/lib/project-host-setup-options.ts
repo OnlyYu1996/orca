@@ -201,7 +201,7 @@ function getHostSetupAvailability(host: ExecutionHostRegistryEntry): {
     ) {
       return {
         isAvailable: false,
-        detail: 'Update Orca on this host to set up projects'
+        detail: 'Update 赛博包工头 on this host to set up projects'
       }
     }
   }

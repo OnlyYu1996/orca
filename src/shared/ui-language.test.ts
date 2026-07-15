@@ -20,8 +20,8 @@ describe('normalizeUiLanguage', () => {
     expect(normalizeUiLanguage(UI_LANGUAGE_SPANISH)).toBe('es')
   })
 
-  it('falls back unknown values to system', () => {
-    expect(normalizeUiLanguage('fr')).toBe('system')
-    expect(normalizeUiLanguage(null)).toBe('system')
+  it('falls back unknown values to Simplified Chinese', () => {
+    expect(normalizeUiLanguage('fr')).toBe('zh')
+    expect(normalizeUiLanguage(null)).toBe('zh')
   })
 })

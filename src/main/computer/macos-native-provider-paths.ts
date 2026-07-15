@@ -2,15 +2,17 @@ import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 export function resolveMacOSComputerUseAppPath(): string | null {
-  const override = process.env.ORCA_COMPUTER_MACOS_HELPER_APP_PATH
+  const override =
+    process.env.SBBGT_COMPUTER_MACOS_HELPER_APP_PATH ??
+    process.env.ORCA_COMPUTER_MACOS_HELPER_APP_PATH
   if (override && existsSync(override)) {
     return override
   }
 
-  const packaged = [join(process.resourcesPath ?? '', 'Orca Computer Use.app')]
+  const packaged = [join(process.resourcesPath ?? '', '赛博包工头电脑控制.app')]
   const dev = [
-    join(process.cwd(), 'native/computer-use-macos/.build/release/Orca Computer Use.app'),
-    resolve(__dirname, '../../native/computer-use-macos/.build/release/Orca Computer Use.app')
+    join(process.cwd(), 'native/computer-use-macos/.build/release/赛博包工头电脑控制.app'),
+    resolve(__dirname, '../../native/computer-use-macos/.build/release/赛博包工头电脑控制.app')
   ]
   const candidates = process.resourcesPath ? [...packaged, ...dev] : dev
 
@@ -27,7 +29,8 @@ export function resolveMacOSComputerUseExecutablePath(): string | null {
 }
 
 export function resolveMacOSNativeProviderPath(): string | null {
-  const override = process.env.ORCA_COMPUTER_MACOS_PROVIDER_PATH
+  const override =
+    process.env.SBBGT_COMPUTER_MACOS_PROVIDER_PATH ?? process.env.ORCA_COMPUTER_MACOS_PROVIDER_PATH
   if (override && existsSync(override)) {
     return override
   }

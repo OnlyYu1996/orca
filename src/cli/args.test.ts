@@ -260,21 +260,19 @@ describe('validateCommandAndFlags', () => {
   it.each(['environment', 'pairing-code'])('rejects --%s without a value', (flag) => {
     const parsed = parseArgs([`--${flag}`, 'demo'], [['demo']])
 
-    expect(() => validateCommandAndFlags(specs, parsed)).toThrow(`Flag --${flag} requires a value.`)
+    expect(() => validateCommandAndFlags(specs, parsed)).toThrow(`Flag --${flag} 需要一个值。`)
   })
 
   it.each(['environment', 'pairing-code'])('rejects an empty --%s= value', (flag) => {
     const parsed = parseArgs(['demo', `--${flag}=`])
 
-    expect(() => validateCommandAndFlags(specs, parsed)).toThrow(`Flag --${flag} requires a value.`)
+    expect(() => validateCommandAndFlags(specs, parsed)).toThrow(`Flag --${flag} 需要一个值。`)
   })
 
   it('still rejects unknown command-specific flags', () => {
     const parsed = parseArgs(['demo', '--bogus'])
 
-    expect(() => validateCommandAndFlags(specs, parsed)).toThrow(
-      'Unknown flag --bogus for command: demo'
-    )
+    expect(() => validateCommandAndFlags(specs, parsed)).toThrow('命令 demo 不支持 Flag --bogus。')
   })
 
   it('enumerates valid flags and suggests a near-miss on unknown-flag errors', () => {
@@ -296,7 +294,7 @@ describe('validateCommandAndFlags', () => {
       expect(data?.validFlags).toContain('force')
       expect(data?.validFlags).toContain('json')
       expect(data?.nextSteps.join('\n')).toContain('--force')
-      expect(data?.nextSteps.join('\n')).toContain('Valid flags:')
+      expect(data?.nextSteps.join('\n')).toContain('可用 Flag：')
     }
   })
 
@@ -317,7 +315,7 @@ describe('validateCommandAndFlags', () => {
     } catch (error) {
       const data = (error as { data?: { suggestions: string[]; nextSteps: string[] } }).data
       expect(data?.suggestions).toContain('worktree rm')
-      expect(data?.nextSteps[0]).toContain('orca worktree rm')
+      expect(data?.nextSteps[0]).toContain('sbbgt worktree rm')
     }
   })
 })

@@ -17,6 +17,7 @@ import type { Store } from '../persistence'
 import { loadKnownUsageWorktreesByRepo, type UsageWorktreeRef } from '../usage-worktree-metadata'
 import type { OpenCodeUsageDailyAggregate, OpenCodeUsagePersistedState } from './types'
 import { createWorktreeRefs, scanOpenCodeUsageDatabases } from './scanner'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 // Why: v2 adds per-database session ownership (stale sibling-copy dedupe).
 // Older caches were built without it and can carry doubled sessions (#8006).
@@ -24,6 +25,13 @@ const SCHEMA_VERSION = 2
 const STALE_MS = 5 * 60_000
 
 let _openCodeUsageFile: string | null = null
+
+function resolveOpenCodeUsageFile(): string {
+  const userDataPath = app.getPath('userData')
+  const usageFile = join(userDataPath, 'sbbgt-opencode-usage.json')
+  migrateLegacyStorageFile(usageFile, [join(userDataPath, 'orca-opencode-usage.json')])
+  return usageFile
+}
 
 function getDefaultState(): OpenCodeUsagePersistedState {
   return {
@@ -60,12 +68,12 @@ export function normalizePersistedState(
 }
 
 export function initOpenCodeUsagePath(): void {
-  _openCodeUsageFile = join(app.getPath('userData'), 'orca-opencode-usage.json')
+  _openCodeUsageFile = resolveOpenCodeUsageFile()
 }
 
 function getOpenCodeUsageFile(): string {
   if (!_openCodeUsageFile) {
-    _openCodeUsageFile = join(app.getPath('userData'), 'orca-opencode-usage.json')
+    _openCodeUsageFile = resolveOpenCodeUsageFile()
   }
   return _openCodeUsageFile
 }

@@ -63,13 +63,39 @@ const TELEMETRY_ENABLED = true
 // in tests — both of which resolve to `IS_OFFICIAL_BUILD === false`, which
 // is the fail-closed default we want anywhere outside an official CI build.
 const BUILD_IDENTITY: 'stable' | 'rc' | null =
-  typeof ORCA_BUILD_IDENTITY !== 'undefined'
-    ? ORCA_BUILD_IDENTITY
-    : ((globalThis as { ORCA_BUILD_IDENTITY?: 'stable' | 'rc' | null }).ORCA_BUILD_IDENTITY ?? null)
+  typeof SBBGT_BUILD_IDENTITY !== 'undefined'
+    ? SBBGT_BUILD_IDENTITY
+    : typeof ORCA_BUILD_IDENTITY !== 'undefined'
+      ? ORCA_BUILD_IDENTITY
+      : ((
+          globalThis as {
+            SBBGT_BUILD_IDENTITY?: 'stable' | 'rc' | null
+            ORCA_BUILD_IDENTITY?: 'stable' | 'rc' | null
+          }
+        ).SBBGT_BUILD_IDENTITY ??
+        (globalThis as { ORCA_BUILD_IDENTITY?: 'stable' | 'rc' | null }).ORCA_BUILD_IDENTITY ??
+        null)
 const WRITE_KEY: string | null =
-  typeof ORCA_POSTHOG_WRITE_KEY !== 'undefined'
-    ? ORCA_POSTHOG_WRITE_KEY
-    : ((globalThis as { ORCA_POSTHOG_WRITE_KEY?: string | null }).ORCA_POSTHOG_WRITE_KEY ?? null)
+  typeof SBBGT_POSTHOG_WRITE_KEY !== 'undefined'
+    ? SBBGT_POSTHOG_WRITE_KEY
+    : typeof ORCA_POSTHOG_WRITE_KEY !== 'undefined'
+      ? ORCA_POSTHOG_WRITE_KEY
+      : ((
+          globalThis as {
+            SBBGT_POSTHOG_WRITE_KEY?: string | null
+            ORCA_POSTHOG_WRITE_KEY?: string | null
+          }
+        ).SBBGT_POSTHOG_WRITE_KEY ??
+        (globalThis as { ORCA_POSTHOG_WRITE_KEY?: string | null }).ORCA_POSTHOG_WRITE_KEY ??
+        null)
+const POSTHOG_HOST: string =
+  (typeof SBBGT_POSTHOG_HOST !== 'undefined'
+    ? SBBGT_POSTHOG_HOST
+    : typeof ORCA_POSTHOG_HOST !== 'undefined'
+      ? ORCA_POSTHOG_HOST
+      : ((globalThis as { SBBGT_POSTHOG_HOST?: string | null }).SBBGT_POSTHOG_HOST ??
+        (globalThis as { ORCA_POSTHOG_HOST?: string | null }).ORCA_POSTHOG_HOST)) ||
+  'https://us.i.posthog.com'
 const IS_OFFICIAL_BUILD: boolean =
   (BUILD_IDENTITY === 'stable' || BUILD_IDENTITY === 'rc') &&
   typeof WRITE_KEY === 'string' &&
@@ -168,7 +194,7 @@ export function initTelemetry(store: Store): void {
   }
 
   posthog = new PostHog(WRITE_KEY as string, {
-    host: 'https://us.i.posthog.com',
+    host: POSTHOG_HOST,
     flushAt: 20,
     flushInterval: 10_000,
     // Strip every auto-attached property we do not want on our wire: no

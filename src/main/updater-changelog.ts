@@ -1,5 +1,6 @@
 import { net } from 'electron'
 import type { ChangelogData } from '../shared/types'
+import { PRODUCT_CHANGELOG_URL } from '../shared/product-links'
 import { compareVersions } from './updater-fallback'
 
 type ChangelogEntry = {
@@ -10,7 +11,7 @@ type ChangelogEntry = {
   releaseNotesUrl: string
 }
 
-const CHANGELOG_URL = 'https://onorca.dev/changelog'
+const CHANGELOG_URL = PRODUCT_CHANGELOG_URL
 
 function isValidEntry(entry: ChangelogEntry): boolean {
   return (
@@ -42,7 +43,11 @@ export async function fetchChangelog(
   incomingVersion: string,
   localVersion: string
 ): Promise<ChangelogData | null> {
-  const res = await net.fetch('https://onorca.dev/whats-new/changelog.json', {
+  const endpoint = process.env.SBBGT_CHANGELOG_JSON_URL?.trim()
+  if (!endpoint) {
+    return null
+  }
+  const res = await net.fetch(endpoint, {
     signal: AbortSignal.timeout(5000)
   })
   if (!res.ok) {

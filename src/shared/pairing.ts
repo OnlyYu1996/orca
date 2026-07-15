@@ -1,6 +1,9 @@
 import { z } from 'zod'
+import { LEGACY_PRODUCT_IDENTITY, PRODUCT_URL_SCHEME } from './product-identity'
 
 export const PAIRING_OFFER_VERSION = 2
+export const PAIRING_URL_SCHEMES = [PRODUCT_URL_SCHEME, LEGACY_PRODUCT_IDENTITY.urlScheme] as const
+const PAIRING_URL_PROTOCOLS = new Set(PAIRING_URL_SCHEMES.map((scheme) => `${scheme}:`))
 const PairingScopeSchema = z.enum(['mobile', 'runtime'])
 
 export const PairingOfferSchema = z.object({
@@ -26,13 +29,15 @@ export function encodePairingOffer(offer: PairingOffer): string {
     .replace(/=+$/, '')
   // Why: Android camera intents and Expo Router preserve query params more
   // reliably than URL fragments when launching a custom-scheme app.
-  return `orca://pair?code=${base64url}`
+  return `${PRODUCT_URL_SCHEME}://pair?code=${base64url}`
 }
 
 export function decodePairingOffer(url: string): PairingOffer {
   const code = extractPairingCodeFromUrl(url)
   if (!code) {
-    throw new Error('Invalid pairing URL: must start with orca://pair and include a pairing code')
+    throw new Error(
+      `Invalid pairing URL: must start with ${PRODUCT_URL_SCHEME}://pair or ${LEGACY_PRODUCT_IDENTITY.urlScheme}://pair and include a pairing code`
+    )
   }
   return decodePairingBase64(code)
 }
@@ -46,7 +51,7 @@ function extractPairingCodeFromUrl(url: string): string | null {
   }
   // Why: prefix checks accepted routes like `orca://pairing?...`; only the
   // pairing deep-link host may carry runtime auth material.
-  if (parsed.protocol !== 'orca:' || parsed.hostname !== 'pair') {
+  if (!PAIRING_URL_PROTOCOLS.has(parsed.protocol.toLowerCase()) || parsed.hostname !== 'pair') {
     return null
   }
   if (parsed.pathname !== '' && parsed.pathname !== '/') {
@@ -59,16 +64,14 @@ function extractPairingCodeFromUrl(url: string): string | null {
   return parsed.hash ? parsed.hash.slice(1) || null : null
 }
 
-// Why: accept either an `orca://pair?...` URL or the bare base64
-// string so the mobile paste-pair flow can take whichever the user
-// actually copied from desktop.
+// 新旧 Scheme 在兼容窗口内双读，裸 Base64 继续支持复制粘贴流程。
 export function parsePairingCode(input: string): PairingOffer | null {
   const trimmed = input.trim()
   if (!trimmed) {
     return null
   }
   try {
-    if (trimmed.toLowerCase().startsWith('orca://')) {
+    if (PAIRING_URL_SCHEMES.some((scheme) => trimmed.toLowerCase().startsWith(`${scheme}://`))) {
       return decodePairingOffer(trimmed)
     }
     return decodePairingBase64(trimmed)

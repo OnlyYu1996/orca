@@ -42,8 +42,13 @@ export function findTransport(
   return null
 }
 
-const PRIMARY_RUNTIME_METADATA_FILE = 'orca-runtime.json'
+const PRIMARY_RUNTIME_METADATA_FILE = 'sbbgt-runtime.json'
+const LEGACY_RUNTIME_METADATA_FILE = 'orca-runtime.json'
 
 export function getRuntimeMetadataPath(userDataPath: string): string {
   return join(userDataPath, PRIMARY_RUNTIME_METADATA_FILE)
+}
+
+export function getLegacyRuntimeMetadataPath(userDataPath: string): string {
+  return join(userDataPath, LEGACY_RUNTIME_METADATA_FILE)
 }

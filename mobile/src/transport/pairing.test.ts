@@ -18,15 +18,19 @@ afterEach(() => {
 
 describe('pairing deep links', () => {
   it('extracts the QR pairing code from the hash payload', () => {
-    expect(extractPairingCodeFromUrl('orca://pair#abc123')).toBe('abc123')
+    expect(extractPairingCodeFromUrl('sbbgt://pair#abc123')).toBe('abc123')
   })
 
   it('extracts the pairing code from a query param', () => {
-    expect(extractPairingCodeFromUrl('orca://pair?code=abc123')).toBe('abc123')
+    expect(extractPairingCodeFromUrl('sbbgt://pair?code=abc123')).toBe('abc123')
   })
 
   it('accepts scanner casing and surrounding whitespace', () => {
-    expect(extractPairingCodeFromUrl('  ORCA://PAIR?code=abc123\n')).toBe('abc123')
+    expect(extractPairingCodeFromUrl('  SBBGT://PAIR?code=abc123\n')).toBe('abc123')
+  })
+
+  it('accepts the legacy Orca scheme', () => {
+    expect(extractPairingCodeFromUrl('orca://pair?code=abc123')).toBe('abc123')
   })
 
   it('rejects lookalike routes', () => {
@@ -52,12 +56,13 @@ describe('pairing deep links', () => {
       return realAtob(input)
     })
 
-    expect(decodePairingUrl(`orca://pair?code=${encodeOffer()}`)).toEqual(offer)
+    expect(decodePairingUrl(`sbbgt://pair?code=${encodeOffer()}`)).toEqual(offer)
   })
 
   it('parses a full pairing URL and a bare copied code', () => {
     const code = encodeOffer()
 
+    expect(parsePairingCode(`sbbgt://pair?code=${code}`)).toEqual(offer)
     expect(parsePairingCode(`orca://pair?code=${code}`)).toEqual(offer)
     expect(parsePairingCode(code)).toEqual(offer)
   })

@@ -5,8 +5,9 @@ import { Button } from './ui/button'
 import { useAppStore } from '../store'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
+import { PRODUCT_REPOSITORY_URL } from '../../../shared/product-links'
 
-const ORCA_REPO_URL = 'https://github.com/stablyai/orca'
+const ORCA_REPO_URL = PRODUCT_REPOSITORY_URL
 type StarNagMode = 'gh' | 'web'
 
 /**

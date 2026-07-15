@@ -93,8 +93,9 @@ export function resolveObservabilityConsent(): ObservabilityConsent {
   // CI and DNT/disabled have different effects on which sub-lanes are gated.
   // Keep the ordering aligned with §Consent boundaries above.
   const dnt = envOn('DO_NOT_TRACK')
-  const orcaDisabled = envOn('ORCA_TELEMETRY_DISABLED')
-  const diagnosticsDisabled = envOn('ORCA_DIAGNOSTICS_DISABLED')
+  const orcaDisabled = envOn('SBBGT_TELEMETRY_DISABLED') || envOn('ORCA_TELEMETRY_DISABLED')
+  const diagnosticsDisabled =
+    envOn('SBBGT_DIAGNOSTICS_DISABLED') || envOn('ORCA_DIAGNOSTICS_DISABLED')
   const ci = inCI()
 
   if (ci) {

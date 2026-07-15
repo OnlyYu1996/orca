@@ -241,8 +241,8 @@ describe('unknown command surfaces a suggestion', () => {
 
     expect(process.exitCode).toBe(1)
     const stderr = errorSpy.mock.calls.map((call) => String(call[0])).join('\n')
-    expect(stderr).toContain('Unknown command: worktree remov')
-    expect(stderr).toContain('orca worktree')
+    expect(stderr).toContain('未知命令：worktree remov')
+    expect(stderr).toContain('sbbgt worktree')
   })
 
   it('reports a mistyped pre-command flag without swallowing the command', async () => {
@@ -250,7 +250,7 @@ describe('unknown command surfaces a suggestion', () => {
 
     expect(process.exitCode).toBe(1)
     const stderr = errorSpy.mock.calls.map((call) => String(call[0])).join('\n')
-    expect(stderr).toContain('Unknown flag --jso for command: worktree list')
+    expect(stderr).toContain('命令 worktree list 不支持 Flag --jso。')
     expect(stderr).toContain('--json')
   })
 
@@ -259,7 +259,7 @@ describe('unknown command surfaces a suggestion', () => {
 
     expect(process.exitCode).toBe(1)
     const stderr = errorSpy.mock.calls.map((call) => String(call[0])).join('\n')
-    expect(stderr).toContain('Unknown flag --workspace for command: worktree list')
+    expect(stderr).toContain('命令 worktree list 不支持 Flag --workspace。')
   })
 
   it('reports a pre-command typo when a global flag splits the command path', async () => {
@@ -268,9 +268,7 @@ describe('unknown command surfaces a suggestion', () => {
     await main(['--jso', 'worktree', '--json', 'list'], '/tmp/repo')
 
     expect(process.exitCode).toBe(1)
-    expect(logSpy.mock.calls.flat().join('\n')).toContain(
-      'Unknown flag --jso for command: worktree list'
-    )
+    expect(logSpy.mock.calls.flat().join('\n')).toContain('命令 worktree list 不支持 Flag --jso。')
     expect(callMock).not.toHaveBeenCalled()
     logSpy.mockRestore()
   })
@@ -284,7 +282,7 @@ describe('unknown command surfaces a suggestion', () => {
 
       expect(process.exitCode).toBe(1)
       const stderr = errorSpy.mock.calls.map((call) => String(call[0])).join('\n')
-      expect(stderr).toContain(`Flag --${flag} requires a value.`)
+      expect(stderr).toContain(`Flag --${flag} 需要一个值。`)
       expect(runtimeClientConstructorMock).not.toHaveBeenCalled()
       expect(callMock).not.toHaveBeenCalled()
     }
@@ -301,7 +299,7 @@ describe('unknown help command surfaces a suggestion', () => {
     await main(argv, '/tmp/repo')
 
     expect(process.exitCode).toBe(1)
-    expect(logSpy.mock.calls.flat().join('\n')).toContain('Did you mean: orca worktree')
+    expect(logSpy.mock.calls.flat().join('\n')).toContain('你是否要运行：sbbgt worktree')
     logSpy.mockRestore()
     process.exitCode = 0
   })
@@ -322,33 +320,21 @@ describe('orca root help', () => {
 
     await main(['--help'], '/tmp/repo')
 
+    expect(logSpy.mock.calls[0][0]).toContain('computer capabilities [--json]')
+    expect(logSpy.mock.calls[0][0]).toContain('显示电脑控制提供器能力')
+    expect(logSpy.mock.calls[0][0]).toContain('computer permissions')
+    expect(logSpy.mock.calls[0][0]).toContain('打开电脑控制权限设置')
+    expect(logSpy.mock.calls[0][0]).toContain('computer press-key')
+    expect(logSpy.mock.calls[0][0]).toContain('按下 Return、Escape 等单个按键')
+    expect(logSpy.mock.calls[0][0]).toContain('project setup-existing-folder')
+    expect(logSpy.mock.calls[0][0]).toContain('导入现有文件夹，使项目可在主机上使用')
+    expect(logSpy.mock.calls[0][0]).toContain('project setup-create')
+    expect(logSpy.mock.calls[0][0]).toContain('project setup-update')
+    expect(logSpy.mock.calls[0][0]).toContain('project setup-delete')
+    expect(logSpy.mock.calls[0][0]).toContain('智能体会话与工作树：')
+    expect(logSpy.mock.calls[0][0]).toContain('`worktree create --agent` 会新建检出并启动智能体。')
     expect(logSpy.mock.calls[0][0]).toContain(
-      'computer capabilities     Show computer-use provider capabilities'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'computer permissions      Show or open computer-use permission setup'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'computer press-key        Press a single key such as Return or Escape'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'project setup-existing-folder Make a project available on a host by importing an existing folder'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'project setup-create      Create independent project host setup metadata'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'project setup-update      Update project host setup metadata'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'project setup-delete      Remove a project host setup'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain('Agent Sessions And Worktrees:')
-    expect(logSpy.mock.calls[0][0]).toContain(
-      '`worktree create --agent` creates a new checkout with an agent.'
-    )
-    expect(logSpy.mock.calls[0][0]).toContain(
-      'orca terminal create --worktree active --command "codex"'
+      'sbbgt terminal create --worktree active --command "codex"'
     )
     expect(callMock).not.toHaveBeenCalled()
   })
@@ -359,8 +345,8 @@ describe('orca root help', () => {
     await main(['--help'], '/tmp/repo')
 
     const rootHelp = String(logSpy.mock.calls[0][0])
-    expect(rootHelp).toContain('Linear:')
-    expect(rootHelp).toContain('linear                    Read Linear ticket context for agents')
+    expect(rootHelp).toContain('Linear：')
+    expect(rootHelp).toContain('linear [<id>]')
     expect(rootHelp).not.toContain('linear issue')
     expect(rootHelp).not.toContain('linear search')
 
@@ -368,7 +354,7 @@ describe('orca root help', () => {
     await main(['linear', '--help'], '/tmp/repo')
 
     const groupHelp = String(logSpy.mock.calls[0][0])
-    expect(groupHelp).toContain('orca linear')
+    expect(groupHelp).toContain('sbbgt linear')
     expect(groupHelp).toContain('issue')
     expect(groupHelp).toContain('search')
     expect(groupHelp).not.toContain('--comments')
@@ -378,19 +364,19 @@ describe('orca root help', () => {
     await main(['linear', 'issue', '--help'], '/tmp/repo')
 
     const issueHelp = String(logSpy.mock.calls[0][0])
-    expect(issueHelp).toContain('orca linear issue [<id>]')
-    expect(issueHelp).toContain('--comments             Include threaded Linear comments')
-    expect(issueHelp).toContain('--attachments          Include attachment metadata and URLs')
-    expect(issueHelp).toContain('--workspace <id>      Connected Linear workspace id')
-    expect(issueHelp).toContain('--id <id>             Linear issue key, id, or URL')
+    expect(issueHelp).toContain('sbbgt linear issue [<id>]')
+    expect(issueHelp).toContain('--comments             包含 Linear 评论线程')
+    expect(issueHelp).toContain('--attachments          包含附件元数据和 URL')
+    expect(issueHelp).toContain('--workspace <id>      已连接的 Linear 工作区 ID')
+    expect(issueHelp).toContain('--id <id>             Linear Issue 标识、ID 或 URL')
 
     logSpy.mockClear()
     await main(['linear', 'search', '--help'], '/tmp/repo')
 
     const searchHelp = String(logSpy.mock.calls[0][0])
-    expect(searchHelp).toContain('orca linear search <query>')
-    expect(searchHelp).toContain('--workspace <id|all>  Connected Linear workspace id, or all')
-    expect(searchHelp).toContain('--query <text>        Text to search across Linear issues')
+    expect(searchHelp).toContain('sbbgt linear search <query>')
+    expect(searchHelp).toContain('--workspace <id|all>  已连接的 Linear 工作区 ID，或 all')
+    expect(searchHelp).toContain('--query <text>        在 Linear Issue 中搜索的文本')
     expect(callMock).not.toHaveBeenCalled()
   })
 
@@ -407,7 +393,7 @@ describe('orca root help', () => {
 
     const setHelp = String(logSpy.mock.calls[0][0])
     expect(setHelp).toContain('--linear-issue <identifier-or-url|null>')
-    expect(setHelp).toContain('--linear-issue <id|url|null> Linked Linear issue identifier or URL')
+    expect(setHelp).toContain('--linear-issue <id|url|null> 关联的 Linear Issue 标识或 URL')
     expect(callMock).not.toHaveBeenCalled()
   })
 
@@ -419,8 +405,8 @@ describe('orca root help', () => {
 
     const help = String(logSpy.mock.calls[0][0])
     expect(help).toContain('[--task-title <text>] [--display-name <text>]')
-    expect(help).toContain('--task-title <text>  Concise title for the orchestration task')
-    expect(help).toContain('--display-name <text> UI label shown for dispatched worker rows')
+    expect(help).toContain('--task-title <text>  编排任务的精简标题')
+    expect(help).toContain('--display-name <text> 分派工作进程行显示的界面标签')
     expect(callMock).not.toHaveBeenCalled()
   })
 
@@ -447,9 +433,7 @@ describe('orca root help', () => {
     expect(createHelp).toContain('folder:<id>')
     expect(createHelp).toContain('folder:<folderId>')
     expect(createHelp).toContain('worktree:<worktreeId>')
-    expect(createHelp).toContain(
-      '--no-parent only affects Orca lineage; omit --base-branch to use the repo default base'
-    )
+    expect(createHelp).toContain('--no-parent 只影响赛博包工头的父子关系')
 
     logSpy.mockClear()
     await main(['worktree', 'set', '--help'], '/tmp/repo')
@@ -467,18 +451,18 @@ describe('orca root help', () => {
 
     await main(['worktree', 'create', '--help'], '/tmp/repo')
 
-    expect(String(logSpy.mock.calls[0][0])).toContain('This creates a new checkout.')
+    expect(String(logSpy.mock.calls[0][0])).toContain('此命令会创建新的检出。')
     expect(String(logSpy.mock.calls[0][0])).toContain(
-      'orca terminal create --worktree active --command "codex"'
+      'sbbgt terminal create --worktree active --command "codex"'
     )
 
     logSpy.mockClear()
     await main(['terminal', 'create', '--help'], '/tmp/repo')
 
     const terminalHelp = String(logSpy.mock.calls[0][0])
-    expect(terminalHelp).toContain('Use this, not worktree create')
+    expect(terminalHelp).toContain('请使用此命令，而不是 worktree create')
     expect(terminalHelp).toContain(
-      'orca terminal create --worktree active --command "codex" --json'
+      'sbbgt terminal create --worktree active --command "codex" --json'
     )
     expect(callMock).not.toHaveBeenCalled()
   })
@@ -1846,7 +1830,7 @@ describe('orca cli worktree awareness', () => {
       )
 
       const output = [...logSpy.mock.calls, ...errSpy.mock.calls].flat().join('\n')
-      expect(output).toContain('Unknown flag --parent-workspace for command: worktree create')
+      expect(output).toContain('命令 worktree create 不支持 Flag --parent-workspace。')
       expect(callMock).not.toHaveBeenCalled()
       expect(process.exitCode).toBe(1)
     }
@@ -4656,7 +4640,7 @@ describe('orca cli worktree awareness', () => {
       ok: false,
       error: {
         code: 'invalid_argument',
-        message: 'Pass --id either positionally or as a flag, not both.'
+        message: '--id 只能使用位置参数或 Flag 之一，不能重复传入。'
       }
     })
     expect(process.exitCode).toBe(1)

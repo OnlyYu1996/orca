@@ -2,28 +2,15 @@ import type { App } from 'electron'
 import { writeStartupDiagnosticLine, type StartupDiagnosticSink } from './startup-diagnostics'
 
 export const SINGLE_INSTANCE_LOCK_FAILURE_MESSAGE =
-  '[single-instance] Another Orca instance is already running for this userData profile; exiting this launch after requesting the existing window. If no Orca process is running, this may be an Electron/macOS single-instance lock failure.'
-export const SINGLE_INSTANCE_LOCK_BYPASS_ENV = 'ORCA_BYPASS_SINGLE_INSTANCE_LOCK'
+  '[single-instance] 当前 userData 配置已有赛博包工头实例运行；请求显示现有窗口后退出本次启动。如果没有运行中的进程，可能是 Electron/macOS 单实例锁异常。'
+export const SINGLE_INSTANCE_LOCK_BYPASS_ENV = 'SBBGT_BYPASS_SINGLE_INSTANCE_LOCK'
+export const LEGACY_SINGLE_INSTANCE_LOCK_BYPASS_ENV = 'ORCA_BYPASS_SINGLE_INSTANCE_LOCK'
 export const SINGLE_INSTANCE_LOCK_BYPASS_MESSAGE =
-  '[single-instance] ORCA_BYPASS_SINGLE_INSTANCE_LOCK=1 is set; bypassing the packaged macOS single-instance lock for diagnostics. Do not use this with another Orca instance running for the same profile.'
+  '[single-instance] 已启用 SBBGT_BYPASS_SINGLE_INSTANCE_LOCK=1，诊断流程将绕过 macOS 单实例锁。请勿与使用同一配置的其他赛博包工头实例同时运行。'
 
 /**
- * Why: Orca writes two canonical discovery files into `<userData>/`:
- * `orca-runtime.json` (RPC endpoint + authToken for the bundled CLI) and
- * `agent-hooks/endpoint.env` (hook port + token for cursor-agent/claude/codex
- * scripts). Without a single-instance lock, every AppImage/.app double-click
- * boots a fresh Electron main that clobbers both files. When the most recent
- * instance quits, metadata points at a dead pid and `orca status` reports
- * `stale_bootstrap` even though the original process is still running.
- *
- * This helper centralises the lock gate so it is testable in isolation and
- * so `src/main/index.ts` has one clean call site rather than two spread-out
- * Electron calls.
- *
- * Electron derives the lock identity from the current `userData` path, so
- * callers MUST invoke this AFTER `configureDevUserDataPath(is.dev)` — that
- * way dev (`orca-dev` userData) and packaged (`orca` userData) runs lock in
- * separate namespaces instead of serialising against each other.
+ * 单实例锁保护 userData 内的运行时发现文件，避免多个 Electron 主进程相互覆盖元数据。
+ * 必须在配置开发 userData 后调用，确保开发版与打包版使用独立锁命名空间。
  */
 export function acquireSingleInstanceLock(app: App, onSecondInstance: () => void): boolean {
   if (!app.requestSingleInstanceLock()) {
@@ -45,7 +32,8 @@ export function shouldBypassSingleInstanceLock(options: {
     platform === 'darwin' &&
     !options.isDev &&
     !options.isServeMode &&
-    env[SINGLE_INSTANCE_LOCK_BYPASS_ENV] === '1'
+    (env[SINGLE_INSTANCE_LOCK_BYPASS_ENV] === '1' ||
+      env[LEGACY_SINGLE_INSTANCE_LOCK_BYPASS_ENV] === '1')
   )
 }
 

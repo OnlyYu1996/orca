@@ -123,7 +123,7 @@ describe('CodexUsageStore', () => {
     await store.refresh(true)
 
     expect(writeFileSync).toHaveBeenCalledTimes(1)
-    const persistedJson = readFileSync(join(tempUserData, 'orca-codex-usage.json'), 'utf-8')
+    const persistedJson = readFileSync(join(tempUserData, 'sbbgt-codex-usage.json'), 'utf-8')
     expect(persistedJson).toBe(JSON.stringify(JSON.parse(persistedJson)))
     expect(persistedJson).not.toContain('\n')
     expect(JSON.parse(persistedJson).scanState).toMatchObject({

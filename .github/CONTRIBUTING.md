@@ -1,41 +1,46 @@
-# Contributing to Orca
+# 为赛博包工头贡献代码
 
-Thanks for contributing to Orca.
+感谢参与赛博包工头的开发。本仓库是 [`stablyai/orca`](https://github.com/stablyai/orca) 的二次开发版本，产品发布和问题跟踪位于 [`OnlyYu1996/orca`](https://github.com/OnlyYu1996/orca)。
 
-## Before You Start
+## 开始之前
 
-- Keep changes scoped to a clear user-facing improvement, bug fix, or refactor.
-- Orca targets macOS, Linux, and Windows. Every change must stay compatible with all three platforms unless the code is explicitly guarded by a runtime platform check.
-- For keyboard shortcuts, use runtime platform checks in renderer code and `CmdOrCtrl` in Electron menu accelerators.
-- For shortcut labels, show `⌘` and `⇧` on macOS, and `Ctrl+` and `Shift+` on Linux and Windows.
-- For file paths, use Node or Electron path utilities such as `path.join`.
-- Orca must work against local repositories, remote servers, and SSH worktrees. Do not assume a process, file, credential, shell, or network path exists only on the local machine.
-- Orca supports many CLI agents, integrations, and git providers. Keep generic behavior provider-neutral; guard integration-specific logic behind explicit checks.
-- Keep changes well-engineered and performant: follow existing architecture, avoid unnecessary work in hot paths, clean up owned resources, and use concrete module names.
-- For UI work, follow [`docs/STYLEGUIDE.md`](../docs/STYLEGUIDE.md), use the tokens and shadcn primitives it specifies, and verify polished behavior across platforms, light/dark mode, and SSH latency.
+- 一次变更聚焦一个明确的用户改进、缺陷修复或重构。
+- 同时考虑 macOS、Linux、Windows、WSL、SSH 和远程运行时，不假设资源只存在于本机。
+- 快捷键使用运行时平台判断；Electron 菜单使用 `CmdOrCtrl`。
+- 文件路径使用 Node/Electron Path API，不硬编码路径分隔符。
+- Git 核心工作流以 Git 2.25 为兼容基线。
+- 通用评审流程同时考虑 GitHub、GitLab 和其他已支持提供商。
+- UI 修改遵循 [docs/STYLEGUIDE.md](../docs/STYLEGUIDE.md)，使用既有 Token 和 shadcn 组件。
+- 修改非显然约束时，用简短中文注释解释原因，不复述代码行为。
 
-## Local Setup
+## 本地开发
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-## Branch Naming
+移动端：
 
-Use a clear, descriptive branch name that reflects the change.
+```bash
+cd mobile
+pnpm install
+pnpm test
+```
 
-Good examples:
+## 分支与提交
+
+分支名应直接描述目标，例如：
 
 - `fix/ctrl-backspace-delete-word`
 - `feat/shift-enter-newline`
 - `chore/update-contributor-guide`
 
-Avoid vague names like `test`, `misc`, or `changes`.
+不要使用 `test`、`misc`、`changes` 等含义不清的名称。普通功能变更不要顺带修改版本号或发布标签。
 
-## Before Opening a PR
+## 提交 PR 前
 
-Run the same checks that CI runs:
+运行与 CI 对齐的检查：
 
 ```bash
 pnpm lint
@@ -44,91 +49,53 @@ pnpm test
 pnpm build
 ```
 
-Add high-quality tests for behavior changes and bug fixes. Prefer tests that would actually catch a regression, not shallow coverage that only exercises the happy path.
-
-If your change affects UI or interaction behavior, verify it on the platforms it could impact.
-
-## Type Declarations: Prefer `.ts` Over `.d.ts`
-
-Project-owned type declarations belong in `.ts` files. `.d.ts` is reserved for ambient shims (e.g., `env.d.ts`, `vite/client.d.ts`). TypeScript's `skipLibCheck: true` setting applies globally, including to our own `.d.ts` files, which means any unresolved type reference in a `.d.ts` silently becomes `any` at its call sites. Write your types in `.ts` files so the compiler actually checks them.
-
-CI enforces this for `src/preload/` and `src/shared/` — see `docs/preload-typecheck-hole.md`.
-
-## Pull Requests
-
-Each pull request should:
-
-- explain the user-visible change
-- stay focused on a single topic when possible
-- include screenshots or screen recordings for new UI or behavior changes
-- include high-quality tests when behavior changes or bug fixes warrant them
-- include a brief code review summary from your AI coding agent that explicitly checks cross-platform compatibility, SSH/remote/local compatibility, supported agent and integration compatibility, performance risk, UI quality when applicable, and basic security risk
-- mention any platform-specific, remote/SSH-specific, agent-specific, integration-specific, or git-provider-specific behavior and testing notes
-- **Include your X (Twitter) handle!** We love giving shoutouts to our contributors when we merge features on [@orca_build](https://x.com/orca_build).
-
-If there is no visual change, say that explicitly in the PR description.
-
-## Release Process
-
-Version bumps, tags, and releases are maintainer-managed. Do not include release version changes in a normal contribution unless a maintainer asks for them.
-
-### Cutting a release (maintainers)
-
-All releases are cut from the **Cut Release** GitHub Actions workflow. There is no local `pnpm release:*` script — running releases locally is too easy to get wrong (dirty tree, wrong branch, stale main).
-
-**To cut a release:**
-
-1. Open [Actions → Cut Release](../../actions/workflows/release-cut.yml).
-2. Click **Run workflow** and pick:
-   - **kind**: one of `rc`, `patch`, `minor`, `major`.
-   - **ref**: the branch, tag, or SHA to build from. Defaults to `main`.
-3. Run it.
-
-The workflow resolves the next version from GitHub Releases, bumps `package.json`, tags, pushes, and runs the multi-platform build + publish inline.
-
-**How the next version is chosen:**
-
-All stable kinds (`patch`, `minor`, `major`) are computed off the latest _stable_ release, ignoring any RCs in between.
-
-- `kind=rc` + last tag was stable (e.g. `v1.3.14`) → `v1.3.15-rc.0`.
-- `kind=rc` + active RC series (e.g. `v1.3.15-rc.2`) → `v1.3.15-rc.3`.
-- `kind=patch` + latest stable `v1.3.14` → `v1.3.15` (regardless of any intermediate RCs).
-- `kind=minor` + latest stable `v1.3.14` → `v1.4.0`.
-- `kind=major` + latest stable `v1.3.14` → `v2.0.0`.
-
-**Safety guarantees:**
-
-- Stable releases are refused if the new version isn't strictly greater than the latest published stable. This is the only rule `electron-updater` actually needs — it compares semver within the `latest` channel, so a regressing stable is the one thing that breaks auto-update for fresh installs.
-- Complete RC draft releases created by the release workflow are published before cutting a new tag only when the draft tag was built from the current release ref. Stale drafts are skipped so fixes cut a fresh RC instead of exposing old artifacts.
-- If the latest RC tag exists but is still draft-only or missing its GitHub Release, the workflow resumes that tag only when it was built from the current release ref. Otherwise the next RC number is cut.
-- RC numbering also considers release commits on `main`, so deleting a stale tag does not let a later cut reuse the same RC number.
-- Off-main releases (when `ref` is not the tip of `main`) only push the tag. `main` is never mutated from a non-main ref, so you can safely release an older commit without polluting history.
-- When `ref` is the tip of `main`, the version-bump commit is fast-forwarded onto `main` so local `package.json` stays in sync with what's shipped.
-
-**Common scenarios:**
-
-- **Normal release:** `kind=patch`, `ref=main`.
-- **"A bad commit just landed on main, release the commit before it":** `kind=patch`, `ref=<good-sha>`. `main` is left alone; the tag points at the good SHA. Fix forward on `main` afterward.
-- **One-off RC for a feature branch:** `kind=rc`, `ref=<branch-or-sha>`. Produces an RC tag that does not touch `main`.
-- **Minor or major bump:** `kind=minor` or `kind=major`.
-
-The scheduled 2x/day RC cron in [`release-rc.yml`](../../actions/workflows/release-rc.yml) is independent and continues to run automatically from `main`.
-
-
-## Release Channels
-
-The public Homebrew cask tracks stable desktop releases:
+移动端变更还应运行：
 
 ```bash
-brew install --cask stablyai/orca/orca
+cd mobile
+pnpm typecheck
+pnpm lint
+pnpm test
 ```
 
-Release candidates use a separate cask token:
+行为变更和缺陷修复应增加能够捕获回归的测试。UI 或交互变更应在受影响平台、亮色/暗色模式和合理的 SSH 延迟条件下验证。
+
+## Pull Request 要求
+
+PR 应包含：
+
+- 用户可见变更和技术边界；
+- 已运行的测试与未覆盖风险；
+- 视觉变更的截图或录屏；
+- 跨平台、SSH/远程、本地、智能体、集成和 Git Provider 兼容性说明；
+- 性能、安全和 UI 质量检查结论；
+- 没有视觉变更时明确说明。
+
+## 类型声明
+
+项目自有类型优先放在 `.ts` 文件中。`.d.ts` 只用于环境声明和第三方 Ambient Shim，避免 `skipLibCheck` 掩盖项目类型错误。
+
+## 发布流程
+
+版本和标签由维护者通过 [Cut Release](../../actions/workflows/release-cut.yml) 工作流管理，不在普通 PR 中手工发布。
+
+稳定版、RC、macOS 公证、Windows 签名、Linux 构建和移动端 Release 都必须发布到当前仓库 `OnlyYu1996/orca`。未配置自有诊断、遥测或商店凭据时，对应能力保持关闭。
+
+Homebrew 稳定渠道：
 
 ```bash
-brew install --cask stablyai/orca/orca@rc
+brew tap OnlyYu1996/orca https://github.com/OnlyYu1996/orca.git
+brew install --cask orca
 ```
 
-The two casks conflict because both install `Orca.app`. Switch channels with a
-normal `brew uninstall --cask` followed by the install for the other channel.
-Do not use `--zap` unless you intentionally want to remove local Orca state.
+RC 渠道：
+
+```bash
+brew install --cask orca@rc
+```
+
+两个 Cask 都安装“赛博包工头.app”，因此互相冲突。切换渠道时正常卸载后重新安装；除非明确需要清除用户状态，否则不要使用 `--zap`。
+
+## 上游同步
+
+同步 `stablyai/orca` 时使用仓库内 `sync-orca-upstream` Skill。上游只用于源码同步和许可证归属，不能覆盖产品身份、中文目录、图标、自有发布链、遥测关闭策略或旧版兼容迁移。

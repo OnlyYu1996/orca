@@ -389,7 +389,7 @@ describe('registerNotificationHandlers', () => {
     ).toEqual({ delivered: true })
     expect(notificationCtorMock).toHaveBeenCalledWith(
       expectedNativeNotificationOptions({
-        title: 'Task complete in feat/notis',
+        title: 'feat/notis 中的任务已完成',
         body: 'orca'
       })
     )
@@ -415,8 +415,8 @@ describe('registerNotificationHandlers', () => {
       const handler = getDispatchHandler()
       expect(await handler({}, { source: 'test' })).toEqual({ delivered: true })
       expect(notificationCtorMock).toHaveBeenCalledWith({
-        title: 'Orca notifications are on',
-        body: 'This is a test notification from Orca.',
+        title: '赛博包工头通知已开启',
+        body: '这是赛博包工头发送的测试通知。',
         sound: 'default'
       })
     } finally {
@@ -443,8 +443,8 @@ describe('registerNotificationHandlers', () => {
       const handler = getDispatchHandler()
       expect(await handler({}, { source: 'test' })).toEqual({ delivered: true })
       expect(notificationCtorMock).toHaveBeenCalledWith({
-        title: 'Orca notifications are on',
-        body: 'This is a test notification from Orca.',
+        title: '赛博包工头通知已开启',
+        body: '这是赛博包工头发送的测试通知。',
         silent: true
       })
     } finally {
@@ -590,7 +590,7 @@ describe('registerNotificationHandlers', () => {
 
     expect(notificationCtorMock).toHaveBeenCalledWith(
       expectedNativeNotificationOptions({
-        title: 'feat/notis - Codex finished',
+        title: 'feat/notis - Codex 已完成',
         body: 'Updated the notification body.'
       })
     )
@@ -627,7 +627,7 @@ describe('registerNotificationHandlers', () => {
 
     expect(notificationCtorMock).toHaveBeenCalledWith(
       expectedNativeNotificationOptions({
-        title: 'orca / feat/notis - Codex finished',
+        title: 'orca / feat/notis - Codex 已完成',
         body: 'Updated the notification body.'
       })
     )
@@ -664,8 +664,8 @@ describe('registerNotificationHandlers', () => {
 
     expect(notificationCtorMock).toHaveBeenCalledWith(
       expectedNativeNotificationOptions({
-        title: 'jinjing-work / main - Claude finished',
-        body: 'Claude finished.'
+        title: 'jinjing-work / main - Claude 已完成',
+        body: 'Claude 已完成。'
       })
     )
   })
@@ -715,14 +715,14 @@ describe('registerNotificationHandlers', () => {
     expect(notificationCtorMock).toHaveBeenNthCalledWith(
       1,
       expectedNativeNotificationOptions({
-        title: 'feat/notis - Claude needs input',
+        title: 'feat/notis - Claude 需要输入',
         body: 'Please approve the command.'
       })
     )
     expect(notificationCtorMock).toHaveBeenNthCalledWith(
       2,
       expectedNativeNotificationOptions({
-        title: 'feat/notis - Claude stopped',
+        title: 'feat/notis - Claude 已停止',
         body: 'Stopped by user.'
       })
     )
@@ -763,7 +763,7 @@ describe('registerNotificationHandlers', () => {
       throw new Error('Expected notification options')
     }
     expect(options).toMatchObject({
-      title: 'feat/notis - builder agent finished'
+      title: 'feat/notis - builder agent 已完成'
     })
     expect(options.body).toMatch(/^Line one x+/)
     expect(options.body).not.toContain('\n')
@@ -800,8 +800,8 @@ describe('registerNotificationHandlers', () => {
 
     expect(notificationCtorMock).toHaveBeenCalledWith(
       expectedNativeNotificationOptions({
-        title: 'feat/notis - Agent finished',
-        body: 'Using Bash: pnpm test'
+        title: 'feat/notis - 智能体 已完成',
+        body: '正在使用 Bash：pnpm test'
       })
     )
   })
@@ -842,7 +842,7 @@ describe('registerNotificationHandlers', () => {
     expect(dispatchMobileNotification).toHaveBeenCalledWith({
       type: 'notification',
       source: 'agent-task-complete',
-      title: 'feat/notis - Hermes finished',
+      title: 'feat/notis - Hermes 已完成',
       body: 'The diff updates notification formatting.',
       worktreeId: 'repo::wt1'
     })
@@ -1083,8 +1083,8 @@ describe('registerNotificationHandlers', () => {
     const handler = getDispatchHandler()
     expect(await handler({}, { source: 'test' })).toEqual({ delivered: true })
     expect(notificationCtorMock).toHaveBeenCalledWith({
-      title: 'Orca notifications are on',
-      body: 'This is a test notification from Orca.',
+      title: '赛博包工头通知已开启',
+      body: '这是赛博包工头发送的测试通知。',
       silent: true
     })
   })
@@ -1611,8 +1611,8 @@ describe('triggerStartupNotificationRegistration', () => {
 
     expect(store.updateUI).toHaveBeenCalledWith({ notificationPermissionRequested: true })
     expect(notificationCtorMock).toHaveBeenCalledWith({
-      title: 'Orca is ready to notify you',
-      body: 'Allow notifications so Orca can alert you when agents finish or terminals need attention.'
+      title: '赛博包工头已准备好发送通知',
+      body: '请允许通知，以便在智能体完成工作或终端需要关注时收到提醒。'
     })
     expect(notificationShowMock).toHaveBeenCalledTimes(1)
   })

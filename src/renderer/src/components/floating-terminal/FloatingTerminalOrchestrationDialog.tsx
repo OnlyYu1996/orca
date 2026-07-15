@@ -112,7 +112,7 @@ export function FloatingTerminalOrchestrationDialog({
           <DialogDescription className="sr-only">
             {translate(
               'auto.components.floating.terminal.FloatingTerminalOrchestrationDialog.6f0aed26b8',
-              'Install the Orca CLI and orchestration skill so agents can coordinate through Orca.'
+              'Install the 赛博包工头 CLI and orchestration skill so agents can coordinate through 赛博包工头.'
             )}
           </DialogDescription>
         </DialogHeader>

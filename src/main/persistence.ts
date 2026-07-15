@@ -79,6 +79,11 @@ import {
 } from '../shared/task-source-context'
 import type { MigrationUnsupportedPtyEntry } from '../shared/agent-status-types'
 import { MOBILE_PAIRING_USERDATA_FILES } from './runtime/mobile-pairing-files'
+import {
+  LEGACY_MOBILE_PAIRING_USERDATA_FILES,
+  type MobilePairingUserDataFileName
+} from './runtime/mobile-pairing-files'
+import { migrateLegacyStorageFile } from './startup/product-storage-migration'
 import { hardenExistingSecureFile } from '../shared/secure-file'
 import {
   LEGACY_DEFAULT_SSH_RELAY_GRACE_PERIOD_SECONDS,
@@ -331,11 +336,29 @@ function retireLegacyInstructionsForClearedTextActionRecipes(
 // but before app.setName(), capturing the correct path at the right moment.
 let _dataFile: string | null = null
 let _userDataDir: string | null = null
+const PRODUCT_DATA_FILE_NAME = 'sbbgt-data.json'
+const LEGACY_DATA_FILE_NAME = 'orca-data.json'
+const PRODUCT_GITHUB_CACHE_FILE_NAME = 'sbbgt-github-cache.json'
+const LEGACY_GITHUB_CACHE_FILE_NAME = 'orca-github-cache.json'
+
+function migrateLegacyPersistenceFiles(userDataDir: string): string {
+  const dataFile = join(userDataDir, PRODUCT_DATA_FILE_NAME)
+  const legacyDataFile = join(userDataDir, LEGACY_DATA_FILE_NAME)
+  migrateLegacyStorageFile(dataFile, [legacyDataFile])
+  migrateLegacyStorageFile(join(userDataDir, PRODUCT_GITHUB_CACHE_FILE_NAME), [
+    join(userDataDir, LEGACY_GITHUB_CACHE_FILE_NAME)
+  ])
+  for (let index = 0; index < 5; index++) {
+    migrateLegacyStorageFile(`${dataFile}.bak.${index}`, [`${legacyDataFile}.bak.${index}`])
+  }
+  return dataFile
+}
 
 export function initDataPath(): void {
   const userDataDir = app.getPath('userData')
   _userDataDir = userDataDir
-  _dataFile = join(userDataDir, 'orca-data.json')
+  _dataFile = migrateLegacyPersistenceFiles(userDataDir)
+  migrateMobilePairingDataToCanonicalUserDataPath(userDataDir)
 }
 
 function getDataFile(): string {
@@ -343,7 +366,7 @@ function getDataFile(): string {
     // Safety fallback — should not be hit in normal startup.
     const userDataDir = app.getPath('userData')
     _userDataDir = userDataDir
-    _dataFile = join(userDataDir, 'orca-data.json')
+    _dataFile = migrateLegacyPersistenceFiles(userDataDir)
   }
   return _dataFile
 }
@@ -355,7 +378,7 @@ function getDataFile(): string {
 // and is snapshotted here best-effort at quit so PR/issue badges still paint
 // instantly on the next launch. Loss of this file costs nothing.
 function getGithubCacheFile(dataFile = getDataFile()): string {
-  return join(dirname(dataFile), 'orca-github-cache.json')
+  return join(dirname(dataFile), PRODUCT_GITHUB_CACHE_FILE_NAME)
 }
 
 // Why: worktrees deleted outside Orca (git CLI worktree remove, rm -rf,
@@ -479,14 +502,24 @@ export function getCanonicalUserDataPath(): string {
  */
 export function migrateMobilePairingDataToCanonicalUserDataPath(sourceUserDataDir: string): void {
   const targetUserDataDir = getCanonicalUserDataPath()
-  if (resolve(sourceUserDataDir) === resolve(targetUserDataDir)) {
+  const sourceFileNames = [
+    MOBILE_PAIRING_USERDATA_FILES,
+    LEGACY_MOBILE_PAIRING_USERDATA_FILES
+  ].find((fileNames) =>
+    fileNames.every((fileName) => existsSync(join(sourceUserDataDir, fileName)))
+  )
+  if (!sourceFileNames) {
     return
   }
-
-  const migrations = MOBILE_PAIRING_USERDATA_FILES.map((fileName) => ({
-    sourcePath: join(sourceUserDataDir, fileName),
+  const migrations = MOBILE_PAIRING_USERDATA_FILES.map((fileName, index) => ({
+    sourcePath: join(sourceUserDataDir, sourceFileNames[index] as MobilePairingUserDataFileName),
     targetPath: join(targetUserDataDir, fileName)
   }))
+  if (
+    migrations.every(({ sourcePath, targetPath }) => resolve(sourcePath) === resolve(targetPath))
+  ) {
+    return
+  }
   if (migrations.some(({ sourcePath }) => !existsSync(sourcePath))) {
     return
   }

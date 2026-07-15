@@ -1,5 +1,5 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, Clipboard, Send } from 'lucide-react'
+import { AlertTriangle, Clipboard, Github, Send } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -15,12 +15,18 @@ import { Label } from '@/components/ui/label'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import {
   formatCrashReportText,
-  isReactErrorBoundaryReport,
   type CrashReportDiagnosticBundle,
   type CrashReportRecord
 } from '../../../../shared/crash-reporting'
 import type { GitHubViewer } from '../../../../shared/types'
 import { translate } from '@/i18n/i18n'
+import {
+  buildCrashReportIssueUrl,
+  formatCrashReportSummary,
+  getCrashReportDialogDescription,
+  getCrashReportDialogTitle,
+  getCrashReportNotesPlaceholder
+} from './crash-report-dialog-copy'
 import {
   CRASH_REPORT_SUBMIT_FAILURE_TOAST_ID,
   getCrashReportCopySubmissionFailure,
@@ -28,43 +34,6 @@ import {
   getCrashReportSubmitWarningNotice
 } from './crash-report-submit-notice'
 import { useCrashReportCopy } from './use-crash-report-copy'
-
-function formatSummary(report: CrashReportRecord): string {
-  if (isReactErrorBoundaryReport(report)) {
-    const surface = typeof report.details.surface === 'string' ? report.details.surface : null
-    return surface ? `React render error in ${surface}` : 'React render error'
-  }
-  return `${report.processType} ${report.reason}${
-    report.exitCode === null ? '' : ` (exit ${report.exitCode})`
-  }`
-}
-
-function getDialogTitle(report: CrashReportRecord | null): string {
-  if (!report) {
-    return 'Report a crash'
-  }
-  return report && isReactErrorBoundaryReport(report)
-    ? 'Orca hit a recoverable UI error'
-    : 'Orca closed unexpectedly'
-}
-
-function getDialogDescription(report: CrashReportRecord | null): string {
-  if (!report) {
-    return 'Send a privacy-safe crash report. Recent redacted diagnostic logs are included when available.'
-  }
-  return report && isReactErrorBoundaryReport(report)
-    ? 'Send a privacy-safe diagnostic report to help us understand the failed UI surface.'
-    : 'Send a privacy-safe diagnostic report to help us understand what happened.'
-}
-
-function getNotesPlaceholder(report: CrashReportRecord | null): string {
-  if (!report) {
-    return 'Optional: what happened?'
-  }
-  return report && isReactErrorBoundaryReport(report)
-    ? 'Optional: what were you doing before this UI error?'
-    : 'Optional: what were you doing before Orca closed?'
-}
 
 type CrashReportDialogSurfaceProps = {
   open: boolean
@@ -86,6 +55,9 @@ export function CrashReportDialogSurface({
   const [includeDiagnosticLogs, setIncludeDiagnosticLogs] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [viewer, setViewer] = useState<GitHubViewer | null>(null)
+  const [feedbackTransportConfigured, setFeedbackTransportConfigured] = useState<boolean | null>(
+    null
+  )
   // Why: account lookup can resolve after the dialog closes or reopens.
   // Sequence the request so a stale viewer is never used for submission.
   const viewerRequestIdRef = useRef(0)
@@ -127,6 +99,21 @@ export function CrashReportDialogSurface({
       return
     }
     setIncludeDiagnosticLogs(true)
+    setFeedbackTransportConfigured(null)
+    void window.api.feedback
+      .getStatus()
+      .then((status) => {
+        if (mountedRef.current) {
+          setFeedbackTransportConfigured(status.configured)
+        }
+      })
+      .catch((error) => {
+        if (mountedRef.current) {
+          // 状态查询失败时按未配置处理，避免意外回退到任何网络上传路径。
+          setFeedbackTransportConfigured(false)
+          console.error('读取崩溃报告服务状态失败:', error)
+        }
+      })
     loadViewerForOpenDialog()
   }, [clearViewer, loadViewerForOpenDialog, open])
 
@@ -168,8 +155,27 @@ export function CrashReportDialogSurface({
   }
 
   const handleSubmit = async (): Promise<void> => {
+    if (feedbackTransportConfigured === null) {
+      return
+    }
     setSubmitting(true)
     try {
+      if (!feedbackTransportConfigured) {
+        await window.api.shell.openUrl(buildCrashReportIssueUrl(report, diagnosticText))
+        await dismissReportIfNeeded()
+        if (!mountedRef.current) {
+          return
+        }
+        setNotes('')
+        toast.success(
+          translate(
+            'auto.components.crash.report.CrashReportDialog.issue.opened',
+            'Opened a draft issue in your browser.'
+          )
+        )
+        onOpenChange(false)
+        return
+      }
       const result = await window.api.crashReports.submit({
         ...(report ? { reportId: report.id } : {}),
         notes,
@@ -204,6 +210,16 @@ export function CrashReportDialogSurface({
       }
       onOpenChange(false)
     } catch (error) {
+      if (!feedbackTransportConfigured) {
+        toast.error(
+          translate(
+            'auto.components.crash.report.CrashReportDialog.issue.openFailed',
+            'Unable to open the GitHub issue page.'
+          )
+        )
+        console.error('打开崩溃报告问题页面失败:', error)
+        return
+      }
       showSubmitFailure(error)
       console.error('Failed to submit crash report:', error)
     } finally {
@@ -236,16 +252,20 @@ export function CrashReportDialogSurface({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
             <AlertTriangle className="size-4 text-destructive" />
-            {getDialogTitle(report)}
+            {getCrashReportDialogTitle(report)}
           </DialogTitle>
-          <DialogDescription className="text-xs">{getDialogDescription(report)}</DialogDescription>
+          <DialogDescription className="text-xs">
+            {getCrashReportDialogDescription(report, feedbackTransportConfigured === true)}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           {report ? (
             <>
               <div className="rounded-md border border-border/70 bg-muted/30 p-3 text-xs">
-                <div className="font-medium text-foreground">{formatSummary(report)}</div>
+                <div className="font-medium text-foreground">
+                  {formatCrashReportSummary(report)}
+                </div>
                 <div className="mt-1 text-muted-foreground">
                   {new Date(report.createdAt).toLocaleString()} · {report.platform} {report.arch} ·
                   {translate('auto.components.crash.report.CrashReportDialog.835037edc9', 'Orca')}{' '}
@@ -281,31 +301,42 @@ export function CrashReportDialogSurface({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={4}
-            placeholder={getNotesPlaceholder(report)}
+            placeholder={getCrashReportNotesPlaceholder(report)}
             className="min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
-          <div className="flex items-start gap-2 rounded-md border border-border/70 bg-muted/20 p-3">
-            <Checkbox
-              id="crash-report-attach-diagnostics"
-              checked={includeDiagnosticLogs}
-              onCheckedChange={(checked) => setIncludeDiagnosticLogs(checked === true)}
-              disabled={submitting}
-              className="mt-0.5"
-            />
-            <div className="space-y-1">
-              <Label htmlFor="crash-report-attach-diagnostics" className="text-xs">
-                {translate(
-                  'auto.components.crash.report.CrashReportDialog.b082f27490',
-                  'Attach recent diagnostic logs'
-                )}
-              </Label>
+          <div className="flex min-h-16 items-start gap-2 rounded-md border border-border/70 bg-muted/20 p-3">
+            {feedbackTransportConfigured === true ? (
+              <>
+                <Checkbox
+                  id="crash-report-attach-diagnostics"
+                  checked={includeDiagnosticLogs}
+                  onCheckedChange={(checked) => setIncludeDiagnosticLogs(checked === true)}
+                  disabled={submitting}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="crash-report-attach-diagnostics" className="text-xs">
+                    {translate(
+                      'auto.components.crash.report.CrashReportDialog.b082f27490',
+                      'Attach recent diagnostic logs'
+                    )}
+                  </Label>
+                  <div className="text-xs leading-5 text-muted-foreground">
+                    {translate(
+                      'auto.components.crash.report.CrashReportDialog.e59f0b9427',
+                      'Sends a capped redacted log bundle with the report.'
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
               <div className="text-xs leading-5 text-muted-foreground">
                 {translate(
-                  'auto.components.crash.report.CrashReportDialog.e59f0b9427',
-                  'Sends a capped redacted log bundle with the report.'
+                  'auto.components.crash.report.CrashReportDialog.issue.privacy',
+                  'Only the redacted text shown above is added to the draft issue. Diagnostic log files stay on this device.'
                 )}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -329,9 +360,26 @@ export function CrashReportDialogSurface({
           >
             {translate('auto.components.crash.report.CrashReportDialog.88fea8e84e', "Don't Send")}
           </Button>
-          <Button type="button" size="sm" onClick={handleSubmit} disabled={loading || submitting}>
-            <Send className="size-3.5" />
-            {translate('auto.components.crash.report.CrashReportDialog.b4951cd27c', 'Send Report')}
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleSubmit}
+            disabled={loading || submitting || feedbackTransportConfigured === null}
+          >
+            {feedbackTransportConfigured === true ? (
+              <Send className="size-3.5" />
+            ) : (
+              <Github className="size-3.5" />
+            )}
+            {feedbackTransportConfigured === true
+              ? translate(
+                  'auto.components.crash.report.CrashReportDialog.b4951cd27c',
+                  'Send Report'
+                )
+              : translate(
+                  'auto.components.crash.report.CrashReportDialog.issue.open',
+                  'Open GitHub issue'
+                )}
           </Button>
         </DialogFooter>
       </DialogContent>

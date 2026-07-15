@@ -53,9 +53,9 @@ describe('getComputerUsePermissionStatus', () => {
     vi.mocked(stat).mockReset()
     resolveHelperAppPathMock.mockReset()
     resolveHelperExecutablePathMock.mockReset()
-    resolveHelperAppPathMock.mockReturnValue('/Applications/Orca Computer Use.app')
+    resolveHelperAppPathMock.mockReturnValue('/Applications/赛博包工头电脑控制.app')
     resolveHelperExecutablePathMock.mockReturnValue(
-      '/Applications/Orca Computer Use.app/Contents/MacOS/orca-computer-use-macos'
+      '/Applications/赛博包工头电脑控制.app/Contents/MacOS/orca-computer-use-macos'
     )
     vi.mocked(mkdtemp).mockResolvedValue(permissionStatusTempDir)
     vi.mocked(stat).mockResolvedValue({} as Awaited<ReturnType<typeof stat>>)
@@ -168,7 +168,7 @@ describe('getComputerUsePermissionStatus', () => {
 
     await expect(getComputerUsePermissionStatus()).resolves.toEqual({
       platform: 'darwin',
-      helperAppPath: '/Applications/Orca Computer Use.app',
+      helperAppPath: '/Applications/赛博包工头电脑控制.app',
       helperUnavailableReason: null,
       permissions: [
         { id: 'accessibility', status: 'granted' },
@@ -179,7 +179,7 @@ describe('getComputerUsePermissionStatus', () => {
       '/usr/bin/open',
       [
         '-n',
-        '/Applications/Orca Computer Use.app',
+        '/Applications/赛博包工头电脑控制.app',
         '--args',
         '--permission-status-file',
         permissionStatusPath
@@ -201,7 +201,7 @@ describe('getComputerUsePermissionStatus', () => {
     await expect(getComputerUsePermissionStatus()).resolves.toEqual({
       platform: 'darwin',
       helperAppPath: null,
-      helperUnavailableReason: 'Orca Computer Use.app was not found',
+      helperUnavailableReason: '未找到赛博包工头电脑控制.app',
       permissions: [
         { id: 'accessibility', status: 'not-granted' },
         { id: 'screenshots', status: 'not-granted' }

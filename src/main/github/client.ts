@@ -80,6 +80,7 @@ import {
 } from './gh-cwd-repo-negative-cache'
 import type { GitHubRepoContext } from './github-repository-identity'
 import { getEnterpriseGitHubRepoSlug } from './github-enterprise-repository'
+import { PRODUCT_REPOSITORY_SLUG } from '../../shared/product-links'
 export { _resetOwnerRepoCache } from './gh-utils'
 export {
   getIssue,
@@ -111,7 +112,7 @@ import {
 type GhExecOptions = ReturnType<typeof ghRepoExecOptions>
 type HostedReviewLocalGitOptions = ReturnType<typeof getHostedReviewLocalGitOptions>
 
-const ORCA_REPO = 'stablyai/orca'
+const ORCA_REPO = PRODUCT_REPOSITORY_SLUG
 const PR_CHECK_LOG_TAIL_JOB_LIMIT = 5
 // Why: each entry holds up to 16KB of log text; bound the cache so a long
 // session reviewing many failing checks can't grow it without limit.

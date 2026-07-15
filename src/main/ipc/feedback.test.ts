@@ -18,6 +18,9 @@ vi.mock('electron', () => ({
 
 import { registerFeedbackHandlers, submitFeedback } from './feedback'
 
+const PRIMARY_FEEDBACK_URL = 'https://feedback.example.test/v1/feedback'
+const FALLBACK_FEEDBACK_URL = 'https://feedback-fallback.example.test/v1/feedback'
+
 function okResponse(): Response {
   return { ok: true, status: 200 } as unknown as Response
 }
@@ -58,10 +61,44 @@ describe('submitFeedback', () => {
     handlers.clear()
     fetchMock.mockReset()
     fetchMock.mockResolvedValue(okResponse())
+    process.env.SBBGT_FEEDBACK_API_URL = PRIMARY_FEEDBACK_URL
+    process.env.SBBGT_FEEDBACK_API_FALLBACK_URL = FALLBACK_FEEDBACK_URL
   })
 
   afterEach(() => {
     vi.useRealTimers()
+    delete process.env.SBBGT_FEEDBACK_API_URL
+    delete process.env.SBBGT_FEEDBACK_API_FALLBACK_URL
+    delete process.env.ORCA_FEEDBACK_API_URL
+    delete process.env.ORCA_FEEDBACK_API_FALLBACK_URL
+  })
+
+  it('does not access the network when no feedback service is configured', async () => {
+    delete process.env.SBBGT_FEEDBACK_API_URL
+    delete process.env.SBBGT_FEEDBACK_API_FALLBACK_URL
+
+    await expect(
+      submitFeedback({
+        feedback: 'local-only report',
+        githubLogin: null,
+        githubEmail: null
+      })
+    ).resolves.toEqual({
+      ok: false,
+      status: null,
+      error: 'feedback endpoint is not configured'
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('uses legacy endpoint variables only when the new variables are absent', async () => {
+    delete process.env.SBBGT_FEEDBACK_API_URL
+    delete process.env.SBBGT_FEEDBACK_API_FALLBACK_URL
+    process.env.ORCA_FEEDBACK_API_URL = 'https://legacy-feedback.example.test/v1/feedback'
+
+    await submitFeedback({ feedback: 'legacy configuration', githubLogin: null, githubEmail: null })
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('https://legacy-feedback.example.test/v1/feedback')
   })
 
   it('strips GitHub identity and anonymous contact fields when submitted anonymously', async () => {
@@ -173,9 +210,9 @@ describe('submitFeedback', () => {
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock.mock.calls[0]?.[0]).toBe('https://www.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(PRIMARY_FEEDBACK_URL)
     expect(requestInit(0).body).toBeInstanceOf(FormData)
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://www.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(PRIMARY_FEEDBACK_URL)
     expect(requestInit(1).headers).toEqual({
       'Content-Type': 'application/json'
     })
@@ -195,7 +232,7 @@ describe('submitFeedback', () => {
       diagnosticBundleFailure: { status: 500, error: 'status 500' }
     })
 
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://api.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(FALLBACK_FEEDBACK_URL)
     expect(requestInit(1).headers).toEqual({ 'Content-Type': 'application/json' })
     expect(postedBody(1)).not.toHaveProperty('diagnosticBundle')
   })
@@ -210,7 +247,7 @@ describe('submitFeedback', () => {
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://api.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(FALLBACK_FEEDBACK_URL)
     expect(requestInit(1).body).not.toBeInstanceOf(FormData)
     expect(postedBody(1)).not.toHaveProperty('diagnosticBundle')
   })
@@ -234,7 +271,7 @@ describe('submitFeedback', () => {
       diagnosticBundleFailure: { status: null, error: 'request timed out after 60 seconds' }
     })
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://api.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(FALLBACK_FEEDBACK_URL)
     expect(postedBody(1)).not.toHaveProperty('diagnosticBundle')
   })
 
@@ -245,7 +282,7 @@ describe('submitFeedback', () => {
       ok: true,
       diagnosticBundleFailure: { status: 403, error: 'status 403' }
     })
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('https://www.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(PRIMARY_FEEDBACK_URL)
     expect(requestInit(1).body).not.toBeInstanceOf(FormData)
   })
 
@@ -279,7 +316,7 @@ describe('submitFeedback', () => {
   it('falls back when the primary feedback request stalls', async () => {
     vi.useFakeTimers()
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-      if (url.includes('www.onorca.dev')) {
+      if (url === PRIMARY_FEEDBACK_URL) {
         return new Promise((_resolve, reject) => {
           init?.signal?.addEventListener('abort', () => reject(new Error('request aborted')))
         })
@@ -302,7 +339,7 @@ describe('submitFeedback', () => {
   it('does not retry the fallback when the fallback fails after a primary server error', async () => {
     vi.useFakeTimers()
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-      if (url.includes('www.onorca.dev')) {
+      if (url === PRIMARY_FEEDBACK_URL) {
         return Promise.resolve({ ok: false, status: 500 } as Response)
       }
       return new Promise((_resolve, reject) => {
@@ -326,7 +363,7 @@ describe('submitFeedback', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('posts to the website API first so crash reports use the snippet-capable route', async () => {
+  it('posts to the configured primary endpoint first', async () => {
     await submitFeedback({
       feedback: '[Crash Report]',
       submissionType: 'crash',
@@ -335,7 +372,7 @@ describe('submitFeedback', () => {
       githubEmail: null
     } as Parameters<typeof submitFeedback>[0])
 
-    expect(fetchMock.mock.calls[0]?.[0]).toBe('https://www.onorca.dev/v1/feedback')
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(PRIMARY_FEEDBACK_URL)
   })
 
   it('forces renderer IPC submissions onto the feedback lane', async () => {
@@ -354,5 +391,6 @@ describe('submitFeedback', () => {
       githubLogin: 'trusted-user',
       githubEmail: null
     })
+    expect(await handlers.get('feedback:getStatus')?.(null)).toEqual({ configured: true })
   })
 })

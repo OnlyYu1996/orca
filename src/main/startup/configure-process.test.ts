@@ -13,6 +13,7 @@ vi.mock('electron', () => {
       }),
       quit: vi.fn(),
       exit: vi.fn(),
+      getVersion: vi.fn(() => '1.0.0'),
       isPackaged: false,
       disableHardwareAcceleration: vi.fn(),
       commandLine: {
@@ -129,50 +130,57 @@ describe('configureDevUserDataPath', () => {
     expect(app.setPath).toHaveBeenCalledWith('userData', '/tmp/orca-dev-repro')
   })
 
-  it('moves dev runs onto an orca-dev userData path', async () => {
+  it('将开发运行放到 sbbgt-dev 用户数据目录', async () => {
     const { app } = await import('electron')
     const { configureDevUserDataPath } = await import('./configure-process')
 
     delete process.env.ORCA_DEV_USER_DATA_PATH
     configureDevUserDataPath(true)
 
-    // Why: production code uses path.join(app.getPath('appData'), 'orca-dev')
-    // which produces platform-specific separators.
-    expect(app.setPath).toHaveBeenCalledWith('userData', join('/tmp/app-data', 'orca-dev'))
+    expect(app.setPath).toHaveBeenCalledWith('userData', join('/tmp/app-data', 'sbbgt-dev'))
   })
 
-  it('leaves packaged runs on the default userData path', async () => {
+  it('将生产运行放到稳定的 sbbgt 用户数据目录', async () => {
     const { app } = await import('electron')
     const { configureDevUserDataPath } = await import('./configure-process')
 
     vi.mocked(app.setPath).mockClear()
     configureDevUserDataPath(false)
 
-    expect(app.setPath).not.toHaveBeenCalled()
+    expect(app.setPath).toHaveBeenCalledWith('userData', join('/tmp/app-data', 'sbbgt'))
   })
 })
 
 describe('configureOrcaUserDataPathEnv', () => {
-  it('overwrites stale inherited ORCA_USER_DATA_PATH with Electron userData', async () => {
+  it('用 Electron userData 同步新旧环境变量', async () => {
     const { app } = await import('electron')
     const { configureOrcaUserDataPathEnv } = await import('./configure-process')
     const originalUserDataPath = process.env.ORCA_USER_DATA_PATH
+    const originalProductUserDataPath = process.env.SBBGT_USER_DATA_PATH
     process.env.ORCA_USER_DATA_PATH = '/tmp/stale-orca-user-data'
     app.setPath('userData', '/tmp/current-orca-user-data')
     let configuredUserDataPath: string | undefined
+    let configuredProductUserDataPath: string | undefined
 
     try {
       configureOrcaUserDataPathEnv()
       configuredUserDataPath = process.env.ORCA_USER_DATA_PATH
+      configuredProductUserDataPath = process.env.SBBGT_USER_DATA_PATH
     } finally {
       if (originalUserDataPath === undefined) {
         delete process.env.ORCA_USER_DATA_PATH
       } else {
         process.env.ORCA_USER_DATA_PATH = originalUserDataPath
       }
+      if (originalProductUserDataPath === undefined) {
+        delete process.env.SBBGT_USER_DATA_PATH
+      } else {
+        process.env.SBBGT_USER_DATA_PATH = originalProductUserDataPath
+      }
     }
 
     expect(configuredUserDataPath).toBe('/tmp/current-orca-user-data')
+    expect(configuredProductUserDataPath).toBe('/tmp/current-orca-user-data')
   })
 })
 

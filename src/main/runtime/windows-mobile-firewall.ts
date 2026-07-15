@@ -7,8 +7,9 @@ import type {
 } from '../../shared/windows-mobile-firewall'
 import { hasSufficientWindowsFirewallRemoteScope } from './windows-firewall-remote-scope'
 
-const FIREWALL_RULE_NAME = 'Orca.MobilePairing'
-const FIREWALL_RULE_DISPLAY_NAME = 'Orca Mobile Pairing'
+const FIREWALL_RULE_NAME = 'Sbbgt.MobilePairing'
+const LEGACY_FIREWALL_RULE_NAME = 'Orca.MobilePairing'
+const FIREWALL_RULE_DISPLAY_NAME = '赛博包工头移动配对'
 const POWERSHELL_TIMEOUT_MS = 10_000
 const ELEVATION_TIMEOUT_MS = 5 * 60_000
 
@@ -196,7 +197,8 @@ $networkCategory = 'Unknown'${addressLookup}
 function buildRepairScript(port: number, executablePath: string): string {
   return `$ErrorActionPreference = 'Stop'
 Get-NetFirewallRule -Name ${quotePowerShell(FIREWALL_RULE_NAME)} -ErrorAction SilentlyContinue | Remove-NetFirewallRule
-New-NetFirewallRule -Name ${quotePowerShell(FIREWALL_RULE_NAME)} -DisplayName ${quotePowerShell(FIREWALL_RULE_DISPLAY_NAME)} -Description 'Allows Orca Mobile to connect to this Orca desktop on private networks.' -Direction Inbound -Action Allow -Enabled True -Profile Private -Protocol TCP -LocalPort ${port} -Program ${quotePowerShell(executablePath)} -EdgeTraversalPolicy Block | Out-Null`
+Get-NetFirewallRule -Name ${quotePowerShell(LEGACY_FIREWALL_RULE_NAME)} -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+New-NetFirewallRule -Name ${quotePowerShell(FIREWALL_RULE_NAME)} -DisplayName ${quotePowerShell(FIREWALL_RULE_DISPLAY_NAME)} -Description '允许赛博包工头移动端通过专用网络连接此桌面端。' -Direction Inbound -Action Allow -Enabled True -Profile Private -Protocol TCP -LocalPort ${port} -Program ${quotePowerShell(executablePath)} -EdgeTraversalPolicy Block | Out-Null`
 }
 
 function buildElevationScript(powershellPath: string, encodedRepairScript: string): string {

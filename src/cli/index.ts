@@ -29,12 +29,9 @@ function shouldIgnoreRemoteSelection(commandPath: string[]): boolean {
   )
 }
 
-// Why: the SSH relay bridge executes this CLI on the Orca host while the
-// caller's shell cwd lives on the remote machine (which cannot be chdir'd
-// into). ORCA_CLI_CWD carries that remote cwd so cwd-based selectors like
-// `--worktree active` resolve against the caller's directory.
+// SSH Relay 在宿主机执行 CLI；新旧环境变量双读，才能让远端当前目录选择器跨版本工作。
 function resolveInvocationCwd(): string {
-  const override = process.env.ORCA_CLI_CWD
+  const override = process.env.SBBGT_CLI_CWD ?? process.env.ORCA_CLI_CWD
   return typeof override === 'string' && override.length > 0 ? override : process.cwd()
 }
 
@@ -42,6 +39,11 @@ export async function main(
   argv = process.argv.slice(2),
   cwd = resolveInvocationCwd()
 ): Promise<void> {
+  if (process.env.SBBGT_LEGACY_CLI && !argv.includes('--json')) {
+    process.stderr.write(
+      `提示：旧命令 ${process.env.SBBGT_LEGACY_CLI} 将在兼容周期结束后移除，请改用 sbbgt。\n`
+    )
+  }
   if (argv[0] === 'agent-teams-tmux') {
     await runAgentTeamsTmuxShim(argv.slice(1))
     return
@@ -70,17 +72,12 @@ export async function main(
   const json = parsed.flags.has('json')
 
   try {
-    // Why: CLI syntax and flag errors should be reported before any runtime
-    // lookup so users do not get misleading "Orca is not running" failures for
-    // simple command typos or unsupported flags.
+    // 先报告 CLI 语法和 Flag 错误，避免简单拼写错误被误报为运行时未启动。
     validateCommandAndFlags(COMMAND_SPECS, parsed)
     const ignoreRemoteSelection = shouldIgnoreRemoteSelection(parsed.commandPath)
     const pairingCode = ignoreRemoteSelection ? null : parsed.flags.get('pairing-code')
     const environmentSelector = ignoreRemoteSelection ? null : parsed.flags.get('environment')
-    // Why: pass `null` (not `undefined`) when remote selection is suppressed
-    // so the RuntimeClient default parameter does not re-activate the
-    // ORCA_PAIRING_CODE / ORCA_ENVIRONMENT env-var fallback for commands
-    // that must run locally (environment / serve).
+    // 本地命令传入 null，防止 RuntimeClient 重新启用新旧远程环境变量回退。
     let client: RuntimeClient | undefined
     await dispatch(parsed.commandPath, {
       flags: parsed.flags,
@@ -109,8 +106,7 @@ export async function main(
 
 async function runClaudeTeams(argv: string[], cwd: string): Promise<void> {
   try {
-    // Why: everything after `orca claude-teams` belongs to Claude Code, not
-    // Orca's own flag parser, so new Claude flags work without Orca changes.
+    // `sbbgt claude-teams` 后的参数全部交给 Claude Code，避免阻断其新增 Flag。
     const client = new RuntimeClient(undefined, undefined, null, null)
     await dispatch(['claude-teams'], {
       flags: new Map(),

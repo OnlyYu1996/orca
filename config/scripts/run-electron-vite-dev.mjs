@@ -127,7 +127,8 @@ function prepareMacDevElectronApp() {
   } catch {}
 
   const title = process.env.ORCA_DEV_DOCK_TITLE || 'Orca: dev'
-  const identityKey = process.env.ORCA_DEV_INSTANCE_KEY || repoRoot
+  const identityKey =
+    process.env.SBBGT_DEV_INSTANCE_KEY ?? process.env.ORCA_DEV_INSTANCE_KEY ?? repoRoot
   // v6: bundle the notification-status helper (real permission readout) and
   // ad-hoc re-sign after plist edits so Notification Center accepts the
   // bundle; bumping forces stale cached copies to be recreated.
@@ -154,8 +155,8 @@ function prepareMacDevElectronApp() {
   // once, macOS may route a notification click to the other instance —
   // Electron drops clicks for notification ids it didn't create, so the
   // click is lost, not misdirected.
-  const bundleId = 'com.stablyai.orca.dev'
-  process.env.ORCA_DEV_MACOS_BUNDLE_ID = bundleId
+  const bundleId = 'com.onlyyu.sbbgt.dev'
+  process.env.SBBGT_DEV_MACOS_BUNDLE_ID = bundleId
   const expectedMarker = JSON.stringify(
     { title, appBundleName, bundleId, sourceAppPath, electronVersion, bundleLayoutVersion },
     null,

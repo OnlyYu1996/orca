@@ -28,15 +28,15 @@ export function buildNotificationOptions(args: NotificationDispatchRequest): {
 } {
   if (args.source === 'terminal-bell') {
     return {
-      title: `Bell in ${args.worktreeLabel ?? 'workspace'}`,
-      body: args.repoLabel ? `${args.repoLabel} · Attention requested` : 'Attention requested'
+      title: `${args.worktreeLabel ?? '工作区'} 中的铃声提醒`,
+      body: args.repoLabel ? `${args.repoLabel} · 需要关注` : '需要关注'
     }
   }
 
   if (args.source === 'test') {
     return {
-      title: 'Orca notifications are on',
-      body: 'This is a test notification from Orca.'
+      title: '赛博包工头通知已开启',
+      body: '这是赛博包工头发送的测试通知。'
     }
   }
 
@@ -59,14 +59,14 @@ function buildAgentTaskCompleteNotificationOptions(
   const worktreeContext = formatNotificationWorktreeContext(args)
   const statusText =
     args.agentState === 'blocked' || args.agentState === 'waiting'
-      ? 'needs input'
+      ? '需要输入'
       : args.agentState === 'done' && args.agentInterrupted
-        ? 'stopped'
-        : 'finished'
+        ? '已停止'
+        : '已完成'
 
   return {
     title: `${worktreeContext} - ${agentLabel} ${statusText}`,
-    body: buildAgentTaskCompleteRichBody(args) ?? `${agentLabel} ${statusText}.`
+    body: buildAgentTaskCompleteRichBody(args) ?? `${agentLabel} ${statusText}。`
   }
 }
 
@@ -82,7 +82,7 @@ function formatNotificationWorktreeContext(args: NotificationDispatchRequest): s
       NOTIFICATION_TITLE_CONTEXT_MAX_LENGTH
     )
   }
-  return worktreeLabel || repoLabel || 'workspace'
+  return worktreeLabel || repoLabel || '工作区'
 }
 
 function hasAgentNotificationSnapshot(args: NotificationDispatchRequest): boolean {
@@ -112,13 +112,13 @@ function buildAgentTaskCompleteRichBody(args: NotificationDispatchRequest): stri
     NOTIFICATION_BODY_PREVIEW_MAX_LENGTH
   )
   if (toolName && toolInput) {
-    return `Using ${toolName}: ${toolInput}`
+    return `正在使用 ${toolName}：${toolInput}`
   }
   if (toolName) {
-    return `Using ${toolName}`
+    return `正在使用 ${toolName}`
   }
   if (toolInput) {
-    return `Tool input: ${toolInput}`
+    return `工具输入：${toolInput}`
   }
 
   return null
@@ -129,7 +129,7 @@ function buildAgentTaskCompleteFallbackNotificationOptions(args: NotificationDis
   body: string
 } {
   return {
-    title: `Task complete in ${args.worktreeLabel ?? 'workspace'}`,
+    title: `${args.worktreeLabel ?? '工作区'} 中的任务已完成`,
     body: buildAgentTaskCompleteFallbackBody(args)
   }
 }
@@ -137,13 +137,13 @@ function buildAgentTaskCompleteFallbackNotificationOptions(args: NotificationDis
 function buildAgentTaskCompleteFallbackBody(args: NotificationDispatchRequest): string {
   return args.repoLabel
     ? `${args.repoLabel}${args.terminalTitle ? ` · ${args.terminalTitle}` : ''}`
-    : (args.terminalTitle ?? 'A coding agent finished working.')
+    : (args.terminalTitle ?? '编码智能体已完成工作。')
 }
 
 function formatNotificationAgentLabel(agentType: string | null | undefined): string {
   const normalized = normalizeNotificationText(agentType, NOTIFICATION_AGENT_LABEL_MAX_LENGTH)
   if (!normalized || normalized === 'unknown') {
-    return 'Agent'
+    return '智能体'
   }
   return AGENT_TYPE_LABELS[normalized] ?? normalized
 }

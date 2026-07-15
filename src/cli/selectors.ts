@@ -70,7 +70,7 @@ export async function resolveCurrentWorktreeSelector(
   if (!enclosingWorktree) {
     throw new RuntimeClientError(
       'selector_not_found',
-      `No Orca-managed worktree contains the current directory: ${currentPath}`
+      `当前目录不属于任何由赛博包工头管理的工作树：${currentPath}`
     )
   }
 

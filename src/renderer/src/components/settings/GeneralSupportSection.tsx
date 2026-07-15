@@ -8,8 +8,9 @@ import { Separator } from '../ui/separator'
 import { SearchableSetting } from './SearchableSetting'
 import { SettingsSubsectionHeader } from './SettingsFormControls'
 import { translate } from '@/i18n/i18n'
+import { PRODUCT_STARGAZERS_URL } from '../../../../shared/product-links'
 
-const ORCA_STARGAZERS_URL = 'https://github.com/stablyai/orca/stargazers'
+const ORCA_STARGAZERS_URL = PRODUCT_STARGAZERS_URL
 
 type SupportState =
   | 'loading'

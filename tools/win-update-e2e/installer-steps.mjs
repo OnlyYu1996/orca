@@ -15,7 +15,7 @@ import { assertWin32 } from './platform-guard.mjs'
 import { runCommandSync } from './powershell-runner.mjs'
 
 const PRODUCT_NAME = 'Orca'
-const EXE_NAME = 'Orca.exe'
+const EXE_NAME = 'sbbgt.exe'
 
 /** Programs root that per-user oneClick NSIS installs into. */
 function programsRoot() {

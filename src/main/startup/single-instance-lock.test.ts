@@ -80,12 +80,20 @@ describe('logSingleInstanceLockFailure', () => {
     logSingleInstanceLockFailure(write)
 
     expect(write).toHaveBeenCalledWith(2, `${SINGLE_INSTANCE_LOCK_FAILURE_MESSAGE}\n`)
-    expect(write.mock.calls[0]?.[1]).toContain('Electron/macOS single-instance lock failure')
+    expect(write.mock.calls[0]?.[1]).toContain('Electron/macOS 单实例锁异常')
   })
 })
 
 describe('shouldBypassSingleInstanceLock', () => {
   it('allows the hidden diagnostic bypass only for packaged macOS app launches', () => {
+    expect(
+      shouldBypassSingleInstanceLock({
+        env: { SBBGT_BYPASS_SINGLE_INSTANCE_LOCK: '1' },
+        isDev: false,
+        isServeMode: false,
+        platform: 'darwin'
+      })
+    ).toBe(true)
     expect(
       shouldBypassSingleInstanceLock({
         env: { ORCA_BYPASS_SINGLE_INSTANCE_LOCK: '1' },
@@ -120,6 +128,6 @@ describe('logSingleInstanceLockBypass', () => {
     logSingleInstanceLockBypass(write)
 
     expect(write).toHaveBeenCalledWith(2, `${SINGLE_INSTANCE_LOCK_BYPASS_MESSAGE}\n`)
-    expect(write.mock.calls[0]?.[1]).toContain('bypassing the packaged macOS single-instance lock')
+    expect(write.mock.calls[0]?.[1]).toContain('诊断流程将绕过 macOS 单实例锁')
   })
 })

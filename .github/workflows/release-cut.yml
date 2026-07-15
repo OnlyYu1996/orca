@@ -60,7 +60,7 @@ jobs:
     # Actions enabled, the scheduled cut would run against the fork's main and
     # diverge it (version line) every slot, conflicting every PR back upstream.
     # Gate to the canonical repo so the workflow no-ops on forks.
-    if: github.repository == 'stablyai/orca'
+    if: github.repository == 'OnlyYu1996/orca'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -851,7 +851,7 @@ jobs:
       # value comes from the per-tag classification above and electron-vite
       # reads it from `process.env` during `pnpm build:release` only.
       # Why ORCA_DIAGNOSTICS_TOKEN_URL here: official builds pin crash
-      # diagnostic uploads to Orca's endpoint at compile time, matching the
+      # 诊断上传地址由当前 Fork 的 Secret 在编译时注入，与
       # telemetry gate's "official binary only" behavior.
       - name: Build app
         run: pnpm build:release
@@ -859,9 +859,10 @@ jobs:
           # Why: Vite's web build crossed Node's default old-space ceiling on
           # the macOS release runner, leaving v1.4.2-rc.8 as an incomplete draft.
           NODE_OPTIONS: --max-old-space-size=4096
-          ORCA_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
-          ORCA_DIAGNOSTICS_TOKEN_URL: https://www.onorca.dev/diagnostics/token
-          ORCA_POSTHOG_WRITE_KEY: ${{ secrets.ORCA_POSTHOG_WRITE_KEY }}
+          SBBGT_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
+          SBBGT_DIAGNOSTICS_TOKEN_URL: ${{ secrets.SBBGT_DIAGNOSTICS_TOKEN_URL }}
+          SBBGT_POSTHOG_WRITE_KEY: ${{ secrets.SBBGT_POSTHOG_WRITE_KEY }}
+          SBBGT_POSTHOG_HOST: ${{ secrets.SBBGT_POSTHOG_HOST }}
 
       - name: Gate runtime file-watcher process isolation
         if: runner.os == 'Linux'
@@ -997,15 +998,10 @@ jobs:
             }
           }
 
-      # ── Windows inner-binary signing (issue #7785) ─────────────────────
-      # Why: SignPath cannot deep-sign inside NSIS installers, so inner PE
-      # files (Orca.exe, node-pty *.node, DLLs) are signed via a separate zip
-      # request, then the installer is rebuilt from the signed tree before the
-      # existing installer signing request below. Every step in this chain is
-      # fail-open (continue-on-error + outcome gating): any failure ships the
-      # original installer with unsigned inner binaries, exactly like releases
-      # did before this chain existed. Rehearsed end to end in run 28988432001
-      # (.github/workflows/windows-signing-rehearsal.yml).
+      # Windows 内部二进制签名（issue #7785）
+      # SignPath 无法深入 NSIS 安装包签名，因此先用独立 ZIP 请求签名 sbbgt.exe、
+      # node-pty *.node 和 DLL，再从已签名目录重建并签名安装器。当前链路保持
+      # fail-open，与引入该链路前的发布行为一致；完整演练见运行 28988432001。
 
       # Why: only unsigned PE files go to SignPath. Files that already carry a
       # valid signature (Microsoft's OpenConsole.exe) must keep their signer.
@@ -1035,8 +1031,8 @@ jobs:
               $list.Add($relative)
             }
 
-          if (-not ($list -contains 'Orca.exe')) {
-            throw 'Orca.exe was not staged for signing; unpacked layout changed?'
+          if (-not ($list -contains 'sbbgt.exe')) {
+            throw 'sbbgt.exe was not staged for signing; unpacked layout changed?'
           }
           if (-not ($list | Where-Object { $_ -like '*conpty_console_list.node' })) {
             throw 'node-pty conpty_console_list.node was not staged; this is the file from issue #7785.'
@@ -1054,7 +1050,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-inner-unsigned-${{ needs.cut.outputs.tag }}
+          name: sbbgt-windows-inner-unsigned-${{ needs.cut.outputs.tag }}
           path: signing-stage/**
           if-no-files-found: error
 
@@ -1094,7 +1090,7 @@ jobs:
             $requestUrl = "https://app.signpath.io/Web/$env:SIGNPATH_ORGANIZATION_ID/SigningRequests/$env:SIGNPATH_REQUEST_ID"
           }
 
-          $message = "Orca Windows release $env:TAG inner-binaries signing request (1 of 2) is ready for SignPath approval.`n<$requestUrl|Open SignPath signing request>`n<$env:GITHUB_RUN_URL|Open GitHub Actions run>"
+          $message = "赛博包工头 Windows $env:TAG 内部二进制签名请求（第 1/2 步）等待 SignPath 批准。`n<$requestUrl|打开 SignPath 签名请求>`n<$env:GITHUB_RUN_URL|打开 GitHub Actions 运行>"
           $payload = @{
             text = $message
             blocks = @(
@@ -1215,33 +1211,32 @@ jobs:
           # Why: keep the pre-rebuild artifacts so a failed rebuild can fall
           # back to shipping them unchanged (fail-open).
           New-Item -ItemType Directory -Path prepack-backup -Force | Out-Null
-          Copy-Item 'dist/orca-windows-setup.exe' 'prepack-backup/orca-windows-setup.exe' -Force
+          Copy-Item 'dist/sbbgt-windows-setup.exe' 'prepack-backup/sbbgt-windows-setup.exe' -Force
           Copy-Item 'dist/latest.yml' 'prepack-backup/latest.yml' -Force
 
           pnpm exec electron-builder --config config/electron-builder.config.cjs --win --publish never --prepackaged "$env:GITHUB_WORKSPACE\dist\win-unpacked"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if (-not (Test-Path 'dist/orca-windows-setup.exe')) {
-            throw 'electron-builder --prepackaged did not produce dist/orca-windows-setup.exe'
+          if (-not (Test-Path 'dist/sbbgt-windows-setup.exe')) {
+            throw 'electron-builder --prepackaged did not produce dist/sbbgt-windows-setup.exe'
           }
 
       - name: Roll back to original installer after failed rebuild
         if: matrix.platform == 'win' && steps.rebuild-nsis-signed.outcome == 'failure'
         shell: pwsh
         run: |
-          if (Test-Path 'prepack-backup/orca-windows-setup.exe') {
-            Copy-Item 'prepack-backup/orca-windows-setup.exe' 'dist/orca-windows-setup.exe' -Force
+          if (Test-Path 'prepack-backup/sbbgt-windows-setup.exe') {
+            Copy-Item 'prepack-backup/sbbgt-windows-setup.exe' 'dist/sbbgt-windows-setup.exe' -Force
             Copy-Item 'prepack-backup/latest.yml' 'dist/latest.yml' -Force
             Write-Warning 'Restored pre-rebuild installer; this release ships with unsigned inner binaries.'
           }
       # ── End Windows inner-binary signing ───────────────────────────────
-
       - name: Upload unsigned Windows installer for SignPath
         if: matrix.platform == 'win'
         id: upload-unsigned-windows-installer
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-unsigned-${{ needs.cut.outputs.tag }}
-          path: dist/orca-windows-setup.exe
+          name: sbbgt-windows-unsigned-${{ needs.cut.outputs.tag }}
+          path: dist/sbbgt-windows-setup.exe
           if-no-files-found: error
 
       # Why: SignPath Foundation production certificates require manual review,
@@ -1282,7 +1277,7 @@ jobs:
 
           # Why: releases where inner signing fell through have only this one request.
           $stage = if ($env:INNER_SIGNING_SUBMITTED -eq 'true') { 'installer signing request (2 of 2)' } else { 'signing request' }
-          $message = "Orca Windows release $env:TAG $stage is ready for SignPath approval.`n<$requestUrl|Open SignPath signing request>`n<$env:GITHUB_RUN_URL|Open GitHub Actions run>"
+          $message = "赛博包工头 Windows $env:TAG $stage 等待 SignPath 批准。`n<$requestUrl|打开 SignPath 签名请求>`n<$env:GITHUB_RUN_URL|打开 GitHub Actions 运行>"
           $payload = @{
             text = $message
             blocks = @(
@@ -1320,16 +1315,16 @@ jobs:
         if: matrix.platform == 'win'
         shell: pwsh
         run: |
-          $signedInstaller = Get-ChildItem -Path signed-windows -Recurse -File -Filter 'orca-windows-setup.exe' | Select-Object -First 1
+          $signedInstaller = Get-ChildItem -Path signed-windows -Recurse -File -Filter 'sbbgt-windows-setup.exe' | Select-Object -First 1
           if ($null -eq $signedInstaller) {
             throw 'Signed Windows installer was not returned by SignPath.'
           }
 
-          Copy-Item -Path $signedInstaller.FullName -Destination 'dist/orca-windows-setup.exe' -Force
-          & 'node_modules/app-builder-bin/win/x64/app-builder.exe' blockmap --input 'dist/orca-windows-setup.exe' --output 'dist/orca-windows-setup.exe.blockmap'
+          Copy-Item -Path $signedInstaller.FullName -Destination 'dist/sbbgt-windows-setup.exe' -Force
+          & 'node_modules/app-builder-bin/win/x64/app-builder.exe' blockmap --input 'dist/sbbgt-windows-setup.exe' --output 'dist/sbbgt-windows-setup.exe.blockmap'
 
-          $installer = Get-Item 'dist/orca-windows-setup.exe'
-          $blockmap = Get-Item 'dist/orca-windows-setup.exe.blockmap'
+          $installer = Get-Item 'dist/sbbgt-windows-setup.exe'
+          $blockmap = Get-Item 'dist/sbbgt-windows-setup.exe.blockmap'
           $stream = [System.IO.File]::OpenRead($installer.FullName)
           try {
             $sha512 = [System.Security.Cryptography.SHA512]::Create()
@@ -1350,13 +1345,13 @@ jobs:
           $latestYml = $latestYml -replace '(?m)^    blockMapSize: \d+$', "    blockMapSize: $($blockmap.Length)"
           Set-Content -Path 'dist/latest.yml' -Value $latestYml -NoNewline
 
-          Get-Item 'dist/orca-windows-setup.exe', 'dist/orca-windows-setup.exe.blockmap', 'dist/latest.yml'
+          Get-Item 'dist/sbbgt-windows-setup.exe', 'dist/sbbgt-windows-setup.exe.blockmap', 'dist/latest.yml'
 
       - name: Verify signed Windows installer
         if: matrix.platform == 'win'
         shell: pwsh
         run: |
-          $signature = Get-AuthenticodeSignature -FilePath 'dist/orca-windows-setup.exe'
+          $signature = Get-AuthenticodeSignature -FilePath 'dist/sbbgt-windows-setup.exe'
           if ($signature.Status -ne 'Valid') {
             throw ($signature | Format-List * | Out-String)
           }
@@ -1365,19 +1360,17 @@ jobs:
           }
           $signature.SignerCertificate | Format-List Subject,Issuer,NotBefore,NotAfter,Thumbprint
 
-      # Why: evidence gate for inner-binary signing (issue #7785, supersedes
-      # PR #7170's Orca.exe-only gate — this covers every staged .exe/.dll/.node
-      # by extracting the shipped installer). Warn-only until the flow has been
-      # proven on a real release, then flip ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED
-      # to 'true' so unsigned inner binaries block the release.
+      # 内部二进制签名证据门禁覆盖安装器中的全部 .exe/.dll/.node（issue #7785）。
+      # 在真实发布验证前仅告警，验证后可将 SBBGT_WINDOWS_INNER_SIGNATURE_REQUIRED
+      # 设为 true，使未签名内部二进制阻断发布。
       - name: Verify Windows inner binary signatures
         if: matrix.platform == 'win'
         shell: pwsh
         env:
-          ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED: 'false'
+          SBBGT_WINDOWS_INNER_SIGNATURE_REQUIRED: 'false'
           INNER_SIGNING_COMPLETED: ${{ steps.rebuild-nsis-signed.outcome == 'success' }}
         run: |
-          $required = $env:ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED -eq 'true'
+          $required = $env:SBBGT_WINDOWS_INNER_SIGNATURE_REQUIRED -eq 'true'
           if ($env:INNER_SIGNING_COMPLETED -ne 'true') {
             $message = 'Windows inner-binary signing did not complete; this release ships unsigned inner binaries (fail-open, issue #7785).'
             if ($required) { throw $message }
@@ -1396,7 +1389,7 @@ jobs:
             # tree — 7z parses the NSIS exe directly as its embedded payload.
             $7za = 'node_modules/7zip-bin/win/x64/7za.exe'
             New-Item -ItemType Directory -Path inner-evidence-extract -Force | Out-Null
-            & $7za x 'dist/orca-windows-setup.exe' '-oinner-evidence-extract' -y | Out-Null
+            & $7za x 'dist/sbbgt-windows-setup.exe' '-oinner-evidence-extract' -y | Out-Null
 
             $root = Resolve-Path 'inner-evidence-extract'
             # Why elevate.exe is always appended: staging skips already-signed
@@ -1429,7 +1422,7 @@ jobs:
               $failures | ForEach-Object { Write-Host "::warning::$_" }
               $message = "Windows inner-binary evidence gate found $($failures.Count) problems."
               if ($required) { throw $message }
-              Write-Host "::warning::$message Fail-open until ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED is 'true'."
+              Write-Host "::warning::$message Fail-open until SBBGT_WINDOWS_INNER_SIGNATURE_REQUIRED is 'true'."
             } else {
               Write-Host "All $($targets.Count) inner binaries in the shipped installer are signed by SignPath Foundation."
             }
@@ -1442,7 +1435,7 @@ jobs:
         if: always() && matrix.platform == 'win'
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-inner-signing-evidence-${{ needs.cut.outputs.tag }}
+          name: sbbgt-windows-inner-signing-evidence-${{ needs.cut.outputs.tag }}
           path: |
             inner-signing-evidence.txt
             inner-signing-list.txt
@@ -1456,7 +1449,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 30
-          command: gh release upload "${{ needs.cut.outputs.tag }}" "dist/orca-windows-setup.exe" "dist/orca-windows-setup.exe.blockmap" "dist/latest.yml" --clobber --repo "${{ github.repository }}"
+          command: gh release upload "${{ needs.cut.outputs.tag }}" "dist/sbbgt-windows-setup.exe" "dist/sbbgt-windows-setup.exe.blockmap" "dist/latest.yml" --clobber --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

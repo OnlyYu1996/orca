@@ -1,22 +1,16 @@
 name: Homebrew Cask Bump
 
-# Why: keep the stablyai/homebrew-orca tap in sync with GitHub Releases.
-# Triggers:
-#   - workflow_call → release-cut.yml finished publishing a stable tag
-#   - workflow_dispatch → manual backfill for a specific tag
+# 保持当前仓库的 Cask 模板与 GitHub Releases 同步。
+# 触发方式：
+#   - workflow_call：release-cut.yml 完成稳定版发布
+#   - workflow_dispatch：手动回填指定标签
 #
-# The job computes the sha256 of orca-macos-arm64.dmg + orca-macos-x64.dmg
-# from the release, templates the channel-specific cask in this repo with the
-# new version and hashes, then PRs the result into stablyai/homebrew-orca.
-# Stable tags update Casks/orca.rb; RC tags update Casks/orca@rc.rb.
+# 此任务计算 sbbgt-macos-arm64.dmg 和 sbbgt-macos-x64.dmg 的 sha256，
+# 更新当前仓库对应渠道的 Cask 版本与哈希后直接提交。稳定标签更新
+# Casks/orca.rb，RC 标签更新 Casks/orca@rc.rb。
 #
-# Why no `release.published` trigger: other products shipped from this repo
-# (e.g. mobile under `mobile-v*`) also publish GitHub Releases. A blanket
-# `release.published` trigger would fire this workflow for any of them and
-# attempt to download `orca-macos-*.dmg` from a non-desktop release, at
-# best 404ing and at worst (if the filter were weaker) rewriting the cask
-# to a non-desktop version. The tap is only ever bumped by the desktop
-# release pipeline calling this workflow directly.
+# 不使用 release.published，因为移动端也会创建 Release；由桌面发布流水线显式调用，
+# 可避免从非桌面 Release 下载 sbbgt-macos-*.dmg 并误写 Cask。
 
 on:
   workflow_call:
@@ -41,9 +35,9 @@ jobs:
       inputs.tag != '' &&
       startsWith(inputs.tag, 'v')
     permissions:
-      contents: read
+      contents: write
     steps:
-      - name: Checkout orca
+      - name: 检出仓库
         uses: actions/checkout@v6
 
       - name: Resolve tag and version
@@ -101,11 +95,11 @@ jobs:
           mkdir -p dmgs
           gh release download "$TAG" \
             --repo "${{ github.repository }}" \
-            --pattern 'orca-macos-arm64.dmg' \
-            --pattern 'orca-macos-x64.dmg' \
+            --pattern 'sbbgt-macos-arm64.dmg' \
+            --pattern 'sbbgt-macos-x64.dmg' \
             --dir dmgs
-          arm=$(sha256sum dmgs/orca-macos-arm64.dmg | awk '{print $1}')
-          intel=$(sha256sum dmgs/orca-macos-x64.dmg  | awk '{print $1}')
+          arm=$(sha256sum dmgs/sbbgt-macos-arm64.dmg | awk '{print $1}')
+          intel=$(sha256sum dmgs/sbbgt-macos-x64.dmg  | awk '{print $1}')
           echo "arm=$arm"     >>"$GITHUB_OUTPUT"
           echo "intel=$intel" >>"$GITHUB_OUTPUT"
 
@@ -132,68 +126,22 @@ jobs:
           print(src)
           PY
 
-      # Why: reuse the existing buf0-bot GitHub App (also used by
-      # track-community-prs.yaml) instead of minting a new PAT. The app is
-      # installed org-wide, so it has access to stablyai/homebrew-orca
-      # automatically. GITHUB_TOKEN cannot push cross-repo; a short-lived
-      # installation token can.
-      - name: Generate buf0-bot token
-        id: app-token
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id: 2590194
-          private-key: ${{ secrets.BUFO_BOT_PRIVATE_KEY }}
-          owner: stablyai
-          repositories: homebrew-orca
-
-      - name: Checkout tap
-        uses: actions/checkout@v6
-        with:
-          repository: stablyai/homebrew-orca
-          path: tap
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Copy cask into tap and open PR
+      - name: Commit updated cask
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           VERSION: ${{ steps.tag.outputs.version }}
           TAG: ${{ steps.tag.outputs.tag }}
           CASK_PATH: ${{ steps.cask.outputs.path }}
-          BRANCH: ${{ steps.cask.outputs.branch }}
           TITLE: ${{ steps.cask.outputs.title }}
         run: |
           set -euo pipefail
-          mkdir -p "tap/$(dirname "$CASK_PATH")"
-          cp "$CASK_PATH" "tap/$CASK_PATH"
-
-          cd tap
-          # Why: commit author must match the buf0-bot app so commits are
-          # attributed to the bot in the tap's history / PR UI.
-          git config user.name  "buf0-bot[bot]"
-          git config user.email "252831055+buf0-bot[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if git diff --quiet; then
             echo "Cask already up-to-date for $TAG; nothing to do."
             exit 0
           fi
 
-          branch="$BRANCH"
-          git checkout -b "$branch"
           git add "$CASK_PATH"
-          git commit -m "$TITLE"
-          git push -u origin "$branch" --force
-
-          # Why: repeated backfills can race an existing PR branch, so edit
-          # the PR title if creation reports that one already exists.
-          gh pr create \
-            --title "$TITLE" \
-            --body "Automated bump of $CASK_PATH from stablyai/orca release $TAG." \
-            --base main \
-            --head "$branch" \
-            || gh pr edit "$branch" --title "$TITLE"
-
-          # Why: squash-merge immediately rather than --auto. The tap has no
-          # required checks or branch protection, and `gh pr merge --auto`
-          # only activates when there's something to wait on — on a repo
-          # with no gates it silently no-ops, leaving the PR open forever.
-          gh pr merge "$branch" --squash --delete-branch
+          git commit -m "chore(homebrew): $TITLE"
+          git push origin HEAD:main

@@ -13,6 +13,7 @@ function settingsWithTelemetry(telemetry: GlobalSettings['telemetry']): GlobalSe
 // and restore explicitly.
 const ENV_KEYS_UNDER_TEST = [
   'DO_NOT_TRACK',
+  'SBBGT_TELEMETRY_DISABLED',
   'ORCA_TELEMETRY_DISABLED',
   'CI',
   'GITHUB_ACTIONS',
@@ -82,6 +83,22 @@ describe('resolveConsent', () => {
 
   it('returns orca_disabled when ORCA_TELEMETRY_DISABLED=1', () => {
     process.env.ORCA_TELEMETRY_DISABLED = '1'
+    expect(
+      resolveConsent(
+        settingsWithTelemetry({
+          optedIn: true,
+          installId: 'x',
+          existedBeforeTelemetryRelease: false
+        })
+      )
+    ).toEqual({
+      effective: 'disabled',
+      reason: 'orca_disabled'
+    })
+  })
+
+  it('returns orca_disabled when SBBGT_TELEMETRY_DISABLED=1', () => {
+    process.env.SBBGT_TELEMETRY_DISABLED = '1'
     expect(
       resolveConsent(
         settingsWithTelemetry({

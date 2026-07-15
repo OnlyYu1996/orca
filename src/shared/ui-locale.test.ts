@@ -34,14 +34,14 @@ describe('ui-locale', () => {
     expect(normalizeSupportedUiLocale('es')).toBe('es')
   })
 
-  it('falls back unsupported locales to English', () => {
-    expect(normalizeSupportedUiLocale('fr-FR')).toBe('en')
+  it('不支持的语言回退到简体中文', () => {
+    expect(normalizeSupportedUiLocale('fr-FR')).toBe('zh')
   })
 
-  it('does not map Traditional Chinese to Simplified yet', () => {
-    expect(normalizeSupportedUiLocale('zh-TW')).toBe('en')
-    expect(normalizeSupportedUiLocale('zh-HK')).toBe('en')
-    expect(normalizeSupportedUiLocale('zh-Hant')).toBe('en')
+  it('繁体中文在没有专用目录时回退到简体中文', () => {
+    expect(normalizeSupportedUiLocale('zh-TW')).toBe('zh')
+    expect(normalizeSupportedUiLocale('zh-HK')).toBe('zh')
+    expect(normalizeSupportedUiLocale('zh-Hant')).toBe('zh')
   })
 
   it('resolves explicit English independently of system locale', () => {
@@ -70,7 +70,7 @@ describe('ui-locale', () => {
     expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'ko-KR')).toBe('ko')
     expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'ja-JP')).toBe('ja')
     expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'es-MX')).toBe('es')
-    expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'fr-FR')).toBe('en')
+    expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'fr-FR')).toBe('zh')
   })
 
   it('uses renderer system locale only for the system setting', () => {

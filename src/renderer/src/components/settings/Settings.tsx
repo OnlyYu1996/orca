@@ -1520,7 +1520,7 @@ function Settings(): React.JSX.Element {
                   id="servers"
                   title={translate(
                     'auto.components.settings.Settings.bd0181eeca',
-                    'Remote Orca Servers'
+                    'Remote 赛博包工头 Servers'
                   )}
                   badge="Beta"
                   description={

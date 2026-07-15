@@ -32,6 +32,7 @@ import {
   getReleaseDownloadUrl
 } from './updater-prerelease-feed'
 import { fetchNudge, shouldApplyNudge } from './updater-nudge'
+import { PRODUCT_LATEST_RELEASE_DOWNLOAD_URL } from '../shared/product-links'
 
 type CheckFailureSource = 'event' | 'promise' | 'fallback-promise'
 type MissingManifestPrereleaseFallbackResult = { userInitiated: boolean }
@@ -655,9 +656,7 @@ async function performQuitAndInstall(): Promise<void> {
         message: 'Could not start update install'
       }
     )
-    sendErrorStatus(
-      'Could not restart to install the update. Quit and reopen Orca, then try again.'
-    )
+    sendErrorStatus('无法重启并安装更新。请退出并重新打开赛博包工头后重试。')
   }
 }
 
@@ -685,7 +684,7 @@ function handleQuitAndInstallFailure(): boolean {
     level: 'warn',
     message: 'Update install could not start; recovered app state'
   })
-  sendErrorStatus('Could not restart to install the update. Quit and reopen Orca, then try again.')
+  sendErrorStatus('无法重启并安装更新。请退出并重新打开赛博包工头后重试。')
   return true
 }
 
@@ -1026,7 +1025,7 @@ async function pinDefaultReleaseFeed(
   } else {
     clearPrereleaseFallbackContext()
     clearPublishingWindowLastGoodCheck()
-    const url = 'https://github.com/stablyai/orca/releases/latest/download'
+    const url = PRODUCT_LATEST_RELEASE_DOWNLOAD_URL
     console.info(
       `[updater] release feed fallback: current=${currentVersion} includePrerelease=${includePrerelease} → ${url}`
     )
@@ -1413,7 +1412,7 @@ export function setupAutoUpdater(
   // moving /latest redirect changing between check and download.
   autoUpdater.setFeedURL({
     provider: 'generic',
-    url: 'https://github.com/stablyai/orca/releases/latest/download'
+    url: PRODUCT_LATEST_RELEASE_DOWNLOAD_URL
   })
 
   if (autoUpdaterInitialized) {

@@ -81,7 +81,7 @@ function showCliPrerequisiteWarning(status: CliInstallStatus): void {
           status.detail ??
           translate(
             'auto.lib.agent.skill.cli.prerequisite.15cbedc3e3',
-            'Install the Orca CLI before running agent skill setup.'
+            'Install the 赛博包工头 CLI before running agent skill setup.'
           )
       }
     )
@@ -99,7 +99,7 @@ function showCliPrerequisiteWarning(status: CliInstallStatus): void {
           status.detail ??
           translate(
             'auto.lib.agent.skill.cli.prerequisite.15cbedc3e3',
-            'Install the Orca CLI before running agent skill setup.'
+            'Install the 赛博包工头 CLI before running agent skill setup.'
           )
       }
     )

@@ -102,6 +102,11 @@ import {
   resolveAutomationWorkspaceProvenance
 } from '../automations/workspace-provenance'
 import { shouldEmitBoundedWarning } from './bounded-warning-dedupe'
+import {
+  readPreferredProjectConfiguration,
+  readPreferredProjectPrivateFile
+} from '../project-configuration-filesystem'
+import { PRODUCT_PRIVATE_DIRECTORY } from '../../shared/product-identity'
 
 type CreateWorktreeArgsWithSystemProvenance = CreateWorktreeArgs & {
   automationProvenance?: AutomationWorkspaceProvenance
@@ -339,8 +344,9 @@ async function getArchiveHooksForRemoval(repo: Repo): Promise<OrcaHooks | null> 
   }
 
   try {
-    const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
-    const yamlHooks = result.isBinary ? null : parseOrcaYaml(result.content)
+    const preferred = await readPreferredProjectConfiguration(fsProvider, repo.path)
+    const yamlHooks =
+      !preferred || preferred.result.isBinary ? null : parseOrcaYaml(preferred.result.content)
     return getEffectiveHooksFromConfig(repo, yamlHooks)
   } catch {
     return getEffectiveHooksFromConfig(repo, null)
@@ -2137,7 +2143,16 @@ export function registerWorktreeHandlers(
           return { status: 'error', hasHooks: false, hooks: null, mayNeedUpdate: false }
         }
         try {
-          const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
+          const preferred = await readPreferredProjectConfiguration(fsProvider, repo.path)
+          if (!preferred) {
+            return {
+              status: 'ok',
+              hasHooks: false,
+              hooks: null,
+              mayNeedUpdate: false
+            }
+          }
+          const result = preferred.result
           return {
             status: 'ok',
             hasHooks: !result.isBinary,
@@ -2261,7 +2276,10 @@ export function registerWorktreeHandlers(
       }
     }
     if (repo.connectionId) {
-      const issueCommandPath = joinWorktreeRelativePath(repo.path, '.orca/issue-command')
+      const issueCommandPath = joinWorktreeRelativePath(
+        repo.path,
+        `${PRODUCT_PRIVATE_DIRECTORY}/issue-command`
+      )
       const fsProvider = getSshFilesystemProvider(repo.connectionId)
       if (!fsProvider) {
         return {
@@ -2278,18 +2296,24 @@ export function registerWorktreeHandlers(
       let localContent: string | null = null
       let sharedContent: string | null = null
       try {
-        const result = await fsProvider.readFile(issueCommandPath)
-        localContent = result.isBinary ? null : result.content.trim() || null
+        const preferred = await readPreferredProjectPrivateFile(
+          fsProvider,
+          repo.path,
+          'issue-command'
+        )
+        localContent =
+          !preferred || preferred.result.isBinary ? null : preferred.result.content.trim() || null
       } catch (error) {
         if (!isENOENT(error)) {
           status = 'error'
         }
       }
       try {
-        const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
-        sharedContent = result.isBinary
-          ? null
-          : parseOrcaYaml(result.content)?.issueCommand?.trim() || null
+        const preferred = await readPreferredProjectConfiguration(fsProvider, repo.path)
+        sharedContent =
+          !preferred || preferred.result.isBinary
+            ? null
+            : parseOrcaYaml(preferred.result.content)?.issueCommand?.trim() || null
       } catch (error) {
         if (!isENOENT(error)) {
           status = 'error'
@@ -2320,7 +2344,10 @@ export function registerWorktreeHandlers(
         return
       }
       if (repo.connectionId) {
-        const issueCommandPath = joinWorktreeRelativePath(repo.path, '.orca/issue-command')
+        const issueCommandPath = joinWorktreeRelativePath(
+          repo.path,
+          `${PRODUCT_PRIVATE_DIRECTORY}/issue-command`
+        )
         const fsProvider = getSshFilesystemProvider(repo.connectionId)
         if (!fsProvider) {
           throw new Error(
@@ -2336,19 +2363,24 @@ export function registerWorktreeHandlers(
           })
           return
         }
-        await fsProvider.createDir(joinWorktreeRelativePath(repo.path, '.orca'))
+        await fsProvider.createDir(joinWorktreeRelativePath(repo.path, PRODUCT_PRIVATE_DIRECTORY))
         const gitignorePath = joinWorktreeRelativePath(repo.path, '.gitignore')
         try {
           const result = await fsProvider.readFile(gitignorePath)
-          if (!result.isBinary && !/^\.orca\/?$/m.test(result.content)) {
+          const ignoredDirectory = PRODUCT_PRIVATE_DIRECTORY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+          const ignoredDirectoryPattern = new RegExp(`^${ignoredDirectory}\\/?$`, 'm')
+          if (!result.isBinary && !ignoredDirectoryPattern.test(result.content)) {
             const separator = result.content.endsWith('\n') ? '' : '\n'
-            await fsProvider.writeFile(gitignorePath, `${result.content}${separator}.orca\n`)
+            await fsProvider.writeFile(
+              gitignorePath,
+              `${result.content}${separator}${PRODUCT_PRIVATE_DIRECTORY}\n`
+            )
           }
         } catch (error) {
           if (!isENOENT(error)) {
             throw error
           }
-          await fsProvider.writeFile(gitignorePath, '.orca\n')
+          await fsProvider.writeFile(gitignorePath, `${PRODUCT_PRIVATE_DIRECTORY}\n`)
         }
         await fsProvider.writeFile(issueCommandPath, `${trimmed}\n`)
         return

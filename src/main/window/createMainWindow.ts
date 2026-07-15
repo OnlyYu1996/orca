@@ -23,6 +23,7 @@ import {
 } from '../../shared/browser-url'
 import { ORCA_BROWSER_GUEST_WEB_PREFERENCES } from '../../shared/browser-guest-web-preferences'
 import { isCrashReportReason } from '../../shared/crash-reporting'
+import { PRODUCT_DISPLAY_NAME } from '../../shared/product-identity'
 import {
   DEFAULT_RENDERER_RECOVERY_MAX_RECOVERIES,
   DEFAULT_RENDERER_RECOVERY_WINDOW_MS,
@@ -238,7 +239,7 @@ export function createMainWindow(
     ...(savedBounds ? { x: savedBounds.x, y: savedBounds.y } : {}),
     minWidth: MIN_WIDTH,
     minHeight: MIN_HEIGHT,
-    title: opts?.title ?? 'Orca',
+    title: opts?.title ?? PRODUCT_DISPLAY_NAME,
     show: false,
     // Why: macOS swallows the app-activating click by default, so clicking
     // back into Orca (e.g. the floating workspace) needed a second click.
@@ -1046,10 +1047,10 @@ export function createMainWindow(
     if (store.getUI().trayMinimizeNoticeShown !== true) {
       try {
         new Notification({
-          title: 'Orca',
+          title: PRODUCT_DISPLAY_NAME,
           body: translateMain(
             'tray.minimizeNotice.body',
-            'Orca is still running in the system tray'
+            `${PRODUCT_DISPLAY_NAME}仍在系统托盘中运行`
           )
         }).show()
       } catch {

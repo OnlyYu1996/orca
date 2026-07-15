@@ -1,9 +1,9 @@
 ---
 name: sync-orca-upstream
-description: 为当前 Orca Fork 审计、规划并安全同步官方 stablyai/orca 上游。用户要求检查上游差异、记录同步节点、评估 Fork 偏移、制定 merge/rebase 方案、执行上游同步或处理同步冲突时使用。
+description: 为“赛博包工头”Fork 审计、规划并安全同步官方 stablyai/orca 上游，同时保护中文品牌、产品身份、兼容迁移与自有发布链。用户要求检查上游差异、记录同步节点、评估 Fork 偏移、制定 merge/rebase 方案、执行上游同步或处理同步冲突时使用。
 ---
 
-# 同步 Orca 上游
+# 同步赛博包工头的 Orca 上游
 
 ## 目标
 
@@ -14,6 +14,7 @@ description: 为当前 Orca Fork 审计、规划并安全同步官方 stablyai/o
 1. 仓库根目录的 `AGENTS.md`。
 2. [references/repository-baseline.md](references/repository-baseline.md) 中的初始节点。
 3. [docs/reference/secondary-development-architecture-baseline.md](../../docs/reference/secondary-development-architecture-baseline.md) 中与改动相关的运行域。
+4. [docs/reference/cyber-foreman-localization-brand-migration.md](../../docs/reference/cyber-foreman-localization-brand-migration.md) 中的品牌与兼容边界。
 
 ## 固定身份
 
@@ -115,19 +116,34 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 
 同步前按以下边界汇总变更和冲突，不能只按文件数量判断风险：
 
-| 分区 | 重点检查 |
-| --- | --- |
-| Shared Protocol | Schema、序列化、事件、版本协商、ExecutionHostId |
-| Preload / IPC | 权限桥、Channel、参数校验、Renderer 暴露面 |
-| Main / Runtime | 服务组合、生命周期、RPC 路由、资源所有权 |
-| SSH / Relay | 远端部署、Provider 路由、版本差异、断线恢复 |
-| Terminal | PTY Daemon、快照、重连、终端状态所有权 |
-| Persistence | Profile、迁移、兼容读取、写入顺序 |
-| Renderer | Store、路由、状态恢复、设计系统 |
-| Mobile / Web / CLI | 协议兼容、配对、E2EE、输出契约 |
-| Build / Release | Node/Electron、原生模块、打包、签名、CI |
+| 分区                 | 重点检查                                                     |
+| -------------------- | ------------------------------------------------------------ |
+| Shared Protocol      | Schema、序列化、事件、版本协商、ExecutionHostId              |
+| Preload / IPC        | 权限桥、Channel、参数校验、Renderer 暴露面                   |
+| Main / Runtime       | 服务组合、生命周期、RPC 路由、资源所有权                     |
+| SSH / Relay          | 远端部署、Provider 路由、版本差异、断线恢复                  |
+| Terminal             | PTY Daemon、快照、重连、终端状态所有权                       |
+| Persistence          | Profile、迁移、兼容读取、写入顺序                            |
+| Renderer             | Store、路由、状态恢复、设计系统                              |
+| Mobile / Web / CLI   | 协议兼容、配对、E2EE、输出契约                               |
+| Build / Release      | Node/Electron、原生模块、打包、签名、CI                      |
+| Brand / Localization | 产品身份、中文目录、图标、链接、遥测关闭策略、旧品牌兼容读取 |
 
 特别检查二开代码是否修改了上游高频变动文件。若同一职责同时存在于 Main、Runtime 和 Relay，不得只修其中一个运行域。
+
+## 品牌保护边界
+
+同步冲突涉及以下文件或职责时，不得直接采用上游版本覆盖：
+
+- `src/shared/product-identity.json`、`src/shared/product-identity.ts`、`src/shared/product-links.ts`：产品身份和自有仓库链接单一来源。
+- `src/main/startup/product-storage-migration.ts`、Persistence、Profile、Runtime 元数据：新路径优先、旧 `orca` 数据兼容读取且不删除。
+- `src/renderer/src/i18n/`、`mobile/src/i18n/`、Main i18n：默认简体中文并保留英文切换。
+- `config/electron-builder.config.cjs`、`resources/brand/`、`mobile/assets/`：AppID、产物名、启动器和图标。
+- `.github/workflows/release-*.yml`、`homebrew-bump.yml`、移动端发布工作流：只能发布到 `OnlyYu1996/orca`。
+- Updater、Feedback、Diagnostics、Telemetry、Cloud、社群和商店入口：未配置自有服务时必须关闭，不能回退上游服务。
+- `README.md`、CLI Help、macOS Computer Use：用户可见名称使用“赛博包工头”，主机器标识使用 `sbbgt`。
+
+旧 `orca` CLI、Scheme、配置、路径、Bundle ID 和 `ORCA_*` 只允许存在于明确兼容读取、旧启动器代理、测试 Fixture、许可证归属或上游证据中。同步完成后必须运行品牌边界审计，禁止引入新的旧标识写入。
 
 ## 验证与记录
 
@@ -138,6 +154,8 @@ rtk node skills/sync-orca-upstream/scripts/audit-upstream.mjs --sync-ready
 3. SSH、WSL、Remote Runtime 相关变更的远端路径验证。
 4. Renderer 变更遵循 `docs/STYLEGUIDE.md`，并执行针对性的交互验证。
 5. Git 行为覆盖 Git 2.25 基线和不同执行 Host 的 Capability Cache。
+6. `pnpm run verify:brand-boundaries`，确认上游改动没有恢复旧品牌和上游服务入口。
+7. Desktop Release、Mobile、CLI 和存储迁移的专项测试。
 
 同步成功后，在 [references/repository-baseline.md](references/repository-baseline.md) 的“同步历史”追加一条记录，至少包含：
 

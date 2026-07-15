@@ -18,6 +18,7 @@ import {
   runEphemeralVmRecipeStart
 } from '../../shared/ephemeral-vm-recipe-runner'
 import type { OrcaVmRecipe } from '../../shared/types'
+import { LEGACY_PRODUCT_IDENTITY, PRODUCT_PROJECT_CONFIG_FILE } from '../../shared/product-identity'
 
 export const VM_HANDLERS: Record<string, CommandHandler> = {
   'vm recipe doctor': async ({ flags, cwd, json }) => {
@@ -42,8 +43,8 @@ export const VM_HANDLERS: Record<string, CommandHandler> = {
 }
 
 function doctorRecipe(repoPath: string, recipeId: string): DoctorResult {
-  const yamlPath = join(repoPath, 'orca.yaml')
-  if (!existsSync(yamlPath)) {
+  const yamlPath = resolveProjectConfigurationPath(repoPath)
+  if (!yamlPath) {
     return {
       recipeId,
       repoPath,
@@ -52,8 +53,8 @@ function doctorRecipe(repoPath: string, recipeId: string): DoctorResult {
         {
           id: 'orca_yaml.exists',
           status: 'fail',
-          message: `No orca.yaml found at ${yamlPath}`,
-          remediation: 'Add environmentRecipes to the repo orca.yaml.'
+          message: `在 ${repoPath} 中未找到 ${PRODUCT_PROJECT_CONFIG_FILE}。`,
+          remediation: `请在仓库的 ${PRODUCT_PROJECT_CONFIG_FILE} 中添加 environmentRecipes。`
         }
       ]
     }
@@ -63,8 +64,10 @@ function doctorRecipe(repoPath: string, recipeId: string): DoctorResult {
   const parseCheck: EphemeralVmRecipeDoctorCheck = {
     id: 'orca_yaml.parse',
     status: hooks ? 'pass' : 'fail',
-    message: hooks ? 'orca.yaml parsed successfully.' : 'orca.yaml has no supported Orca config.',
-    ...(hooks ? {} : { remediation: 'Add an environmentRecipes entry to orca.yaml.' })
+    message: hooks ? `${yamlPath} 解析成功。` : `${yamlPath} 中没有受支持的赛博包工头配置。`,
+    ...(hooks
+      ? {}
+      : { remediation: `请在 ${PRODUCT_PROJECT_CONFIG_FILE} 中添加 environmentRecipes。` })
   }
   const result = doctorEphemeralVmRecipe({
     repoPath,
@@ -81,6 +84,15 @@ function doctorRecipe(repoPath: string, recipeId: string): DoctorResult {
 
 function readTextFile(path: string): string {
   return readFileSync(path, 'utf8')
+}
+
+function resolveProjectConfigurationPath(repoPath: string): string | null {
+  const currentPath = join(repoPath, PRODUCT_PROJECT_CONFIG_FILE)
+  if (existsSync(currentPath)) {
+    return currentPath
+  }
+  const legacyPath = join(repoPath, LEGACY_PRODUCT_IDENTITY.projectConfigFile)
+  return existsSync(legacyPath) ? legacyPath : null
 }
 
 // Why: give the agent the full create/destroy output so it can self-diagnose a
@@ -259,7 +271,11 @@ function buildProvisionFailureRemediation(stderr: string, stdout: string): strin
 }
 
 function loadRecipe(repoPath: string, recipeId: string): OrcaVmRecipe | null {
-  const hooks = parseOrcaYaml(readTextFile(join(repoPath, 'orca.yaml')))
+  const yamlPath = resolveProjectConfigurationPath(repoPath)
+  if (!yamlPath) {
+    return null
+  }
+  const hooks = parseOrcaYaml(readTextFile(yamlPath))
   return hooks?.environmentRecipes?.find((entry) => entry.id === recipeId) ?? null
 }
 

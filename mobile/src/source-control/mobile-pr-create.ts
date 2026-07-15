@@ -37,7 +37,7 @@ export function getMobilePrCreateSuccessWarning(
       : `${copy.titleLabel} is already open.`
   }
   if (outcome.linkError) {
-    return `${copy.titleLabel} created, but Orca could not refresh it yet.`
+    return `${copy.titleLabel} 已创建，但赛博包工头暂时无法刷新。`
   }
   return undefined
 }

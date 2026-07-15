@@ -79,7 +79,7 @@ export function resolveConsent(settings: GlobalSettings): ConsentState {
     return { effective: 'disabled', reason: 'do_not_track' }
   }
   // Precedence 2: product-specific kill switch.
-  if (isEnvVarTruthy('ORCA_TELEMETRY_DISABLED')) {
+  if (isEnvVarTruthy('SBBGT_TELEMETRY_DISABLED') || isEnvVarTruthy('ORCA_TELEMETRY_DISABLED')) {
     return { effective: 'disabled', reason: 'orca_disabled' }
   }
   // Precedence 3: CI detection. Any presence (not just truthy) counts — many

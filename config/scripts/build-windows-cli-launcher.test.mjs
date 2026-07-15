@@ -14,7 +14,11 @@ describe('Windows CLI launcher', () => {
     try {
       const result = spawnSync(
         process.execPath,
-        ['config/scripts/build-windows-cli-launcher.mjs', '--output', join(outputRoot, 'orca.exe')],
+        [
+          'config/scripts/build-windows-cli-launcher.mjs',
+          '--output',
+          join(outputRoot, 'sbbgt.exe')
+        ],
         { cwd: projectRoot, encoding: 'utf8' }
       )
 
@@ -30,11 +34,11 @@ describe('Windows CLI launcher', () => {
     const appRoot = mkdtempSync(join(tmpdir(), 'orca cli launcher '))
     try {
       const resourcesPath = join(appRoot, 'resources')
-      const launcherPath = join(resourcesPath, 'bin', 'orca.exe')
+      const launcherPath = join(resourcesPath, 'bin', 'sbbgt.exe')
       const cliPath = join(resourcesPath, 'app.asar.unpacked', 'out', 'cli', 'index.js')
       mkdirSync(join(resourcesPath, 'bin'), { recursive: true })
       mkdirSync(dirname(cliPath), { recursive: true })
-      copyFileSync(process.execPath, join(appRoot, 'Orca.exe'))
+      copyFileSync(process.execPath, join(appRoot, 'sbbgt.exe'))
       writeFileSync(
         cliPath,
         `process.stdout.write(JSON.stringify({

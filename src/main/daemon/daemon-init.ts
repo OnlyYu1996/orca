@@ -331,6 +331,7 @@ function createOutOfProcessLauncher(runtimeDir: string): DaemonLauncher {
           ELECTRON_RUN_AS_NODE: '1',
           // Why: the detached daemon is plain Node and cannot call Electron's
           // app.getPath(), but shell-ready rcfiles must live outside swept tmp.
+          SBBGT_USER_DATA_PATH: userDataPath,
           ORCA_USER_DATA_PATH: userDataPath
         }
       }

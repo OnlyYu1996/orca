@@ -11,7 +11,7 @@ import {
 export const SUPPORTED_UI_LOCALES = ['en', 'zh', 'ko', 'ja', 'es'] as const
 export type SupportedUiLocale = (typeof SUPPORTED_UI_LOCALES)[number]
 
-export const DEFAULT_UI_LOCALE: SupportedUiLocale = 'en'
+export const DEFAULT_UI_LOCALE: SupportedUiLocale = 'zh'
 
 function normalizeLocaleTag(locale: string | undefined): string {
   return (locale ?? DEFAULT_UI_LOCALE).trim().toLowerCase().replace(/_/g, '-')
@@ -36,7 +36,7 @@ export function resolveUiLocale(
   systemLocale: string | undefined = DEFAULT_UI_LOCALE
 ): SupportedUiLocale {
   if (language === UI_LANGUAGE_ENGLISH) {
-    return DEFAULT_UI_LOCALE
+    return 'en'
   }
   if (language === UI_LANGUAGE_CHINESE) {
     return 'zh'

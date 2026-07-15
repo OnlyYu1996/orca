@@ -7,6 +7,7 @@ vi.mock('electron', () => ({
 }))
 
 import { fetchChangelog } from './updater-changelog'
+import { PRODUCT_CHANGELOG_URL } from '../shared/product-links'
 
 function jsonResponse(body: unknown): Response {
   return { ok: true, json: () => Promise.resolve(body) } as unknown as Response
@@ -33,6 +34,7 @@ function makeEntries(
 describe('fetchChangelog', () => {
   beforeEach(() => {
     fetchMock.mockReset()
+    process.env.SBBGT_CHANGELOG_JSON_URL = 'https://example.test/changelog.json'
   })
 
   it('returns exact match when the incoming version has rich content', async () => {
@@ -76,7 +78,7 @@ describe('fetchChangelog', () => {
     expect(result!.release.title).toBe('Release 1.1.17')
     expect(result!.release.description).toBe('Cool feature')
     // Why: fallback entries link to the generic changelog, not a version-specific page.
-    expect(result!.release.releaseNotesUrl).toBe('https://onorca.dev/changelog')
+    expect(result!.release.releaseNotesUrl).toBe(PRODUCT_CHANGELOG_URL)
     expect(result!.releasesBehind).toBe(2)
   })
 
@@ -98,7 +100,7 @@ describe('fetchChangelog', () => {
 
     expect(result).not.toBeNull()
     expect(result!.release.title).toBe('Release 1.1.17')
-    expect(result!.release.releaseNotesUrl).toBe('https://onorca.dev/changelog')
+    expect(result!.release.releaseNotesUrl).toBe(PRODUCT_CHANGELOG_URL)
     // releasesBehind is from local (index 2) to incoming (index 0) = 2
     expect(result!.releasesBehind).toBe(2)
   })
@@ -168,7 +170,7 @@ describe('fetchChangelog', () => {
 
     expect(result).not.toBeNull()
     expect(result!.release.title).toBe('Release 1.1.18')
-    expect(result!.release.releaseNotesUrl).toBe('https://onorca.dev/changelog')
+    expect(result!.release.releaseNotesUrl).toBe(PRODUCT_CHANGELOG_URL)
   })
 
   it('shows rich entry when local version is not in JSON (very old user)', async () => {
@@ -186,7 +188,7 @@ describe('fetchChangelog', () => {
 
     expect(result).not.toBeNull()
     expect(result!.release.title).toBe('Release 1.1.17')
-    expect(result!.release.releaseNotesUrl).toBe('https://onorca.dev/changelog')
+    expect(result!.release.releaseNotesUrl).toBe(PRODUCT_CHANGELOG_URL)
     // releasesBehind is null because the local version isn't in the JSON.
     expect(result!.releasesBehind).toBeNull()
   })

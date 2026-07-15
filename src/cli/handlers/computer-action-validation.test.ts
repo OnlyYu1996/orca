@@ -66,7 +66,7 @@ describe('orca computer action CLI validation', () => {
     expect(output).toContain(
       'Computer-use targeting accepts either --session or --worktree, not both'
     )
-    expect(output).toContain('Next step: Do not retry the same command unchanged.')
+    expect(output).toContain('下一步：Do not retry the same command unchanged.')
     expect(process.exitCode).toBe(1)
   })
 
@@ -246,10 +246,10 @@ describe('orca computer action CLI validation', () => {
       'Invalid positive integer for --click-count'
     )
     expect(vi.mocked(console.error).mock.calls[0][0]).toContain(
-      'Next step: Fix the command flags or RPC params exactly as described by the error message.'
+      '下一步：Fix the command flags or RPC params exactly as described by the error message.'
     )
     expect(vi.mocked(console.error).mock.calls[0][0]).toContain(
-      'Next step: Do not retry the same command unchanged.'
+      '下一步：Do not retry the same command unchanged.'
     )
     expect(process.exitCode).toBe(1)
   })

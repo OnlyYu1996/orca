@@ -7,6 +7,7 @@ import { isAbsolute, join } from 'node:path'
 import os from 'node:os'
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { electronApp, is } from '@electron-toolkit/utils'
+import { PRODUCT_DISPLAY_NAME } from '../shared/product-identity'
 import * as QRCode from 'qrcode'
 import {
   Store,
@@ -61,6 +62,7 @@ import {
   installDevParentWatchdog,
   installUncaughtPipeErrorGuard,
   isDevParentShutdownRequested,
+  migrateLegacyProductUserData,
   patchPackagedProcessPath,
   shouldInstallManagedHooks
 } from './startup/configure-process'
@@ -430,6 +432,7 @@ if (app.isPackaged && process.platform !== 'win32') {
   })
 }
 configureDevUserDataPath(is.dev)
+migrateLegacyProductUserData(is.dev)
 configureOrcaUserDataPathEnv()
 
 // Why: just past createMainWindow's 10s ready-to-show reveal fallback,
@@ -1128,12 +1131,12 @@ async function presentRendererRecoveryPrompt(recentRecoveryCount: number): Promi
   const window = mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined
   const options = {
     type: 'error' as const,
-    buttons: ['Reload', 'Quit'],
+    buttons: ['重新加载', '退出'],
     defaultId: 0,
     cancelId: 1,
-    title: 'Orca keeps failing to load',
-    message: 'The app window crashed repeatedly and stopped reloading automatically.',
-    detail: `Orca tried to recover ${recentRecoveryCount} times in a row without success. This is often a graphics-driver or installation problem. Reload to try again, or quit and relaunch Orca.`
+    title: `${PRODUCT_DISPLAY_NAME}多次加载失败`,
+    message: '应用窗口连续崩溃，已停止自动重新加载。',
+    detail: `${PRODUCT_DISPLAY_NAME}已连续尝试恢复 ${recentRecoveryCount} 次但均未成功。这通常与显卡驱动或安装文件有关。可重新加载后重试，或退出并重新启动应用。`
   }
   const { response } = window
     ? await dialog.showMessageBox(window, options)
@@ -1405,7 +1408,7 @@ async function printServeReady(options: ServeOptions): Promise<void> {
     )
     return
   }
-  console.log(`Orca server ready: ${endpoint ?? 'websocket unavailable'}`)
+  console.log(`${PRODUCT_DISPLAY_NAME}服务器已就绪：${endpoint ?? 'WebSocket 不可用'}`)
   if (pairing.available) {
     if (pairing.webClientUrl) {
       console.log(`Web client URL: ${pairing.webClientUrl}`)

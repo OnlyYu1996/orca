@@ -1,8 +1,6 @@
-name: Mobile iOS Release
+name: 赛博包工头 iOS 发布
 
-# Why a separate workflow from Android: iOS releases go through App Store
-# review, which can take days. Decoupling the triggers lets an Android release
-# ship immediately without waiting on iOS, and vice versa.
+# iOS 与 Android 分开发布，避免 App Store 审核阻塞 Android 产物。
 on:
   push:
     tags:
@@ -10,25 +8,22 @@ on:
   workflow_dispatch:
     inputs:
       bump_patch_version:
-        description: 'Bump the iOS marketing version patch number before release. Tick this after a version has shipped to the App Store (the release fails fast if the current version''s train is already closed).'
+        description: '发布前递增 iOS 补丁版本；当前版本已发布到 App Store 后启用。'
         required: false
         default: false
         type: boolean
       release_version:
-        description: 'Optional exact iOS marketing version override, e.g. 0.0.15'
+        description: '可选：精确指定 iOS 版本，例如 0.0.15'
         required: false
         type: string
       testflight_changelog:
-        description: 'Optional TestFlight external tester changelog'
+        description: '可选：TestFlight 外部测试更新说明'
         required: false
         type: string
 
 jobs:
   ios-build:
-    # GitHub-hosted macOS runner: required for Xcode. Expo SDK 55's
-    # expo-modules-core declares swift_version 6.0 and uses Swift 6 syntax
-    # (@MainActor isolation). Xcode 16.x (macos-15) can't even parse it
-    # ("unknown attribute 'MainActor'"), so we need Xcode 26.x → macos-26.
+    # Expo SDK 55 依赖 Swift 6 语法，因此使用带 Xcode 26.x 的 macos-26 Runner。
     runs-on: macos-26
 
     defaults:
@@ -36,36 +31,36 @@ jobs:
         working-directory: mobile
 
     steps:
-      - name: Checkout
+      - name: 检出代码
         uses: actions/checkout@v6
 
-      - name: Select Xcode
+      - name: 选择 Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # Xcode 26.x ships the Swift 6.x toolchain Expo SDK 55 requires.
+          # Xcode 26.x 提供 Expo SDK 55 所需的 Swift 6.x 工具链。
           xcode-version: '26.5'
 
-      - name: Setup Node.js
+      - name: 配置 Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - name: Setup pnpm
+      - name: 配置 pnpm
         uses: pnpm/action-setup@v6
         with:
           run_install: false
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: Setup Ruby and fastlane
+      - name: 配置 Ruby 和 fastlane
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
           bundler-cache: true
           working-directory: mobile
 
-      - name: Resolve release version and build number
+      - name: 解析发布版本和构建号
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
@@ -76,28 +71,23 @@ jobs:
           FASTLANE_HIDE_CHANGELOG: '1'
         run: bundle exec fastlane ios prepare_release_version version:"$MOBILE_IOS_RELEASE_VERSION" bump_patch:"$MOBILE_IOS_BUMP_PATCH_VERSION"
 
-      - name: Expo prebuild
+      - name: 生成 Expo iOS 工程
         run: npx expo prebuild --platform ios --no-install
 
-      - name: Install CocoaPods
+      - name: 安装 CocoaPods
         run: npx pod-install ios
 
-      # Why: `-allowProvisioningUpdates` + the App Store Connect API key can
-      # create/refresh provisioning profiles, but it cannot recreate the
-      # distribution certificate's PRIVATE KEY across runs. So we import a
-      # pre-exported distribution .p12 (created once via Apple Developer) into a
-      # throwaway keychain. The keychain is ephemeral to the runner and torn
-      # down with the VM; nothing secret is written to the repo.
-      - name: Import distribution certificate
+      # App Store Connect API Key 无法重建分发证书私钥，因此将预导出的 .p12 导入临时钥匙串。
+      - name: 导入分发证书
         env:
           IOS_DIST_CERT_P12: ${{ secrets.IOS_DIST_CERT_P12 }}
           IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
         run: |
           set -euo pipefail
-          KEYCHAIN_PATH="$RUNNER_TEMP/orca-signing.keychain-db"
-          # Random per-run keychain password; never persisted.
+          KEYCHAIN_PATH="$RUNNER_TEMP/sbbgt-signing.keychain-db"
+          # 每次运行生成随机密码，不持久化。
           KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
-          CERT_PATH="$RUNNER_TEMP/orca-dist-cert.p12"
+          CERT_PATH="$RUNNER_TEMP/sbbgt-dist-cert.p12"
 
           echo "$IOS_DIST_CERT_P12" | base64 --decode > "$CERT_PATH"
 
@@ -106,29 +96,29 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security import "$CERT_PATH" -P "$IOS_DIST_CERT_PASSWORD" \
             -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          # Allow codesign/xcodebuild to use the key without an interactive prompt.
+          # 允许 codesign/xcodebuild 无交互使用私钥。
           security set-key-partition-list -S apple-tool:,apple: \
             -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
-          # Put our keychain in the search list so xcodebuild can find the identity.
+          # 将临时钥匙串加入搜索列表，供 xcodebuild 查找签名身份。
           security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
           rm -f "$CERT_PATH"
 
-      - name: Build and upload to TestFlight
+      - name: 构建并上传 TestFlight
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TESTFLIGHT_CHANGELOG: ${{ github.event.inputs.testflight_changelog }}
-          # Keep fastlane non-interactive and quiet about analytics in CI.
+          # CI 中保持 fastlane 非交互并关闭更新说明。
           FASTLANE_SKIP_UPDATE_CHECK: '1'
           FASTLANE_HIDE_CHANGELOG: '1'
         run: bundle exec fastlane ios release
 
-      - name: Upload .ipa artifact
+      - name: 上传 IPA 产物
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: orca-mobile-ipa
+          name: sbbgt-mobile-ipa
           path: mobile/build/*.ipa
           if-no-files-found: ignore

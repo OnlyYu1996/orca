@@ -16,9 +16,9 @@ async function makeFixture(): Promise<{ userDataPath: string; resourcesPath: str
   const root = await mkdtemp(join(tmpdir(), 'orca-terminal-cli-shim-'))
   created.push(root)
   const resourcesPath = join(root, 'resources')
-  // The bundled orca-ide launcher must exist for the shim to be written.
+  // 原因：旧命令兼容层必须最终代理到已打包的 sbbgt 主启动器。
   mkdirSync(join(resourcesPath, 'bin'), { recursive: true })
-  writeFileSync(join(resourcesPath, 'bin', 'orca-ide'), '#!/usr/bin/env bash\n', 'utf8')
+  writeFileSync(join(resourcesPath, 'bin', 'sbbgt'), '#!/usr/bin/env bash\n', 'utf8')
   return { userDataPath: join(root, 'user-data'), resourcesPath }
 }
 
@@ -27,7 +27,7 @@ afterEach(async () => {
 })
 
 describe('ensureLinuxTerminalOrcaCliShimDir', () => {
-  it('writes an executable bare-orca shim that execs the bundled orca-ide launcher', async () => {
+  it('writes an executable bare-orca shim that execs the bundled sbbgt launcher', async () => {
     const { userDataPath, resourcesPath } = await makeFixture()
 
     const shimDir = ensureLinuxTerminalOrcaCliShimDir({
@@ -38,8 +38,8 @@ describe('ensureLinuxTerminalOrcaCliShimDir', () => {
 
     expect(shimDir).toBe(join(userDataPath, 'linux-orca-cli-shim'))
     const content = readFileSync(join(shimDir!, 'orca'), 'utf8')
-    // Single-quoted so a resources path with shell metacharacters can't break out.
-    expect(content).toContain(`exec '${join(resourcesPath, 'bin', 'orca-ide')}' "$@"`)
+    // 原因：单引号防止资源路径中的 Shell 元字符逃逸命令。
+    expect(content).toContain(`exec '${join(resourcesPath, 'bin', 'sbbgt')}' "$@"`)
     const mode = statSync(join(shimDir!, 'orca')).mode & 0o777
     expect(mode & 0o111).not.toBe(0)
   })
@@ -72,7 +72,7 @@ describe('ensureLinuxTerminalOrcaCliShimDir', () => {
     })
     expect(healed).not.toBeNull()
     const healedPath = join(healed!, 'orca')
-    expect(readFileSync(healedPath, 'utf8')).toContain('orca-ide')
+    expect(readFileSync(healedPath, 'utf8')).toContain('sbbgt')
     expect(statSync(healedPath).mode & 0o111).not.toBe(0)
   })
 
@@ -107,7 +107,7 @@ describe('ensureLinuxTerminalOrcaCliShimDir', () => {
     // userData path succeeds — proving failures are not cached.
     const resourcesPath = join(root, 'resources')
     mkdirSync(join(resourcesPath, 'bin'), { recursive: true })
-    writeFileSync(join(resourcesPath, 'bin', 'orca-ide'), '#!/usr/bin/env bash\n', 'utf8')
+    writeFileSync(join(resourcesPath, 'bin', 'sbbgt'), '#!/usr/bin/env bash\n', 'utf8')
     const recovered = ensureLinuxTerminalOrcaCliShimDir({
       userDataPath,
       resourcesPath,

@@ -1,6 +1,9 @@
 import type { DeviceScope } from '../../../shared/runtime-types'
+import { LEGACY_PRODUCT_IDENTITY, PRODUCT_URL_SCHEME } from '../../../shared/product-identity'
 
 const PAIRING_OFFER_VERSION = 2
+const PAIRING_SCHEMES = [PRODUCT_URL_SCHEME, LEGACY_PRODUCT_IDENTITY.urlScheme] as const
+const PAIRING_PROTOCOLS = new Set(PAIRING_SCHEMES.map((scheme) => `${scheme}:`))
 
 export type WebPairingOffer = {
   v: typeof PAIRING_OFFER_VERSION
@@ -22,7 +25,7 @@ export function parseWebPairingInput(input: string): WebPairingOffer | null {
   }
 
   try {
-    if (trimmed.toLowerCase().startsWith('orca://')) {
+    if (PAIRING_SCHEMES.some((scheme) => trimmed.toLowerCase().startsWith(`${scheme}://`))) {
       const code = extractPairingCodeFromUrl(trimmed)
       return code ? decodePairingPayload(code) : null
     }
@@ -45,7 +48,7 @@ export function readPairingInputFromLocation(location: Location): string | null 
   if (!hash) {
     return null
   }
-  if (hash.startsWith('orca://pair')) {
+  if (PAIRING_SCHEMES.some((scheme) => hash.toLowerCase().startsWith(`${scheme}://pair`))) {
     return hash
   }
   const hashParams = new URLSearchParams(hash)
@@ -121,7 +124,7 @@ function extractPairingCodeFromUrl(url: string): string | null {
   }
   // Why: prefix checks accepted routes like `orca://pairing?...`; only the
   // pairing deep-link host may carry runtime auth material.
-  if (parsed.protocol !== 'orca:' || parsed.hostname !== 'pair') {
+  if (!PAIRING_PROTOCOLS.has(parsed.protocol.toLowerCase()) || parsed.hostname !== 'pair') {
     return null
   }
   if (parsed.pathname !== '' && parsed.pathname !== '/') {

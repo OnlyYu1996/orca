@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Capture one-shot macOS launch diagnostics for a published Orca release.
+# 为已发布的赛博包工头版本采集一次性 macOS 启动诊断。
 #
-# Usage:
-#   ORCA_DIAGNOSTIC_TAG=v1.4.42-rc.1 bash config/scripts/macos-launch-diagnostics.sh
+# 用法：
+#   SBBGT_DIAGNOSTIC_TAG=v1.4.42-rc.1 bash config/scripts/macos-launch-diagnostics.sh
 #   bash config/scripts/macos-launch-diagnostics.sh --tag v1.4.42-rc.1
 set -euo pipefail
 
-REPO="${ORCA_DIAGNOSTIC_REPO:-stablyai/orca}"
-TAG="${ORCA_DIAGNOSTIC_TAG:-}"
+REPO="${SBBGT_DIAGNOSTIC_REPO:-${ORCA_DIAGNOSTIC_REPO:-OnlyYu1996/orca}}"
+TAG="${SBBGT_DIAGNOSTIC_TAG:-${ORCA_DIAGNOSTIC_TAG:-}}"
 KEEP=0
 
 while [[ $# -gt 0 ]]; do
@@ -26,58 +26,58 @@ while [[ $# -gt 0 ]]; do
       ;;
     -h|--help)
       cat <<'EOF'
-Capture one-shot macOS launch diagnostics for a published Orca release.
+为已发布的赛博包工头版本采集一次性 macOS 启动诊断。
 
-Usage:
-  ORCA_DIAGNOSTIC_TAG=v1.4.42-rc.1 bash config/scripts/macos-launch-diagnostics.sh
+用法：
+  SBBGT_DIAGNOSTIC_TAG=v1.4.42-rc.1 bash config/scripts/macos-launch-diagnostics.sh
   bash config/scripts/macos-launch-diagnostics.sh --tag v1.4.42-rc.1
 EOF
       exit 0
       ;;
     *)
-      echo "Unknown argument: $1" >&2
-      echo "Usage: $0 --tag vX.Y.Z-rc.N [--repo owner/repo] [--keep]" >&2
+      echo "未知参数：$1" >&2
+      echo "用法：$0 --tag vX.Y.Z-rc.N [--repo owner/repo] [--keep]" >&2
       exit 2
       ;;
   esac
 done
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "This diagnostic script only supports macOS." >&2
+  echo "此诊断脚本仅支持 macOS。" >&2
   exit 2
 fi
 
 if [[ -z "$TAG" ]]; then
-  echo "Set ORCA_DIAGNOSTIC_TAG or pass --tag vX.Y.Z-rc.N." >&2
+  echo "请设置 SBBGT_DIAGNOSTIC_TAG，或传入 --tag vX.Y.Z-rc.N。" >&2
   exit 2
 fi
 
 ARCH="$(uname -m)"
 case "$ARCH" in
-  arm64) ASSET="orca-macos-arm64.dmg" ;;
-  x86_64) ASSET="orca-macos-x64.dmg" ;;
+  arm64) ASSET="sbbgt-macos-arm64.dmg" ;;
+  x86_64) ASSET="sbbgt-macos-x64.dmg" ;;
   *)
-    echo "Unsupported macOS architecture: $ARCH" >&2
+    echo "不支持的 macOS 架构：$ARCH" >&2
     exit 2
     ;;
 esac
 
 TIMESTAMP="$(date -u '+%Y%m%dT%H%M%SZ')"
-WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/orca-launch-diagnostics.XXXXXXXX")"
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/sbbgt-launch-diagnostics.XXXXXXXX")"
 OUT_DIR="$WORK_DIR/output"
 MOUNT_DIR="$WORK_DIR/mount"
-APP_DIR="$WORK_DIR/Orca.app"
+APP_DIR="$WORK_DIR/赛博包工头.app"
 DMG_PATH="$WORK_DIR/$ASSET"
 mkdir -p "$OUT_DIR" "$MOUNT_DIR"
 
 if [[ -d "$HOME/Desktop" ]]; then
-  ZIP_PATH="$HOME/Desktop/orca-launch-diagnostics-${TAG}-${TIMESTAMP}.zip"
+  ZIP_PATH="$HOME/Desktop/sbbgt-launch-diagnostics-${TAG}-${TIMESTAMP}.zip"
 else
-  ZIP_PATH="$PWD/orca-launch-diagnostics-${TAG}-${TIMESTAMP}.zip"
+  ZIP_PATH="$PWD/sbbgt-launch-diagnostics-${TAG}-${TIMESTAMP}.zip"
 fi
 
 diag_log() {
-  printf '[orca-diagnostics] %s\n' "$*"
+  printf '[sbbgt-diagnostics] %s\n' "$*"
 }
 
 run_capture() {
@@ -121,42 +121,42 @@ write_environment_report() {
     echo "## shell"
     echo "$SHELL"
     echo
-    echo "## current Orca processes before diagnostics"
-    pgrep -fl 'Orca|orca' || true
+    echo "## 诊断前的赛博包工头进程"
+    pgrep -fl '赛博包工头|sbbgt|Orca|orca' || true
   } >"$OUT_DIR/environment.txt"
 }
 
-ensure_no_existing_orca() {
+ensure_no_existing_sbbgt() {
   local existing
-  existing="$(pgrep -x Orca || true)"
+  existing="$(pgrep -x sbbgt || true)"
   if [[ -z "$existing" ]]; then
     return 0
   fi
 
   {
-    echo "An Orca process is already running. Close Orca and run this script again."
+    echo "赛博包工头正在运行。请先退出应用，再重新运行此脚本。"
     echo
     ps -p "$(printf '%s' "$existing" | paste -sd, -)" -o pid=,ppid=,command= || true
-  } | tee "$OUT_DIR/existing-orca-process.txt" >&2
+  } | tee "$OUT_DIR/existing-sbbgt-process.txt" >&2
   exit 2
 }
 
 download_and_copy_app() {
   local url="https://github.com/$REPO/releases/download/$TAG/$ASSET"
-  diag_log "downloading $url"
+  diag_log "正在下载 $url"
   curl -fL --retry 3 --retry-delay 2 -o "$DMG_PATH" "$url"
   shasum -a 256 "$DMG_PATH" >"$OUT_DIR/dmg.sha256" || true
 
-  diag_log "mounting DMG"
+  diag_log "正在挂载 DMG"
   hdiutil attach "$DMG_PATH" -nobrowse -readonly -mountpoint "$MOUNT_DIR" >"$OUT_DIR/hdiutil-attach.txt"
   local source_app
   source_app="$(find "$MOUNT_DIR" -maxdepth 1 -name '*.app' -type d | head -n 1)"
   if [[ -z "$source_app" ]]; then
-    echo "No .app bundle found in $DMG_PATH" >&2
+    echo "在 $DMG_PATH 中未找到 .app 应用包" >&2
     exit 1
   fi
 
-  diag_log "copying app to isolated temp path"
+  diag_log "正在将应用复制到隔离的临时路径"
   ditto "$source_app" "$APP_DIR"
   hdiutil detach "$MOUNT_DIR" -quiet
 }
@@ -187,7 +187,7 @@ write_app_report() {
 
 start_log_stream() {
   local file="$1"
-  local predicate='process == "Orca" OR eventMessage CONTAINS[c] "Orca" OR eventMessage CONTAINS[c] "com.stablyai.orca"'
+  local predicate='process == "sbbgt" OR eventMessage CONTAINS[c] "赛博包工头" OR eventMessage CONTAINS[c] "com.onlyyu.sbbgt" OR eventMessage CONTAINS[c] "com.stablyai.orca"'
   if command -v log >/dev/null 2>&1; then
     command log stream --style compact --predicate "$predicate" >"$file" 2>&1 &
     echo "$!"
@@ -204,8 +204,8 @@ stop_log_stream() {
   fi
 }
 
-latest_orca_pid_for_app() {
-  pgrep -nf "$APP_DIR/Contents/MacOS/Orca" || true
+latest_sbbgt_pid_for_app() {
+  pgrep -nf "$APP_DIR/Contents/MacOS/sbbgt" || true
 }
 
 sample_process_once() {
@@ -218,7 +218,7 @@ sample_process_once() {
 
 terminate_app_processes() {
   local pid
-  pid="$(latest_orca_pid_for_app)"
+  pid="$(latest_sbbgt_pid_for_app)"
   if [[ -n "$pid" ]]; then
     kill "$pid" >/dev/null 2>&1 || true
     sleep 1
@@ -237,7 +237,7 @@ wait_for_probe() {
 
   for i in $(seq 1 200); do
     local app_pid
-    app_pid="$(latest_orca_pid_for_app)"
+    app_pid="$(latest_sbbgt_pid_for_app)"
     if [[ "$sampled" -eq 0 && -n "$app_pid" ]]; then
       sampled=1
       echo "sampled_pid=$app_pid" >>"$OUT_DIR/$label.meta"
@@ -270,7 +270,7 @@ run_launchservices_probe() {
   local stream_file="$OUT_DIR/$label.system-stream.log"
   local stream_pid
 
-  diag_log "running LaunchServices probe: $label"
+  diag_log "正在运行 LaunchServices 探针：$label"
   stream_pid="$(start_log_stream "$stream_file")"
   {
     echo "label=$label"
@@ -284,9 +284,9 @@ run_launchservices_probe() {
       --stdout "$stdout_file" \
       --stderr "$stderr_file" \
       --env ELECTRON_ENABLE_LOGGING=1 \
-      --env ORCA_STARTUP_DIAGNOSTICS=trace \
-      --env ORCA_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
-      --env ORCA_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
+      --env SBBGT_STARTUP_DIAGNOSTICS=1 \
+      --env SBBGT_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
+      --env SBBGT_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
       --env "$extra_env_name=$extra_env_value" \
       "$APP_DIR" &
   else
@@ -294,9 +294,9 @@ run_launchservices_probe() {
       --stdout "$stdout_file" \
       --stderr "$stderr_file" \
       --env ELECTRON_ENABLE_LOGGING=1 \
-      --env ORCA_STARTUP_DIAGNOSTICS=trace \
-      --env ORCA_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
-      --env ORCA_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
+      --env SBBGT_STARTUP_DIAGNOSTICS=1 \
+      --env SBBGT_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
+      --env SBBGT_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
       "$APP_DIR" &
   fi
   local runner_pid="$!"
@@ -313,7 +313,7 @@ run_direct_exec_probe() {
   local stream_file="$OUT_DIR/$label.system-stream.log"
   local stream_pid
 
-  diag_log "running direct exec probe"
+  diag_log "正在运行直接执行探针"
   stream_pid="$(start_log_stream "$stream_file")"
   {
     echo "label=$label"
@@ -322,10 +322,10 @@ run_direct_exec_probe() {
   } >"$OUT_DIR/$label.meta"
 
   ELECTRON_ENABLE_LOGGING=1 \
-    ORCA_STARTUP_DIAGNOSTICS=trace \
-    ORCA_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
-    ORCA_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
-    "$APP_DIR/Contents/MacOS/Orca" >"$stdout_file" 2>"$stderr_file" &
+    SBBGT_STARTUP_DIAGNOSTICS=1 \
+    SBBGT_STARTUP_DIAGNOSTICS_TRACE_LIMIT=30000 \
+    SBBGT_STARTUP_DIAGNOSTICS_FILE="$bootstrap_file" \
+    "$APP_DIR/Contents/MacOS/sbbgt" >"$stdout_file" 2>"$stderr_file" &
   local runner_pid="$!"
   wait_for_probe "$runner_pid" "$label"
   echo "ended_utc=$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >>"$OUT_DIR/$label.meta"
@@ -333,34 +333,34 @@ run_direct_exec_probe() {
 }
 
 write_system_log_snapshot() {
-  local predicate='process == "Orca" OR eventMessage CONTAINS[c] "Orca" OR eventMessage CONTAINS[c] "com.stablyai.orca"'
+  local predicate='process == "sbbgt" OR eventMessage CONTAINS[c] "赛博包工头" OR eventMessage CONTAINS[c] "com.onlyyu.sbbgt" OR eventMessage CONTAINS[c] "com.stablyai.orca"'
   if command -v log >/dev/null 2>&1; then
-    diag_log "capturing recent unified log snapshot"
+    diag_log "正在采集最近的统一日志快照"
     command log show --style syslog --last 10m --predicate "$predicate" >"$OUT_DIR/system-log-last-10m.log" 2>&1 || true
   fi
 }
 
 package_results() {
   {
-    echo "Diagnostics completed."
-    echo "Tag: $TAG"
-    echo "Output zip: $ZIP_PATH"
+    echo "诊断已完成。"
+    echo "标签：$TAG"
+    echo "输出压缩包：$ZIP_PATH"
     echo
-    echo "Please attach this zip to the GitHub issue:"
+    echo "请将此压缩包附加到当前仓库的 GitHub Issue："
     echo "  $ZIP_PATH"
   } >"$OUT_DIR/README.txt"
 
-  diag_log "creating zip"
+  diag_log "正在创建压缩包"
   (cd "$OUT_DIR" && zip -qry "$ZIP_PATH" .)
-  diag_log "wrote $ZIP_PATH"
+  diag_log "已写入 $ZIP_PATH"
 }
 
 write_environment_report
-ensure_no_existing_orca
+ensure_no_existing_sbbgt
 download_and_copy_app
 write_app_report
 run_launchservices_probe "launchservices-trace"
-run_launchservices_probe "launchservices-bypass-lock" "ORCA_BYPASS_SINGLE_INSTANCE_LOCK" "1"
+run_launchservices_probe "launchservices-bypass-lock" "SBBGT_BYPASS_SINGLE_INSTANCE_LOCK" "1"
 run_direct_exec_probe
 write_system_log_snapshot
 package_results

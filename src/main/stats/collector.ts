@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from '
 import { join, dirname } from 'node:path'
 import type { StatsSummary } from '../../shared/types'
 import type { StatsEvent, StatsAggregates, StatsFile } from './types'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 const STATS_SCHEMA_VERSION = 1
 const MAX_EVENTS = 10_000
@@ -20,14 +21,21 @@ const DEBOUNCE_MS = 5_000
 // comment block in persistence.ts:20-28 for the full explanation.
 let _statsFile: string | null = null
 
+function resolveStatsFile(): string {
+  const userDataPath = app.getPath('userData')
+  const statsFile = join(userDataPath, 'sbbgt-stats.json')
+  migrateLegacyStorageFile(statsFile, [join(userDataPath, 'orca-stats.json')])
+  return statsFile
+}
+
 export function initStatsPath(): void {
-  _statsFile = join(app.getPath('userData'), 'orca-stats.json')
+  _statsFile = resolveStatsFile()
 }
 
 function getStatsFile(): string {
   if (!_statsFile) {
     // Safety fallback — should not be hit in normal startup.
-    _statsFile = join(app.getPath('userData'), 'orca-stats.json')
+    _statsFile = resolveStatsFile()
   }
   return _statsFile
 }

@@ -45,7 +45,7 @@ function writeIndex(activeProfileId = 'personal'): void {
     activeProfileId,
     profiles: [profile('personal', 'Personal'), profile('work', 'Work')]
   }
-  writeFileSync(join(testState.dir, 'orca-profile-index.json'), JSON.stringify(index), 'utf-8')
+  writeFileSync(join(testState.dir, 'sbbgt-profile-index.json'), JSON.stringify(index), 'utf-8')
 }
 
 function writeProfileState(profileId: string, repos: Repo[]): void {
@@ -53,7 +53,7 @@ function writeProfileState(profileId: string, repos: Repo[]): void {
     ...getDefaultPersistedState('/Users/tester'),
     repos
   }
-  const dataFile = join(testState.dir, 'profiles', profileId, 'orca-data.json')
+  const dataFile = join(testState.dir, 'profiles', profileId, 'sbbgt-data.json')
   mkdirSync(dirname(dataFile), { recursive: true })
   writeFileSync(dataFile, JSON.stringify(state), 'utf-8')
 }

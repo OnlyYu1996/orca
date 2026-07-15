@@ -42,6 +42,23 @@ describe('Orca cloud auth config', () => {
     })
   })
 
+  it('prefers SBBGT cloud configuration while retaining ORCA compatibility', () => {
+    const state = getOrcaCloudAuthConfig({
+      SBBGT_CLOUD_API_URL: 'https://sbbgt-cloud.example',
+      SBBGT_CLOUD_CLIENT_ID: 'sbbgt-client',
+      ORCA_CLOUD_API_URL: 'https://legacy-cloud.example',
+      ORCA_CLOUD_CLIENT_ID: 'legacy-client'
+    })
+
+    expect(state).toMatchObject({
+      configured: true,
+      config: {
+        apiBaseUrl: 'https://sbbgt-cloud.example',
+        clientId: 'sbbgt-client'
+      }
+    })
+  })
+
   it('allows loopback HTTP endpoints for local desktop auth development', () => {
     const state = getOrcaCloudAuthConfig({
       ORCA_CLOUD_API_URL: 'http://localhost:4100',

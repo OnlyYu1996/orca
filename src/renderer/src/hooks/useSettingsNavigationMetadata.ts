@@ -449,7 +449,7 @@ export function buildSettingsNavigationMetadata({
       id: 'servers',
       title: translate(
         'auto.hooks.useSettingsNavigationMetadata.de0c2907a1',
-        'Remote Orca Servers'
+        'Remote 赛博包工头 Servers'
       ),
       description: isWebClient
         ? 'Connect this browser to a saved Orca server.'

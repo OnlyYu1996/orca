@@ -117,8 +117,8 @@ describe('unknownCommandData', () => {
   it('produces a human nextSteps line when a suggestion exists', () => {
     const data = unknownCommandData(specs, ['worktree', 'remov'])
     expect(data.suggestions).toContain('worktree rm')
-    expect(data.nextSteps[0]).toContain('Did you mean')
-    expect(data.nextSteps[0]).toContain('orca worktree rm')
+    expect(data.nextSteps[0]).toContain('你是否要运行')
+    expect(data.nextSteps[0]).toContain('sbbgt worktree rm')
   })
 
   it('produces empty nextSteps when nothing is close', () => {

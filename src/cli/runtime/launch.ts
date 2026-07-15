@@ -10,13 +10,13 @@ import { RuntimeClientError } from './types'
 const IGNORED_NON_RECIPE_STDOUT = '[serve] ignored non-recipe stdout'
 
 export function launchOrcaApp(): void {
-  const overrideCommand = process.env.ORCA_OPEN_COMMAND
+  const overrideCommand = process.env.SBBGT_OPEN_COMMAND ?? process.env.ORCA_OPEN_COMMAND
   if (typeof overrideCommand === 'string' && overrideCommand.trim().length > 0) {
     spawnDetached(overrideCommand, [], { shell: true })
     return
   }
 
-  const overrideExecutable = process.env.ORCA_APP_EXECUTABLE
+  const overrideExecutable = process.env.SBBGT_APP_EXECUTABLE ?? process.env.ORCA_APP_EXECUTABLE
   if (typeof overrideExecutable === 'string' && overrideExecutable.trim().length > 0) {
     spawnDetached(overrideExecutable, getExecutableAppArgs(), {
       ...getExecutableSpawnOptions(overrideExecutable),
@@ -47,7 +47,7 @@ export function launchOrcaApp(): void {
 
   throw new RuntimeClientError(
     'runtime_open_failed',
-    'Could not determine how to launch Orca. Start Orca manually and try again.'
+    '无法确定如何启动赛博包工头。请手动启动应用后重试。'
   )
 }
 
@@ -141,7 +141,9 @@ export function serveOrcaApp(
         resolve(code)
         return
       }
-      reject(new RuntimeClientError('runtime_serve_failed', `Orca serve exited via ${signal}`))
+      reject(
+        new RuntimeClientError('runtime_serve_failed', `赛博包工头 serve 进程因 ${signal} 退出。`)
+      )
     })
   })
 }
@@ -224,8 +226,8 @@ function waitForRecipeJson(child: ReturnType<typeof spawnProcess>): Promise<numb
         new RuntimeClientError(
           'runtime_serve_failed',
           typeof code === 'number'
-            ? `Orca serve exited before printing valid recipe JSON with code ${code}.`
-            : `Orca serve exited before printing valid recipe JSON via ${signal}.`
+            ? `赛博包工头 serve 进程在输出有效配方 JSON 前退出，退出码为 ${code}。`
+            : `赛博包工头 serve 进程在输出有效配方 JSON 前因 ${signal} 退出。`
         )
       )
     }
@@ -238,7 +240,10 @@ function waitForRecipeJson(child: ReturnType<typeof spawnProcess>): Promise<numb
 }
 
 function getExecutableAppArgs(): string[] {
-  return process.env.ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT === '1' ? [resolveAppRoot()] : []
+  const needsAppRoot =
+    process.env.SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT ??
+    process.env.ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT
+  return needsAppRoot === '1' ? [resolveAppRoot()] : []
 }
 
 function getExecutableSpawnOptions(executable: string): Pick<SpawnOptions, 'shell'> {
@@ -253,7 +258,7 @@ function resolveAppRoot(): string {
 }
 
 function resolveForegroundOrcaExecutable(): string {
-  const overrideExecutable = process.env.ORCA_APP_EXECUTABLE
+  const overrideExecutable = process.env.SBBGT_APP_EXECUTABLE ?? process.env.ORCA_APP_EXECUTABLE
   if (typeof overrideExecutable === 'string' && overrideExecutable.trim().length > 0) {
     return overrideExecutable
   }
@@ -262,7 +267,7 @@ function resolveForegroundOrcaExecutable(): string {
   }
   throw new RuntimeClientError(
     'runtime_serve_failed',
-    'Could not determine how to start Orca server. Set ORCA_APP_EXECUTABLE to the Orca executable.'
+    '无法确定如何启动赛博包工头服务器。请将 SBBGT_APP_EXECUTABLE 设置为应用可执行文件。'
   )
 }
 

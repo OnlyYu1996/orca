@@ -14,6 +14,7 @@ import { useShortcutKeyDetails, type ShortcutKeyComboDetails } from '@/hooks/use
 import { useMountedRef } from '@/hooks/useMountedRef'
 import logo from '../../../../resources/logo.svg'
 import { translate } from '@/i18n/i18n'
+import { PRODUCT_STARGAZERS_URL } from '../../../shared/product-links'
 import {
   getLandingPreflightIssues,
   hasGitHubBackedProject,
@@ -26,7 +27,7 @@ type ShortcutItem = {
   action: string
 }
 
-const ORCA_STARGAZERS_URL = 'https://github.com/stablyai/orca/stargazers'
+const ORCA_STARGAZERS_URL = PRODUCT_STARGAZERS_URL
 
 type StarState = 'loading' | 'starred' | 'not-starred' | 'web-fallback' | 'hidden'
 

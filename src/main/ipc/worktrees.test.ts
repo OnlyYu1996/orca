@@ -8377,6 +8377,9 @@ describe('registerWorktreeHandlers', () => {
     }
     const fsProvider = {
       readFile: vi.fn(async (filePath: string) => {
+        if (filePath.endsWith('/.sbbgt/issue-command')) {
+          throw Object.assign(new Error('missing'), { code: 'ENOENT' })
+        }
         if (filePath.endsWith('/.orca/issue-command')) {
           return { content: 'local command\n', isBinary: false }
         }
@@ -8453,10 +8456,10 @@ describe('registerWorktreeHandlers', () => {
       content: 'orca issue command'
     })
 
-    expect(fsProvider.writeFile).toHaveBeenNthCalledWith(1, '/remote/repo/.gitignore', '.orca\n')
+    expect(fsProvider.writeFile).toHaveBeenNthCalledWith(1, '/remote/repo/.gitignore', '.sbbgt\n')
     expect(fsProvider.writeFile).toHaveBeenNthCalledWith(
       2,
-      '/remote/repo/.orca/issue-command',
+      '/remote/repo/.sbbgt/issue-command',
       'orca issue command\n'
     )
   })

@@ -1,0 +1,468 @@
+{
+  "version": 1,
+  "migrationBaseline": "6e1aa8503c688f85d16b4c72981e2f5e862e491f",
+  "rules": [
+    {
+      "category": "upstream-repository",
+      "path": "README.md",
+      "contains": "stablyai/orca",
+      "reason": "README 明确区分源码上游、产品 Fork 和 MIT 归属。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": ".github/CONTRIBUTING.md",
+      "contains": "stablyai/orca",
+      "reason": "贡献指南说明二开来源和上游同步边界。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "config/reliability-gates.jsonc",
+      "contains": "https://github.com/stablyai/orca/",
+      "reason": "可靠性门禁保留上游 Issue 和 PR 作为不可变设计证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "config/scripts/rebrand-localization-catalogs.mjs",
+      "contains": "github.com/stablyai/orca",
+      "reason": "品牌迁移脚本需要识别并替换上游旧链接。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "config/scripts/repro-windows-apphang-terminal-activation.mjs",
+      "contains": "https://github.com/stablyai/orca/issues/6874",
+      "reason": "复现报告固定引用其对应的上游 Issue。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/shared/tui-agent-config.ts",
+      "contains": "https://github.com/stablyai/orca/pull/926",
+      "reason": "注释保留行为来源的上游 PR 证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/shared/github-project-types.ts",
+      "contains": "stablyai/orca",
+      "reason": "类型注释使用上游仓库作为通用 owner/repo 格式示例。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/main/cli/linux-terminal-orca-cli-shim.ts",
+      "contains": "stablyai/orca#7904",
+      "reason": "Linux 兼容注释保留上游问题编号证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/main/startup/configure-process.ts",
+      "contains": "stablyai/orca#829",
+      "reason": "Shell PATH 兼容注释保留上游问题编号证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/main/startup/hydrate-shell-path.ts",
+      "contains": "stablyai/orca#829",
+      "reason": "Shell PATH 兼容注释保留上游问题编号证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/main/github/client.ts",
+      "contains": "stablyai/orca",
+      "reason": "注释用大小写不同的上游仓库名说明 GitHub 不区分大小写。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/main/ipc/pty.ts",
+      "contains": "stablyai/orca#7904",
+      "reason": "Linux CLI Shim 注释保留上游问题编号证据。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/renderer/src/components/TaskPage.tsx",
+      "contains": "stablyai/orca",
+      "reason": "注释使用上游仓库说明 Fork 归一化和 owner/repo 格式。"
+    },
+    {
+      "category": "upstream-repository",
+      "path": "src/renderer/src/components/github/IssueSourceIndicator.tsx",
+      "contains": "stablyai/orca",
+      "reason": "注释使用上游仓库说明大小写归一化。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "README.md",
+      "contains": "com.stably",
+      "reason": "兼容迁移表公开记录旧 Desktop 和 Mobile AppID。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "src/shared/product-identity.json",
+      "contains": "com.stably",
+      "reason": "产品身份单一来源保留旧 AppID 供兼容读取和存储迁移。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "native/computer-use-macos/Sources/OrcaComputerUseMacOS/main.swift",
+      "contains": "com.stablyai.orca",
+      "reason": "电脑控制辅助应用在兼容周期内继续授权旧桌面 Bundle ID。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "config/scripts/macos-launch-diagnostics.sh",
+      "contains": "com.stablyai.orca",
+      "reason": "诊断日志谓词同时捕获升级前旧进程留下的系统日志。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "Casks/orca.rb",
+      "contains": "com.stablyai.orca",
+      "reason": "brew uninstall --zap 需要清理旧版 AppID 的残留目录。"
+    },
+    {
+      "category": "legacy-bundle-id",
+      "path": "Casks/orca@rc.rb",
+      "contains": "com.stablyai.orca",
+      "reason": "RC Cask 的 --zap 同样需要清理旧版 AppID 残留。"
+    },
+    {
+      "category": "legacy-addition:bundle-id",
+      "path": "src/shared/product-identity.json",
+      "contains": "com.stably",
+      "reason": "结构化保存旧 AppID，仅供兼容读取。"
+    },
+    {
+      "category": "legacy-addition:bundle-id",
+      "path": "native/computer-use-macos/Sources/OrcaComputerUseMacOS/main.swift",
+      "contains": "com.stablyai.orca",
+      "reason": "旧 Bundle ID 仅用于兼容授权。"
+    },
+    {
+      "category": "legacy-addition:bundle-id",
+      "path": "config/scripts/macos-launch-diagnostics.sh",
+      "contains": "com.stablyai.orca",
+      "reason": "旧 Bundle ID 仅用于历史日志捕获。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/runtime/client.ts",
+      "contains": "ORCA_",
+      "reason": "远程运行时环境变量使用 SBBGT_* 优先、ORCA_* 回退。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/index.ts",
+      "contains": "ORCA_",
+      "reason": "CLI 继续读取远端桥接和 Agent Teams 的旧环境变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/startup/startup-diagnostics.ts",
+      "contains": "ORCA_STARTUP_DIAGNOSTICS",
+      "reason": "启动诊断新变量优先并兼容读取旧变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/startup/single-instance-lock.ts",
+      "contains": "ORCA_BYPASS_SINGLE_INSTANCE_LOCK",
+      "reason": "单实例诊断开关兼容旧自动化。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/preload/index.ts",
+      "contains": "ORCA_STARTUP_DIAGNOSTICS",
+      "reason": "Preload 启动基准兼容读取旧诊断变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/run-electron-vite-dev.mjs",
+      "contains": "ORCA_DEV_INSTANCE_KEY",
+      "reason": "开发包装 App 的实例键兼容旧脚本。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/macos-launch-diagnostics.sh",
+      "contains": "ORCA_DIAGNOSTIC",
+      "reason": "诊断脚本支持旧调用方传入的仓库和标签变量。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "src/shared/product-identity.json",
+      "contains": "\"urlScheme\": \"orca\"",
+      "reason": "产品身份配置记录旧 Scheme 供解析兼容。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "mobile/app.json",
+      "contains": "\"orca\"",
+      "reason": "移动端在兼容周期内继续注册旧配对 Scheme。"
+    },
+    {
+      "category": "legacy-addition:project-config",
+      "path": "src/shared/product-identity.json",
+      "contains": "orca.yaml",
+      "reason": "产品身份配置记录旧仓库配置文件名供回退读取。"
+    },
+    {
+      "category": "legacy-addition:project-config",
+      "path": "src/main/project-configuration-filesystem.ts",
+      "contains": "legacy.projectConfigFile",
+      "reason": "仓库配置读取器只读兼容旧文件。"
+    },
+    {
+      "category": "legacy-addition:private-directory",
+      "path": "src/shared/product-identity.json",
+      "contains": "\"privateDirectory\": \".orca\"",
+      "reason": "产品身份配置记录旧私有目录供迁移和回退读取。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "package.json",
+      "contains": "\"orca",
+      "reason": "npm Bin 在一个正式版周期内保留旧 CLI 代理。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/shared/product-identity.json",
+      "contains": "orca",
+      "reason": "产品身份配置集中记录旧 CLI 名称。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "config/electron-builder.config.cjs",
+      "contains": "orca",
+      "reason": "打包配置携带旧 CLI 代理文件，主启动器仍为 sbbgt。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "README.md",
+      "contains": "`orca",
+      "reason": "README 明确记录旧 CLI 的兼容周期和迁移目标。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "README.md",
+      "contains": "orca://",
+      "reason": "README 的兼容表说明旧配对链接仍可解析。"
+    },
+    {
+      "category": "legacy-addition:project-config",
+      "path": "README.md",
+      "contains": "orca.yaml",
+      "reason": "README 的兼容表说明旧仓库配置只读兼容。"
+    },
+    {
+      "category": "legacy-addition:private-directory",
+      "path": "README.md",
+      "contains": ".orca/",
+      "reason": "README 的兼容表说明旧私有目录迁移策略。"
+    },
+    {
+      "category": "legacy-addition:bundle-id",
+      "path": "README.md",
+      "contains": "com.stably",
+      "reason": "README 的兼容表记录旧 Desktop 和 Mobile AppID。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/build-computer-macos.mjs",
+      "contains": "ORCA_COMPUTER_MACOS_BUNDLE_ID",
+      "reason": "macOS 辅助应用构建参数兼容旧 CI 变量。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "config/scripts/orca-dev.mjs",
+      "contains": "orca-dev",
+      "reason": "旧开发 CLI 文件是明确的弃用提示代理。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "mobile/app.json",
+      "contains": "\"orca\"",
+      "reason": "旧名称在此行只作为兼容配对 Scheme，不是主 CLI。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "native/windows-cli-launcher/OrcaCliLauncher.cs",
+      "contains": "ORCA_NODE_OPTIONS",
+      "reason": "Windows 启动器向旧版 CLI 运行时转发兼容环境变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/handlers/core.ts",
+      "contains": "ORCA_PANE_KEY",
+      "reason": "CLI 在兼容周期内读取旧终端窗格标识。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/handlers/orchestration.ts",
+      "contains": "ORCA_",
+      "reason": "编排 CLI 对终端句柄、Pane 和测试计时变量采用新前缀优先、旧前缀回退。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "src/cli/help.ts",
+      "contains": "orca://",
+      "reason": "CLI 帮助明确说明旧配对 Scheme 的兼容窗口。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "src/cli/runtime/client.ts",
+      "contains": "orca://",
+      "reason": "远程配对错误提示同时说明新旧 Scheme。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/runtime/launch.ts",
+      "contains": "ORCA_",
+      "reason": "应用启动覆盖参数采用 SBBGT_* 优先、ORCA_* 回退。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/cli/runtime/metadata.ts",
+      "contains": "orca",
+      "reason": "CLI 元数据读取器迁移旧生产和开发用户目录。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/runtime/metadata.ts",
+      "contains": "ORCA_USER_DATA_PATH",
+      "reason": "CLI 用户目录采用新变量优先、旧变量回退。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/cli/cli-installer.ts",
+      "contains": "ORCA_",
+      "reason": "开发启动器向旧运行时转发兼容环境，主变量均为 SBBGT_*。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/main/cli/wsl-cli-installer.ts",
+      "contains": "orca-ide",
+      "reason": "WSL 安装器保留旧命令代理一个正式版周期。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/computer/macos-native-provider-paths.ts",
+      "contains": "ORCA_COMPUTER_MACOS_",
+      "reason": "macOS 电脑控制路径覆盖变量使用新前缀优先、旧前缀回退。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/ipc/feedback.ts",
+      "contains": "ORCA_FEEDBACK_API_",
+      "reason": "反馈端点兼容旧自部署配置；未配置任何端点时保持关闭。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/ipc/notifications.ts",
+      "contains": "ORCA_DEV_MACOS_BUNDLE_ID",
+      "reason": "通知设置链接兼容旧开发包装 App 注入的 Bundle ID 变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/observability/diagnostic-upload-endpoint.ts",
+      "contains": "ORCA_DIAGNOSTICS_TOKEN_URL",
+      "reason": "诊断端点使用新构建常量优先并兼容旧自部署配置。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/observability/index.ts",
+      "contains": "ORCA_",
+      "reason": "诊断和遥测禁用开关兼容旧环境变量，任一禁用值都优先关闭。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/orca-profiles/profile-cloud-auth-config.ts",
+      "contains": "ORCA_CLOUD_",
+      "reason": "Cloud 自部署配置使用新变量优先并兼容旧变量；无配置时关闭。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/runtime/orchestration/coordinator.ts",
+      "contains": "ORCA_USER_DATA_PATH",
+      "reason": "协调器用户目录采用新变量优先、旧变量回退。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/startup/configure-process.ts",
+      "contains": "ORCA_",
+      "reason": "启动流程读取旧用户目录和 HTTP/1 兼容开关，并向旧子进程镜像用户目录。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/telemetry/consent.ts",
+      "contains": "ORCA_TELEMETRY_DISABLED",
+      "reason": "旧禁用变量继续具备关闭遥测的权限，不会启用上传。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "src/shared/runtime-environment-store.ts",
+      "contains": "orca://",
+      "reason": "环境存储错误提示说明旧配对 Scheme 仍可解析。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/sbbgt-dev.mjs",
+      "contains": "ORCA_",
+      "reason": "新开发 CLI 启动器向旧 Electron/CLI 运行时镜像兼容变量。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/cli/cli-help-copy-zh.ts",
+      "contains": "orca",
+      "reason": "中文帮助层识别并改写上游规范中的旧命令文本。"
+    },
+    {
+      "category": "legacy-addition:url-scheme",
+      "path": "src/cli/cli-help-copy-zh.ts",
+      "contains": "orca://pair",
+      "reason": "中文帮助层将旧 Scheme 示例转换为新 Scheme。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/cli/cli-help-copy-zh.ts",
+      "contains": "ORCA_",
+      "reason": "中文帮助层将旧环境变量示例转换为 SBBGT_*。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/main/startup/product-storage-migration.ts",
+      "contains": "orca",
+      "reason": "存储迁移器枚举旧生产、开发和 Linux CLI 数据目录。"
+    },
+    {
+      "category": "legacy-addition:cli-command",
+      "path": "src/shared/product-identity.json",
+      "contains": "Orca",
+      "reason": "产品身份单一来源记录旧显示名供迁移与兼容提示。"
+    },
+    {
+      "category": "user-visible-product-name",
+      "path": "Casks/orca.rb",
+      "contains": "~/Library/Application Support/Orca",
+      "reason": "Homebrew 卸载清理列表需要删除旧版本遗留的数据目录。"
+    },
+    {
+      "category": "user-visible-product-name",
+      "path": "Casks/orca@rc.rb",
+      "contains": "~/Library/Application Support/Orca",
+      "reason": "RC Cask 卸载清理列表需要删除旧版本遗留的数据目录。"
+    },
+    {
+      "category": "user-visible-product-name",
+      "path": "src/cli/runtime/metadata.ts",
+      "contains": "['orca', 'Orca']",
+      "reason": "CLI 元数据读取器需要探测旧生产用户目录，字符串不会展示给用户。"
+    },
+    {
+      "category": "user-visible-product-name",
+      "path": "src/main/runtime/windows-mobile-firewall.ts",
+      "contains": "LEGACY_FIREWALL_RULE_NAME = 'Orca.MobilePairing'",
+      "reason": "防火墙修复器需要删除旧版本规则，随后只创建新品牌规则。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/startup/dev-instance-identity.ts",
+      "contains": "?? env.ORCA_DEV_",
+      "reason": "开发实例身份使用 SBBGT_DEV_* 优先，并在兼容周期内回退旧变量。"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "displayName": "赛博包工头",
+  "englishName": "Cyber Foreman",
+  "machineName": "sbbgt",
+  "desktopAppId": "com.onlyyu.sbbgt",
+  "desktopDevAppId": "com.onlyyu.sbbgt.dev",
+  "mobileAppId": "com.onlyyu.sbbgt.mobile",
+  "cliCommand": "sbbgt",
+  "devCliCommand": "sbbgt-dev",
+  "urlScheme": "sbbgt",
+  "projectConfigFile": "sbbgt.yaml",
+  "privateDirectory": ".sbbgt",
+  "legacy": {
+    "displayName": "Orca",
+    "machineName": "orca",
+    "cliCommands": ["orca", "orca-ide"],
+    "devCliCommand": "orca-dev",
+    "urlScheme": "orca",
+    "projectConfigFile": "orca.yaml",
+    "privateDirectory": ".orca",
+    "desktopAppId": "com.stablyai.orca",
+    "mobileAppId": "com.stably.orca.mobile"
+  },
+  "repository": {
+    "owner": "OnlyYu1996",
+    "name": "orca",
+    "defaultBranch": "main"
+  },
+  "upstreamRepository": {
+    "owner": "stablyai",
+    "name": "orca"
+  }
+}

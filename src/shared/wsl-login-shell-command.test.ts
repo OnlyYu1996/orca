@@ -176,7 +176,7 @@ describe('wsl login shell command helpers', () => {
     expect(command).toContain('getent passwd')
     expect(command).toContain('if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then')
     expect(command).toContain('_orca_shell_ready_root=""')
-    expect(command).toContain('if [ -n "${ORCA_USER_DATA_PATH:-}" ]; then')
+    expect(command).toContain('if [ -n "${SBBGT_USER_DATA_PATH:-${ORCA_USER_DATA_PATH:-}}" ]; then')
     expect(command).toContain('_orca_wsl_shell_name=$(basename "$_orca_wsl_shell"')
     expect(command).toContain('bash)')
     expect(command).toContain('--rcfile "${_orca_shell_ready_root}/bash/rcfile"')

@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-internal static class OrcaCliLauncher
+internal static class CyberForemanCliLauncher
 {
     private static int Main(string[] args)
     {
         try
         {
-            string launcherDirectory = Path.GetDirectoryName(typeof(OrcaCliLauncher).Assembly.Location);
+            string launcherDirectory = Path.GetDirectoryName(typeof(CyberForemanCliLauncher).Assembly.Location);
             string resourcesDirectory = Directory.GetParent(launcherDirectory).FullName;
             string appDirectory = Directory.GetParent(resourcesDirectory).FullName;
-            string electronPath = Path.Combine(appDirectory, "Orca.exe");
+            string electronPath = ResolveElectronPath(appDirectory);
             string cliPath = Path.Combine(
                 resourcesDirectory,
                 "app.asar.unpacked",
@@ -24,13 +24,13 @@ internal static class OrcaCliLauncher
 
             if (!File.Exists(electronPath))
             {
-                Console.Error.WriteLine("Unable to locate Orca.exe next to \"{0}\"", resourcesDirectory);
+                Console.Error.WriteLine("无法在 \"{0}\" 旁定位赛博包工头可执行文件。", resourcesDirectory);
                 return 1;
             }
 
             if (!File.Exists(cliPath))
             {
-                Console.Error.WriteLine("Unable to locate the Orca CLI entrypoint at \"{0}\"", cliPath);
+                Console.Error.WriteLine("无法定位赛博包工头 CLI 入口：\"{0}\"", cliPath);
                 return 1;
             }
 
@@ -43,10 +43,16 @@ internal static class OrcaCliLauncher
 
             // Why: launching without cmd.exe preserves embedded newlines while matching the
             // packaged batch launcher's Electron-as-Node environment contract.
-            MoveEnvironmentVariable(startInfo.EnvironmentVariables, "NODE_OPTIONS", "ORCA_NODE_OPTIONS");
+            MoveEnvironmentVariable(startInfo.EnvironmentVariables, "NODE_OPTIONS", "SBBGT_NODE_OPTIONS");
             MoveEnvironmentVariable(
                 startInfo.EnvironmentVariables,
                 "NODE_REPL_EXTERNAL_MODULE",
+                "SBBGT_NODE_REPL_EXTERNAL_MODULE"
+            );
+            CopyEnvironmentVariable(startInfo.EnvironmentVariables, "SBBGT_NODE_OPTIONS", "ORCA_NODE_OPTIONS");
+            CopyEnvironmentVariable(
+                startInfo.EnvironmentVariables,
+                "SBBGT_NODE_REPL_EXTERNAL_MODULE",
                 "ORCA_NODE_REPL_EXTERNAL_MODULE"
             );
             startInfo.EnvironmentVariables["ELECTRON_RUN_AS_NODE"] = "1";
@@ -59,8 +65,35 @@ internal static class OrcaCliLauncher
         }
         catch (Exception error)
         {
-            Console.Error.WriteLine("Unable to start the Orca CLI: {0}", error.Message);
+            Console.Error.WriteLine("无法启动赛博包工头 CLI：{0}", error.Message);
             return 1;
+        }
+    }
+
+    private static string ResolveElectronPath(string appDirectory)
+    {
+        foreach (string executableName in new[] { "sbbgt.exe", "赛博包工头.exe", "Orca.exe" })
+        {
+            string candidatePath = Path.Combine(appDirectory, executableName);
+            if (File.Exists(candidatePath))
+            {
+                return candidatePath;
+            }
+        }
+        return Path.Combine(appDirectory, "sbbgt.exe");
+    }
+
+    private static void CopyEnvironmentVariable(
+        StringDictionary environment,
+        string sourceName,
+        string targetName
+    )
+    {
+        string value = environment[sourceName];
+        environment.Remove(targetName);
+        if (value != null)
+        {
+            environment[targetName] = value;
         }
     }
 

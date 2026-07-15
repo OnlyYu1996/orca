@@ -216,7 +216,7 @@ export function useMobileSourceControlLoaders(params: Params): MobileSourceContr
             if (isMobileGitUnavailable(response.error?.code, response.error?.message)) {
               setScreenState({
                 kind: 'unavailable',
-                message: 'Update Orca desktop to use Source Control on mobile.'
+                message: '请更新电脑端赛博包工头，以便在移动端使用源代码管理。'
               })
               return false
             }

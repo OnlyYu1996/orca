@@ -7,7 +7,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { hardenExistingSecureFile, writeSecureJsonFile } from '../../shared/secure-file'
 import type { DeviceScope } from '../../shared/runtime-types'
-import { DEVICE_REGISTRY_FILENAME } from './mobile-pairing-files'
+import { DEVICE_REGISTRY_FILENAME, LEGACY_DEVICE_REGISTRY_FILENAME } from './mobile-pairing-files'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 export type { DeviceScope }
 
@@ -26,6 +27,11 @@ export class DeviceRegistry {
 
   constructor(userDataPath: string) {
     this.registryPath = join(userDataPath, DEVICE_REGISTRY_FILENAME)
+    const legacyRegistryPath = join(userDataPath, LEGACY_DEVICE_REGISTRY_FILENAME)
+    if (existsSync(legacyRegistryPath)) {
+      hardenExistingSecureFile(legacyRegistryPath)
+    }
+    migrateLegacyStorageFile(this.registryPath, [legacyRegistryPath])
     this.load()
   }
 

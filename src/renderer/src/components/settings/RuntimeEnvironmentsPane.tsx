@@ -190,7 +190,7 @@ export function getActiveServerModeDescription(allowLocalRuntime: boolean): stri
       )
     : translate(
         'auto.components.settings.RuntimeEnvironmentsPane.2c85efb3e8',
-        'Selecting a saved server makes this browser use that paired Orca runtime as its default Host.'
+        'Selecting a saved server makes this browser use that paired 赛博包工头 runtime as its default Host.'
       )
 }
 

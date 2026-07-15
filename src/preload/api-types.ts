@@ -876,7 +876,7 @@ export type AppApi = {
   /** Resolves when the daemon PTY provider and hook receiver have either
    *  started or failed open for the first BrowserWindow. */
   awaitFirstWindowStartupServices: () => Promise<void>
-  /** Emits a startup benchmark marker when ORCA_STARTUP_DIAGNOSTICS is enabled. */
+  /** 启用 SBBGT_STARTUP_DIAGNOSTICS 或旧 ORCA_STARTUP_DIAGNOSTICS 时发送启动基准标记。 */
   startupDiagnostic: (event: string, details?: Record<string, unknown>) => Promise<void>
   /** Returns the macOS active input mode, or layout ID when no IME mode is
    *  selected (e.g. `com.apple.keylayout.PolishPro`). Used by the
@@ -1397,6 +1397,7 @@ export type PreloadApi = {
     management: PtyManagementApi
   }
   feedback: {
+    getStatus: () => Promise<{ configured: boolean }>
     submit: (args: {
       feedback: string
       submitAnonymously?: boolean

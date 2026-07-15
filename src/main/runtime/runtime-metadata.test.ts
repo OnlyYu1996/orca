@@ -73,7 +73,7 @@ describe('runtime metadata', () => {
     clearRuntimeMetadata(userDataPath)
 
     expect(readRuntimeMetadata(userDataPath)).toBeNull()
-    expect(getRuntimeMetadataPath(userDataPath)).toContain('orca-runtime.json')
+    expect(getRuntimeMetadataPath(userDataPath)).toContain('sbbgt-runtime.json')
   })
 
   describe('clearRuntimeMetadataIfOwned', () => {
@@ -189,8 +189,8 @@ describe('runtime metadata', () => {
       })
 
       for (const path of [
-        join(userDataPath, 'orca-devices.json'),
-        join(userDataPath, 'orca-e2ee-keypair.json'),
+        join(userDataPath, 'sbbgt-devices.json'),
+        join(userDataPath, 'sbbgt-e2ee-keypair.json'),
         getEnvironmentStorePath(userDataPath)
       ]) {
         expect(statSync(path).mode & 0o777).toBe(0o600)
@@ -258,7 +258,7 @@ describe('runtime metadata', () => {
   it('replaces oversized E2EE keypair files instead of reading them as metadata', () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-large-keypair-'))
     tempDirs.push(userDataPath)
-    const keypairPath = join(userDataPath, 'orca-e2ee-keypair.json')
+    const keypairPath = join(userDataPath, 'sbbgt-e2ee-keypair.json')
     writeFileSync(keypairPath, 'x'.repeat(9 * 1024))
 
     const keypair = loadOrCreateE2EEKeypair(userDataPath)

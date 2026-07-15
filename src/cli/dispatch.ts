@@ -83,7 +83,7 @@ export const HANDLER_COMMAND_KEYS: ReadonlySet<string> = new Set(HANDLERS.keys()
 export async function dispatch(commandPath: string[], ctx: HandlerContext): Promise<void> {
   const handler = HANDLERS.get(commandPath.join(' '))
   if (!handler) {
-    throw new RuntimeClientError('invalid_argument', `Unknown command: ${commandPath.join(' ')}`)
+    throw new RuntimeClientError('invalid_argument', `未知命令：${commandPath.join(' ')}`)
   }
   await handler(ctx)
 }

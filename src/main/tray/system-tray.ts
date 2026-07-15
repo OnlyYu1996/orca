@@ -1,6 +1,7 @@
 import { Menu, Tray, type NativeImage } from 'electron'
 import { createAppIconImage } from '../app-icon'
 import { translateMain } from '../i18n/main-i18n'
+import { PRODUCT_DISPLAY_NAME } from '../../shared/product-identity'
 import { composeTrayAttentionIcon } from './tray-attention-icon'
 
 type SystemTrayOptions = {
@@ -57,11 +58,14 @@ export function createSystemTray(opts: SystemTrayOptions): Tray | null {
   tray = new Tray(baseTrayImage)
   // Why: reflect any attention event that fired before the tray existed.
   applyTrayImage()
-  tray.setToolTip('Orca')
+  tray.setToolTip(PRODUCT_DISPLAY_NAME)
   const menu = Menu.buildFromTemplate([
-    { label: translateMain('tray.openOrca', 'Open Orca'), click: () => opts.onOpen() },
+    {
+      label: translateMain('tray.openOrca', `打开${PRODUCT_DISPLAY_NAME}`),
+      click: () => opts.onOpen()
+    },
     { type: 'separator' },
-    { label: translateMain('tray.quit', 'Quit'), click: () => opts.onQuit() }
+    { label: translateMain('tray.quit', '退出'), click: () => opts.onQuit() }
   ])
   tray.setContextMenu(menu)
   // Why: a left-click on the tray icon is the conventional Windows gesture to

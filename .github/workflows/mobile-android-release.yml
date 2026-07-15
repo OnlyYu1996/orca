@@ -1,8 +1,6 @@
-name: Mobile Android Release
+name: 赛博包工头 Android 发布
 
-# Why a separate workflow from iOS: iOS releases go through App Store review,
-# which can take days. Decoupling the triggers lets an Android release ship
-# immediately without waiting on iOS, and vice versa.
+# Android 与 iOS 分开发布，避免 App Store 审核阻塞 Android 产物。
 on:
   push:
     tags:
@@ -10,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: 'Optional exact mobile marketing version assertion, e.g. 0.0.22'
+        description: '可选：精确指定移动端版本，例如 0.0.22'
         required: false
         type: string
       publish_github_release:
-        description: 'Create or update the mobile-android-v<version> GitHub Release'
+        description: '创建或更新 mobile-android-v<version> GitHub Release'
         required: false
         default: true
         type: boolean
@@ -23,10 +21,7 @@ jobs:
   android-build:
     runs-on: ubuntu-latest
 
-    # Why: the "Create GitHub Release" step below uses the default GITHUB_TOKEN
-    # to call `gh release create`, which requires contents:write. Without this,
-    # the job builds the APK fine but fails at release time with
-    # "HTTP 403: Resource not accessible by integration".
+    # 创建 GitHub Release 需要默认 GITHUB_TOKEN 具备 contents:write。
     permissions:
       contents: write
 
@@ -35,48 +30,48 @@ jobs:
         working-directory: mobile
 
     steps:
-      - name: Checkout
+      - name: 检出代码
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
+      - name: 配置 Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - name: Setup pnpm
+      - name: 配置 pnpm
         uses: pnpm/action-setup@v6
         with:
           run_install: false
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: Resolve release version and version code
+      - name: 解析发布版本和版本号
         id: release
         env:
           MOBILE_ANDROID_RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           MOBILE_ANDROID_PUBLISH_RELEASE: ${{ github.event.inputs.publish_github_release }}
         run: node scripts/prepare-android-release.mjs
 
-      - name: Setup JDK 17
+      - name: 配置 JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Expo prebuild
+      - name: 生成 Expo Android 工程
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build Android release APK
+      - name: 构建 Android Release APK
         run: cd android && ./gradlew assembleRelease
 
-      - name: Upload APK artifact
+      - name: 上传 APK 产物
         uses: actions/upload-artifact@v7
         with:
-          name: orca-mobile-apk
+          name: sbbgt-mobile-apk
           path: mobile/android/app/build/outputs/apk/release/*.apk
 
-      - name: Ensure GitHub release tag
+      - name: 确保 GitHub Release 标签存在
         if: steps.release.outputs.publish_release == 'true' && !startsWith(github.ref, 'refs/tags/mobile-android-v')
         run: |
           set -euo pipefail
@@ -90,7 +85,7 @@ jobs:
           git tag "$tag" "$GITHUB_SHA"
           git push origin "refs/tags/$tag"
 
-      - name: Create GitHub Release
+      - name: 创建 GitHub Release
         if: steps.release.outputs.publish_release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -106,7 +101,7 @@ jobs:
           else
             gh release create "$tag" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Orca Mobile Android $tag" \
+              --title "赛博包工头 Android $tag" \
               --prerelease \
               --latest=false \
               --generate-notes \

@@ -18,20 +18,27 @@ import { createPlainNodeEntryGuardPlugin } from './build-plugins/plain-node-entr
 // every other build path resolves these env vars to undefined, which the
 // JSON.stringify below folds to the literal `null`. Ambient declarations
 // for the two constants live in `src/types/build-constants.d.ts`.
-const orcaBuildIdentity = process.env.ORCA_BUILD_IDENTITY
-const ORCA_BUILD_IDENTITY_LITERAL =
-  orcaBuildIdentity === 'stable' || orcaBuildIdentity === 'rc'
-    ? JSON.stringify(orcaBuildIdentity)
+const productBuildIdentity = process.env.SBBGT_BUILD_IDENTITY ?? process.env.ORCA_BUILD_IDENTITY
+const PRODUCT_BUILD_IDENTITY_LITERAL =
+  productBuildIdentity === 'stable' || productBuildIdentity === 'rc'
+    ? JSON.stringify(productBuildIdentity)
     : 'null'
-const orcaPostHogWriteKey = process.env.ORCA_POSTHOG_WRITE_KEY
-const ORCA_POSTHOG_WRITE_KEY_LITERAL =
-  typeof orcaPostHogWriteKey === 'string' && orcaPostHogWriteKey.length > 0
-    ? JSON.stringify(orcaPostHogWriteKey)
+const productPostHogWriteKey =
+  process.env.SBBGT_POSTHOG_WRITE_KEY ?? process.env.ORCA_POSTHOG_WRITE_KEY
+const PRODUCT_POSTHOG_WRITE_KEY_LITERAL =
+  typeof productPostHogWriteKey === 'string' && productPostHogWriteKey.length > 0
+    ? JSON.stringify(productPostHogWriteKey)
     : 'null'
-const orcaDiagnosticsTokenUrl = process.env.ORCA_DIAGNOSTICS_TOKEN_URL
-const ORCA_DIAGNOSTICS_TOKEN_URL_LITERAL =
-  typeof orcaDiagnosticsTokenUrl === 'string' && orcaDiagnosticsTokenUrl.length > 0
-    ? JSON.stringify(orcaDiagnosticsTokenUrl)
+const productPostHogHost = process.env.SBBGT_POSTHOG_HOST ?? process.env.ORCA_POSTHOG_HOST
+const PRODUCT_POSTHOG_HOST_LITERAL =
+  typeof productPostHogHost === 'string' && /^https?:\/\//.test(productPostHogHost)
+    ? JSON.stringify(productPostHogHost)
+    : 'null'
+const productDiagnosticsTokenUrl =
+  process.env.SBBGT_DIAGNOSTICS_TOKEN_URL ?? process.env.ORCA_DIAGNOSTICS_TOKEN_URL
+const PRODUCT_DIAGNOSTICS_TOKEN_URL_LITERAL =
+  typeof productDiagnosticsTokenUrl === 'string' && productDiagnosticsTokenUrl.length > 0
+    ? JSON.stringify(productDiagnosticsTokenUrl)
     : 'null'
 
 function createStartupDiagnosticsBanner(chunkName: string): string {
@@ -197,9 +204,14 @@ export default defineConfig({
     // Why: compile-time substitution for the telemetry gate. See the block
     // above for the full rationale.
     define: {
-      ORCA_BUILD_IDENTITY: ORCA_BUILD_IDENTITY_LITERAL,
-      ORCA_POSTHOG_WRITE_KEY: ORCA_POSTHOG_WRITE_KEY_LITERAL,
-      ORCA_DIAGNOSTICS_TOKEN_URL: ORCA_DIAGNOSTICS_TOKEN_URL_LITERAL
+      SBBGT_BUILD_IDENTITY: PRODUCT_BUILD_IDENTITY_LITERAL,
+      SBBGT_POSTHOG_WRITE_KEY: PRODUCT_POSTHOG_WRITE_KEY_LITERAL,
+      SBBGT_POSTHOG_HOST: PRODUCT_POSTHOG_HOST_LITERAL,
+      SBBGT_DIAGNOSTICS_TOKEN_URL: PRODUCT_DIAGNOSTICS_TOKEN_URL_LITERAL,
+      ORCA_BUILD_IDENTITY: PRODUCT_BUILD_IDENTITY_LITERAL,
+      ORCA_POSTHOG_WRITE_KEY: PRODUCT_POSTHOG_WRITE_KEY_LITERAL,
+      ORCA_POSTHOG_HOST: PRODUCT_POSTHOG_HOST_LITERAL,
+      ORCA_DIAGNOSTICS_TOKEN_URL: PRODUCT_DIAGNOSTICS_TOKEN_URL_LITERAL
     },
     // Why: @xterm/headless declares "exports": null in package.json, which
     // prevents Vite's default resolver from finding the CJS entry. Point

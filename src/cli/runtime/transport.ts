@@ -16,7 +16,7 @@ export async function sendRequest<TResult>(
       reject(
         new RuntimeClientError(
           'runtime_unavailable',
-          'No compatible transport found in Orca runtime metadata.'
+          '赛博包工头运行时元数据中没有可用的兼容传输方式。'
         )
       )
       return
@@ -32,12 +32,7 @@ export async function sendRequest<TResult>(
       }
       settled = true
       socket.destroy()
-      reject(
-        new RuntimeClientError(
-          'runtime_timeout',
-          'Timed out waiting for the Orca runtime to respond.'
-        )
-      )
+      reject(new RuntimeClientError('runtime_timeout', '等待赛博包工头运行时响应超时。'))
     }, timeoutMs)
 
     const finish = (
@@ -62,7 +57,7 @@ export async function sendRequest<TResult>(
         ok: false,
         error: new RuntimeClientError(
           'runtime_unavailable',
-          'Could not connect to the running Orca app. Restart Orca and try again.'
+          '无法连接到正在运行的赛博包工头。请重启应用后重试。'
         )
       })
     })
@@ -75,7 +70,7 @@ export async function sendRequest<TResult>(
         ok: false,
         error: new RuntimeClientError(
           'runtime_unavailable',
-          'The Orca runtime closed the connection before responding. Restart Orca and try again.'
+          '赛博包工头运行时在响应前关闭了连接。请重启应用后重试。'
         )
       })
     })
@@ -103,7 +98,7 @@ export async function sendRequest<TResult>(
             ok: false,
             error: new RuntimeClientError(
               'invalid_runtime_response',
-              'The Orca runtime returned an invalid response frame.'
+              '赛博包工头运行时返回了无效响应帧。'
             )
           })
           return
@@ -130,7 +125,7 @@ export async function sendRequest<TResult>(
             ok: false,
             error: new RuntimeClientError(
               'invalid_runtime_response',
-              'The Orca runtime returned an invalid response frame.'
+              '赛博包工头运行时返回了无效响应帧。'
             )
           })
           return
@@ -151,7 +146,7 @@ export async function sendRequest<TResult>(
             ok: false,
             error: new RuntimeClientError(
               'invalid_runtime_response',
-              'The Orca runtime returned a mismatched response id.'
+              '赛博包工头运行时返回了不匹配的响应 ID。'
             )
           })
           return
@@ -161,7 +156,7 @@ export async function sendRequest<TResult>(
             ok: false,
             error: new RuntimeClientError(
               'runtime_unavailable',
-              'The Orca runtime changed while the request was in flight. Retry the command.'
+              '请求处理期间赛博包工头运行时已发生变化，请重试该命令。'
             )
           })
           return

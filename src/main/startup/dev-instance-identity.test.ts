@@ -4,11 +4,11 @@ import { getDevInstanceIdentity } from './dev-instance-identity'
 describe('dev-instance-identity', () => {
   it('keeps packaged identity stable', () => {
     expect(getDevInstanceIdentity(false, {})).toMatchObject({
-      name: 'Orca',
+      name: '赛博包工头',
       isDev: false,
       devLabel: null,
       dockBadgeLabel: null,
-      appUserModelId: 'com.stablyai.orca'
+      appUserModelId: 'com.onlyyu.sbbgt'
     })
   })
 
@@ -26,9 +26,9 @@ describe('dev-instance-identity', () => {
       devWorktreeName: 'dev-indicator',
       devRepoRoot: '/repo/worktrees/dev-indicator'
     })
-    expect(identity.name).toBe('Orca: nwparker/dev-indicator')
+    expect(identity.name).toBe('赛博包工头: nwparker/dev-indicator')
     expect(identity.dockBadgeLabel).toBeNull()
-    expect(identity.appUserModelId).toMatch(/^com\.stablyai\.orca\.dev\.[a-f0-9]{10}$/)
+    expect(identity.appUserModelId).toMatch(/^com\.onlyyu\.sbbgt\.dev\.[a-f0-9]{10}$/)
   })
 
   it('includes the branch when it differs from the worktree basename', () => {
@@ -39,7 +39,7 @@ describe('dev-instance-identity', () => {
     })
 
     expect(identity.devLabel).toBe('payment-ui @ feature/billing-shell')
-    expect(identity.name).toBe('Orca: feature/billing-shell')
+    expect(identity.name).toBe('赛博包工头: feature/billing-shell')
     expect(identity.dockBadgeLabel).toBeNull()
   })
 
@@ -51,7 +51,28 @@ describe('dev-instance-identity', () => {
     })
 
     expect(identity.devLabel).toBe('manual label')
-    expect(identity.name).toBe('Orca: feature/other')
+    expect(identity.name).toBe('赛博包工头: feature/other')
     expect(identity.dockBadgeLabel).toBeNull()
+  })
+
+  it('prefers new development environment variables over legacy fallbacks', () => {
+    const identity = getDevInstanceIdentity(true, {
+      SBBGT_DEV_REPO_ROOT: '/repo/new',
+      ORCA_DEV_REPO_ROOT: '/repo/legacy',
+      SBBGT_DEV_WORKTREE_NAME: 'new-worktree',
+      ORCA_DEV_WORKTREE_NAME: 'legacy-worktree',
+      SBBGT_DEV_BRANCH: 'feature/new',
+      ORCA_DEV_BRANCH: 'feature/legacy',
+      SBBGT_DEV_INSTANCE_LABEL: 'new label',
+      ORCA_DEV_INSTANCE_LABEL: 'legacy label'
+    })
+
+    expect(identity).toMatchObject({
+      devRepoRoot: '/repo/new',
+      devWorktreeName: 'new-worktree',
+      devBranch: 'feature/new',
+      devLabel: 'new label',
+      name: '赛博包工头: feature/new'
+    })
   })
 })

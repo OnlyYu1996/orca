@@ -18,6 +18,7 @@ describe('web pairing input', () => {
   }
 
   it('parses query-form pairing URLs', () => {
+    expect(parseWebPairingInput(`sbbgt://pair?code=${encodeOffer()}`)).toEqual(offer)
     expect(parseWebPairingInput(`orca://pair?code=${encodeOffer()}`)).toEqual(offer)
   })
 
@@ -26,7 +27,7 @@ describe('web pairing input', () => {
   })
 
   it('preserves optional device scope metadata', () => {
-    expect(parseWebPairingInput(`orca://pair?code=${encodeOffer({ scope: 'mobile' })}`)).toEqual({
+    expect(parseWebPairingInput(`sbbgt://pair?code=${encodeOffer({ scope: 'mobile' })}`)).toEqual({
       ...offer,
       scope: 'mobile'
     })
@@ -44,7 +45,7 @@ describe('web pairing input', () => {
   })
 
   it('auto-saves scoped runtime offers during web startup', () => {
-    const input = `orca://pair?code=${encodeOffer({ scope: 'runtime' })}`
+    const input = `sbbgt://pair?code=${encodeOffer({ scope: 'runtime' })}`
     expect(
       decideWebPairingStartup({ initialPairingInput: input, hasStoredEnvironment: false })
     ).toEqual({

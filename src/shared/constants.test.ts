@@ -8,9 +8,9 @@ import {
 
 describe('getDefaultSettings', () => {
   it('uses platform-consistent separators for the default workspace directory', () => {
-    expect(getDefaultSettings('/Users/alice').workspaceDir).toBe('/Users/alice/orca/workspaces')
+    expect(getDefaultSettings('/Users/alice').workspaceDir).toBe('/Users/alice/sbbgt/workspaces')
     expect(getDefaultSettings('C:\\Users\\alice').workspaceDir).toBe(
-      'C:\\Users\\alice\\orca\\workspaces'
+      'C:\\Users\\alice\\sbbgt\\workspaces'
     )
   })
 
@@ -44,8 +44,8 @@ describe('getDefaultSettings', () => {
     expect(getDefaultSettings('/tmp').skipCloseTerminalWithRunningProcessConfirm).toBe(false)
   })
 
-  it('uses system language by default', () => {
-    expect(getDefaultSettings('/tmp').uiLanguage).toBe('system')
+  it('uses Simplified Chinese by default', () => {
+    expect(getDefaultSettings('/tmp').uiLanguage).toBe('zh')
   })
 
   it('confirms before closing pinned tabs by default', () => {

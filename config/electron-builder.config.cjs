@@ -11,6 +11,7 @@ const {
   prunePackagedRuntimeNodeModules,
   verifyPackagedMainRuntimeDeps
 } = require('./packaged-runtime-node-modules.cjs')
+const productIdentity = require('../src/shared/product-identity.json')
 
 const isMacRelease = process.env.ORCA_MAC_RELEASE === '1'
 const isLinuxArm64Release = process.env.ORCA_LINUX_ARM64_RELEASE === '1'
@@ -47,8 +48,8 @@ const winSpeechNativeResource = {
 
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
-  appId: 'com.stablyai.orca',
-  productName: 'Orca',
+  appId: productIdentity.desktopAppId,
+  productName: productIdentity.displayName,
   directories: {
     buildResources: 'resources/build'
   },
@@ -164,7 +165,7 @@ module.exports = {
       chmodSync(join(resourcesDir, filename), 0o755)
     }
     if (context.electronPlatformName === 'darwin') {
-      await signMacComputerUseHelper(join(resourcesDir, 'Orca Computer Use.app'), context.packager)
+      await signMacComputerUseHelper(join(resourcesDir, '赛博包工头电脑控制.app'), context.packager)
       await signMacNotificationStatusHelper(
         join(resourcesDir, '..', 'MacOS', 'orca-notification-status'),
         context.packager
@@ -172,7 +173,7 @@ module.exports = {
     }
   },
   win: {
-    executableName: 'Orca',
+    executableName: productIdentity.machineName,
     // Why: Windows installers are signed after electron-builder packaging by
     // SignPath, so the packager cannot infer the updater publisherName.
     signtoolOptions: {
@@ -182,11 +183,19 @@ module.exports = {
       ...commonExtraResources,
       winSpeechNativeResource,
       {
+        from: 'resources/win32/bin/sbbgt.cmd',
+        to: 'bin/sbbgt.cmd'
+      },
+      {
+        from: 'native/windows-cli-launcher/.build/sbbgt.exe',
+        to: 'bin/sbbgt.exe'
+      },
+      {
         from: 'resources/win32/bin/orca.cmd',
         to: 'bin/orca.cmd'
       },
       {
-        from: 'native/windows-cli-launcher/.build/orca.exe',
+        from: 'native/windows-cli-launcher/.build/sbbgt.exe',
         to: 'bin/orca.exe'
       },
       {
@@ -201,7 +210,7 @@ module.exports = {
     ]
   },
   nsis: {
-    artifactName: 'orca-windows-setup.${ext}',
+    artifactName: 'sbbgt-windows-setup.${ext}',
     shortcutName: '${productName}',
     uninstallDisplayName: '${productName}',
     createDesktopShortcut: 'always',
@@ -212,28 +221,27 @@ module.exports = {
   },
   mac: {
     icon: 'resources/build/icon.icns',
+    artifactName: 'sbbgt-${version}-${arch}.${ext}',
     entitlements: 'resources/build/entitlements.mac.plist',
     entitlementsInherit: 'resources/build/entitlements.mac.plist',
     extendInfo: {
       NSAppleEventsUsageDescription:
-        'Orca allows terminal-launched developer tools to automate local apps when you request it.',
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具自动操作本地应用。',
       NSBluetoothAlwaysUsageDescription:
-        'Orca allows terminal-launched developer tools to access Bluetooth devices when you request it.',
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具访问蓝牙设备。',
       NSBluetoothPeripheralUsageDescription:
-        'Orca allows terminal-launched developer tools to access Bluetooth devices when you request it.',
-      NSCameraUsageDescription: "Application requests access to the device's camera.",
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具访问蓝牙设备。',
+      NSCameraUsageDescription: '赛博包工头需要在您明确请求时访问摄像头。',
       NSLocationUsageDescription:
-        'Orca allows terminal-launched developer tools to access location when you request it.',
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具访问位置信息。',
       NSLocalNetworkUsageDescription:
-        'Orca allows terminal-launched developer tools to discover and connect to local development servers when you request it.',
-      NSMicrophoneUsageDescription: "Application requests access to the device's microphone.",
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具发现并连接本地开发服务器。',
+      NSMicrophoneUsageDescription: '赛博包工头需要在您明确请求时访问麦克风。',
       NSAudioCaptureUsageDescription:
-        'Orca allows terminal-launched developer tools to capture desktop audio when you request it.',
+        '赛博包工头会在您明确请求时，允许从终端启动的开发工具采集桌面音频。',
       NSBonjourServices: ['_http._tcp', '_https._tcp'],
-      NSDocumentsFolderUsageDescription:
-        "Application requests access to the user's Documents folder.",
-      NSDownloadsFolderUsageDescription:
-        "Application requests access to the user's Downloads folder."
+      NSDocumentsFolderUsageDescription: '赛博包工头需要在您明确请求时访问“文稿”文件夹。',
+      NSDownloadsFolderUsageDescription: '赛博包工头需要在您明确请求时访问“下载”文件夹。'
     },
     // Why: local macOS validation builds should launch without Apple release
     // credentials. Hardened runtime + notarization stay enabled only on the
@@ -244,6 +252,10 @@ module.exports = {
     extraResources: [
       ...commonExtraResources,
       macSpeechNativeResource,
+      {
+        from: 'resources/darwin/bin/sbbgt',
+        to: 'bin/sbbgt'
+      },
       {
         from: 'resources/darwin/bin/orca',
         to: 'bin/orca'
@@ -259,8 +271,8 @@ module.exports = {
         to: 'serve-sim'
       },
       {
-        from: 'native/computer-use-macos/.build/release/Orca Computer Use.app',
-        to: 'Orca Computer Use.app'
+        from: 'native/computer-use-macos/.build/release/赛博包工头电脑控制.app',
+        to: '赛博包工头电脑控制.app'
       },
       featureWallResources
     ],
@@ -288,12 +300,11 @@ module.exports = {
   // silently downgrading to ad-hoc artifacts that look shippable in CI logs.
   forceCodeSigning: isMacRelease,
   dmg: {
-    artifactName: 'orca-macos-${arch}.${ext}'
+    artifactName: 'sbbgt-macos-${arch}.${ext}'
   },
   linux: {
-    // Why: Ubuntu desktop ships GNOME Orca as the `orca` package and /usr/bin/orca.
-    // The Linux installer should not claim those system package/file names.
-    executableName: 'orca-ide',
+    // Ubuntu 自带 GNOME Orca 的 orca 包和 /usr/bin/orca，本产品使用 sbbgt 避免冲突。
+    executableName: productIdentity.machineName,
     // Why: the icns source lets electron-builder emit standard hicolor PNG
     // sizes; a single 1024px PNG is ignored by some Linux docks/launchers.
     icon: 'resources/build/icon.icns',
@@ -301,12 +312,16 @@ module.exports = {
       entry: {
         // Why: Electron reports WM_CLASS=orca for the visible Linux window;
         // GNOME docks need an exact match to group it with orca-ide.desktop.
-        StartupWMClass: 'orca'
+        StartupWMClass: productIdentity.machineName
       }
     },
     extraResources: [
       ...commonExtraResources,
       linuxSpeechNativeResource,
+      {
+        from: 'resources/linux/bin/sbbgt',
+        to: 'bin/sbbgt'
+      },
       {
         from: 'resources/linux/bin/orca-ide',
         to: 'bin/orca-ide'
@@ -322,15 +337,15 @@ module.exports = {
       featureWallResources
     ],
     target: ['AppImage', 'deb'],
-    maintainer: 'stablyai',
+    maintainer: 'OnlyYu1996',
     category: 'Utility'
   },
   appImage: {
-    artifactName: isLinuxArm64Release ? 'orca-linux-arm64.${ext}' : 'orca-linux.${ext}'
+    artifactName: isLinuxArm64Release ? 'sbbgt-linux-arm64.${ext}' : 'sbbgt-linux.${ext}'
   },
   deb: {
-    packageName: 'orca-ide',
-    artifactName: 'orca-ide_${version}_${arch}.${ext}',
+    packageName: productIdentity.machineName,
+    artifactName: 'sbbgt_${version}_${arch}.${ext}',
     // Why: xvfb lets the bundled `orca serve` CLI run browser panes on a headless
     // Linux host — Chromium needs a display server even for offscreen rendering,
     // and serve starts Xvfb itself when present (see ensure-virtual-display.ts).
@@ -351,8 +366,8 @@ module.exports = {
     afterRemove: 'resources/linux/packaging/after-remove.sh'
   },
   rpm: {
-    packageName: 'orca-ide',
-    artifactName: 'orca-ide-${version}.${arch}.${ext}',
+    packageName: productIdentity.machineName,
+    artifactName: 'sbbgt-${version}.${arch}.${ext}',
     // Why: see deb depends. RPM distros ship Xvfb as xorg-x11-server-Xvfb (there
     // is no `xvfb` package), so the name differs from the deb here.
     depends: [
@@ -372,13 +387,13 @@ module.exports = {
   // (node-pty) for each target architecture when producing dual-arch macOS
   // builds (x64 + arm64). With npmRebuild disabled, CI on an arm64 runner
   // packages arm64 binaries into the x64 DMG, causing "posix_spawnp failed"
-  // on Intel Macs. The beforeBuild hook performs Orca's targeted rebuild and
+  // Intel Mac 上必须执行目标架构重建；beforeBuild Hook 负责赛博包工头的定向重建，
   // returns false so electron-builder does not rebuild optional cpu-features.
   npmRebuild: true,
   publish: {
     provider: 'github',
-    owner: 'stablyai',
-    repo: 'orca',
+    owner: productIdentity.repository.owner,
+    repo: productIdentity.repository.name,
     releaseType: 'release'
   }
 }
@@ -387,7 +402,7 @@ function chmodUnixCliLaunchers(resourcesDir, electronPlatformName) {
   if (electronPlatformName === 'win32') {
     return
   }
-  for (const launcherName of ['orca', 'orca-ide']) {
+  for (const launcherName of ['sbbgt', 'orca', 'orca-ide']) {
     const launcherPath = join(resourcesDir, 'bin', launcherName)
     if (!existsSync(launcherPath)) {
       continue
@@ -418,7 +433,7 @@ function chmodMacServeSimHelpers(resourcesDir, electronPlatformName) {
 async function signMacComputerUseHelper(helperAppPath, packager) {
   if (!existsSync(helperAppPath)) {
     if (isMacRelease) {
-      throw new Error(`Missing Orca Computer Use helper app at ${helperAppPath}`)
+      throw new Error(`缺少赛博包工头电脑控制辅助应用：${helperAppPath}`)
     }
     return
   }
@@ -432,10 +447,10 @@ async function signMacComputerUseHelper(helperAppPath, packager) {
     findInstalledMacSigningIdentity(codeSigningInfo?.keychainFile) ??
     (isMacRelease ? null : '-')
   if (!identity) {
-    throw new Error('Missing signing identity for Orca Computer Use helper app')
+    throw new Error('缺少赛博包工头电脑控制辅助应用的签名身份')
   }
   // Why: TCC grants attach to this nested app's code identity. Sign it before
-  // the outer Orca.app is sealed so production builds preserve that identity.
+  // 在外层赛博包工头.app 封装前完成，确保生产构建保留该身份。
   execFileSync('codesign', codesignArgs(identity, helperAppPath), { stdio: 'inherit' })
   execFileSync('codesign', ['--verify', '--deep', '--strict', helperAppPath], {
     stdio: 'inherit'
@@ -463,7 +478,7 @@ async function signMacNotificationStatusHelper(helperPath, packager) {
   // Why: macOS keys notification records to the code-signing identifier; the
   // binary embeds the app's CFBundleIdentifier in __TEXT,__info_plist so this
   // (and any later) `codesign --force` derives the correct identifier. Sign
-  // before the outer Orca.app is sealed, like the computer-use helper.
+  // 与电脑控制辅助应用一样，在外层赛博包工头.app 封装前完成。
   const args = ['--force', '--sign', identity]
   if (isMacRelease) {
     args.push('--options', 'runtime', '--timestamp')

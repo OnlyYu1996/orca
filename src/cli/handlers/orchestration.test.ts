@@ -313,7 +313,7 @@ describe('orchestration send structured payload flags', () => {
       )
     ).rejects.toMatchObject({
       code: 'no_active_sender_terminal',
-      message: expect.stringContaining('Pass --from')
+      message: expect.stringContaining('请传入 --from')
     })
     expect(callMock).not.toHaveBeenCalled()
   })

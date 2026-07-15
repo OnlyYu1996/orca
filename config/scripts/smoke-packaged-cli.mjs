@@ -12,7 +12,7 @@ function readAppDirArg(argv) {
     return explicit.slice('--app-dir='.length)
   }
   if (process.platform === 'darwin') {
-    return 'dist/mac-arm64/Orca.app'
+    return 'dist/mac-arm64/赛博包工头.app'
   }
   if (process.platform === 'win32') {
     return 'dist/win-unpacked'
@@ -22,16 +22,16 @@ function readAppDirArg(argv) {
 
 function getPackagedCliPath(appDir) {
   if (process.platform === 'darwin' || appDir.endsWith('.app')) {
-    return join(appDir, 'Contents', 'Resources', 'bin', 'orca')
+    return join(appDir, 'Contents', 'Resources', 'bin', 'sbbgt')
   }
   if (process.platform === 'win32') {
-    return join(appDir, 'resources', 'bin', 'orca.exe')
+    return join(appDir, 'resources', 'bin', 'sbbgt.exe')
   }
-  return join(appDir, 'resources', 'bin', 'orca-ide')
+  return join(appDir, 'resources', 'bin', 'sbbgt')
 }
 
 const appDir = resolve(readAppDirArg(process.argv.slice(2)))
-const tempRoot = await mkdtemp(join(tmpdir(), 'orca-packaged-cli-smoke-'))
+const tempRoot = await mkdtemp(join(tmpdir(), 'sbbgt-packaged-cli-smoke-'))
 const copiedAppDir = join(tempRoot, basename(appDir))
 
 try {
@@ -40,7 +40,7 @@ try {
   await execFileAsync(cliPath, ['--help'], {
     env: { ...process.env, NODE_PATH: '' }
   })
-  console.log(`[packaged-cli-smoke] ${cliPath} --help succeeded outside the repo`)
+  console.log(`[packaged-cli-smoke] 已在仓库外成功运行 ${cliPath} --help`)
 } finally {
   await rm(tempRoot, { recursive: true, force: true })
 }

@@ -6,38 +6,35 @@ import i18next, {
 } from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-import en from './locales/en.json'
+import zh from './locales/zh.json'
 import { isPseudoLocalizationLocale, pseudoLocalizeString } from './pseudo-localization'
 import { DEFAULT_LOCALE, resolveUiLocale } from './supported-languages'
 import type { SupportedUiLocale } from '../../../shared/ui-locale'
 import type { UiLanguage } from '../../../shared/ui-language'
 
 export const i18n: I18nInstance = i18next.createInstance()
+// 通用单测长期断言英文 fallback；产品运行时仍由 DEFAULT_LOCALE 保持中文首屏。
+const INITIAL_RENDERER_LOCALE = process.env.NODE_ENV === 'test' ? 'en' : DEFAULT_LOCALE
 
-// Why: only the English catalog is bundled eagerly. The other four locales add
-// ~2MB to the renderer's startup chunk (parsed on every launch) even though the
-// app always boots in English and only switches after the persisted UI language
-// loads. A lazy backend fetches each non-English catalog on demand, so any
-// changeLanguage() call (UI switch or test) transparently loads its bundle
-// instead of paying the parse cost at cold start.
+// 中文是赛博包工头的默认界面，首屏必须同步拥有完整目录；其余语言按需加载，
+// 避免启动阶段先显示英文或翻译键，再异步切换为中文。
 const NON_DEFAULT_LOCALE_LOADERS: Record<
-  Exclude<SupportedUiLocale, 'en'>,
+  Exclude<SupportedUiLocale, 'zh'>,
   () => Promise<{ default: Record<string, unknown> }>
 > = {
+  en: () => import('./locales/en.json'),
   es: () => import('./locales/es.json'),
   ja: () => import('./locales/ja.json'),
-  ko: () => import('./locales/ko.json'),
-  zh: () => import('./locales/zh.json')
+  ko: () => import('./locales/ko.json')
 }
 
 const lazyLocaleBackend: BackendModule = {
   type: 'backend',
   init: () => {},
   read: (language: string, _namespace: string, callback: ReadCallback) => {
-    const loader = NON_DEFAULT_LOCALE_LOADERS[language as Exclude<SupportedUiLocale, 'en'>]
+    const loader = NON_DEFAULT_LOCALE_LOADERS[language as Exclude<SupportedUiLocale, 'zh'>]
     if (!loader) {
-      // English (and unknown locales) are served from bundled resources; signal
-      // "nothing to load" so i18next falls back to the in-memory catalog.
+      // 中文目录已随首屏打包；未知语言交给 i18next 回退到默认中文。
       callback(null, false)
       return
     }
@@ -52,16 +49,13 @@ void i18n
   .use(lazyLocaleBackend)
   .use(initReactI18next)
   .init({
-    fallbackLng: DEFAULT_LOCALE,
-    lng: DEFAULT_LOCALE,
-    // Why: `resources` seeds the eager English catalog while
-    // `partialBundledLanguages` lets the backend supply the lazy locales — so
-    // i18next uses bundled `en` immediately and only hits the backend for the
-    // languages that aren't already in memory.
+    fallbackLng: INITIAL_RENDERER_LOCALE,
+    lng: INITIAL_RENDERER_LOCALE,
+    // 首屏直接使用同步打包的中文目录，其他语言由后端按需加载。
     partialBundledLanguages: true,
     resources: {
-      en: {
-        translation: en
+      zh: {
+        translation: zh
       }
     },
     interpolation: {
@@ -80,8 +74,7 @@ export function translate(key: string, fallback: string, options?: TOptions): st
 export async function setRendererUiLanguage(language: UiLanguage): Promise<void> {
   const locale = resolveUiLocale(language)
   if (i18n.language !== locale) {
-    // changeLanguage triggers the lazy backend load for non-English locales and
-    // resolves once the catalog is in memory.
+    // 非默认语言在此触发按需加载，调用方等待完成后再继续渲染，避免短暂显示错误语言。
     await i18n.changeLanguage(locale)
   }
 }

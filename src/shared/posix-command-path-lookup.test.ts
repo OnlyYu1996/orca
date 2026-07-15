@@ -36,30 +36,31 @@ describe('buildPosixCommandPathLookupScript', () => {
     it.skipIf(isWindows || shell.path === null)(
       `resolves without mutating alias and function masks in ${shell.name}`,
       () => {
-        const commandName = basename(process.execPath)
-        const script = [
-          `${commandName}() { printf '%s\\n' masked-function; }`,
-          `alias ${commandName}='printf "%s\\n" masked-alias'`,
-          buildPosixCommandPathLookupScript({ kind: 'literal', value: commandName }),
-          `printf '%s\\n' "$resolved"`,
-          `alias ${commandName} >/dev/null`,
-          `unalias ${commandName}`,
-          `${commandName}`
-        ].join('\n')
+        withExecutableFixture('masked_agent_test', (directory, executable) => {
+          const commandName = basename(executable)
+          const script = [
+            `${commandName}() { printf '%s\\n' masked-function; }`,
+            `alias ${commandName}='printf "%s\\n" masked-alias'`,
+            buildPosixCommandPathLookupScript({ kind: 'literal', value: commandName }),
+            `printf '%s\\n' "$resolved"`,
+            `alias ${commandName} >/dev/null`,
+            `unalias ${commandName}`,
+            `${commandName}`
+          ].join('\n')
 
-        const resolved = execFileSync(shell.path!, ['-c', script], {
-          encoding: 'utf8',
-          env: {
-            ...process.env,
-            PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ''}`
-          }
+          const resolved = execFileSync(shell.path!, ['-c', script], {
+            encoding: 'utf8',
+            env: {
+              ...process.env,
+              PATH: `${directory}${delimiter}${process.env.PATH ?? ''}`
+            }
+          })
+            .trim()
+            .split('\n')
+
+          expectResolvedExecutable(resolved[0], executable)
+          expect(resolved[1]).toBe('masked-function')
         })
-          .trim()
-          .split('\n')
-
-        expect(isAbsolute(resolved[0])).toBe(true)
-        expect(realpathSync(resolved[0])).toBe(realpathSync(process.execPath))
-        expect(resolved[1]).toBe('masked-function')
       }
     )
   }

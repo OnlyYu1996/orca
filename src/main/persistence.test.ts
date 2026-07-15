@@ -150,7 +150,7 @@ async function withPlatform<T>(platform: NodeJS.Platform, fn: () => Promise<T>):
 }
 
 function dataFile(): string {
-  return join(testState.dir, 'orca-data.json')
+  return join(testState.dir, 'sbbgt-data.json')
 }
 
 function writeDataFile(data: unknown): void {
@@ -339,7 +339,7 @@ describe('Store', () => {
 
   it('loads state from an explicit profile data file path', async () => {
     const profileDataDirectory = join(testState.dir, 'profiles', 'local-default')
-    const profileDataFile = join(profileDataDirectory, 'orca-data.json')
+    const profileDataFile = join(profileDataDirectory, 'sbbgt-data.json')
     mkdirSync(profileDataDirectory, { recursive: true })
     writeDataFile({
       schemaVersion: 1,
@@ -2356,7 +2356,7 @@ describe('Store', () => {
       customAgentCommand: 'claude'
     })
     store.flush()
-    const persisted = JSON.parse(readFileSync(join(testState.dir, 'orca-data.json'), 'utf-8'))
+    const persisted = JSON.parse(readFileSync(join(testState.dir, 'sbbgt-data.json'), 'utf-8'))
     expect(persisted.settings.sourceControlAi.actions.commitMessage).toEqual({
       agentId: 'claude',
       commandInputTemplate: '{basePrompt}\n\nRollback commit prompt'
@@ -4642,7 +4642,7 @@ describe('Store', () => {
 
   it('normalizes disabled TUI agents on load and update', async () => {
     writeFileSync(
-      join(testState.dir, 'orca-data.json'),
+      join(testState.dir, 'sbbgt-data.json'),
       JSON.stringify({
         settings: {
           disabledTuiAgents: ['codex', 'not-real', 'codex', 'claude']
@@ -4668,7 +4668,7 @@ describe('Store', () => {
 
   it('migrates yolo default args onto untouched agent launch settings', async () => {
     writeFileSync(
-      join(testState.dir, 'orca-data.json'),
+      join(testState.dir, 'sbbgt-data.json'),
       JSON.stringify({
         settings: {
           agentCmdOverrides: {}
@@ -4690,7 +4690,7 @@ describe('Store', () => {
 
   it('does not add yolo defaults for legacy agents with command overrides', async () => {
     writeFileSync(
-      join(testState.dir, 'orca-data.json'),
+      join(testState.dir, 'sbbgt-data.json'),
       JSON.stringify({
         settings: {
           agentCmdOverrides: {
@@ -4709,7 +4709,7 @@ describe('Store', () => {
 
   it('removes unsupported TUI skip-permissions args from migrated profiles', async () => {
     writeFileSync(
-      join(testState.dir, 'orca-data.json'),
+      join(testState.dir, 'sbbgt-data.json'),
       JSON.stringify({
         settings: {
           agentYoloDefaultsMigrated: true,
@@ -4737,7 +4737,7 @@ describe('Store', () => {
 
   it('normalizes app icon on load and update', async () => {
     writeFileSync(
-      join(testState.dir, 'orca-data.json'),
+      join(testState.dir, 'sbbgt-data.json'),
       JSON.stringify({
         settings: {
           appIcon: 'not-real'
@@ -5243,7 +5243,7 @@ describe('Store', () => {
     const store = await createStore()
     store.setGitHubCache({ pr: { 'o/r#7': { fetchedAt: 7 } as never }, issue: {} })
     store.flush()
-    expect(existsSync(join(testState.dir, 'orca-github-cache.json'))).toBe(true)
+    expect(existsSync(join(testState.dir, 'sbbgt-github-cache.json'))).toBe(true)
 
     const restarted = await createStore()
     expect(restarted.getGitHubCache().pr['o/r#7']).toEqual({ fetchedAt: 7 })
@@ -5252,8 +5252,8 @@ describe('Store', () => {
   it('keeps GitHub cache sidecars scoped to explicit profile data files', async () => {
     const profileADir = join(testState.dir, 'profiles', 'a')
     const profileBDir = join(testState.dir, 'profiles', 'b')
-    const profileADataFile = join(profileADir, 'orca-data.json')
-    const profileBDataFile = join(profileBDir, 'orca-data.json')
+    const profileADataFile = join(profileADir, 'sbbgt-data.json')
+    const profileBDataFile = join(profileBDir, 'sbbgt-data.json')
     mkdirSync(profileADir, { recursive: true })
     mkdirSync(profileBDir, { recursive: true })
 
@@ -6708,7 +6708,7 @@ describe('Store', () => {
 
   it('stores terminal scrollback snapshots beside explicit profile data files', async () => {
     const profileDataDirectory = join(testState.dir, 'profiles', 'local-default')
-    const profileDataFile = join(profileDataDirectory, 'orca-data.json')
+    const profileDataFile = join(profileDataDirectory, 'sbbgt-data.json')
     mkdirSync(profileDataDirectory, { recursive: true })
 
     vi.resetModules()
@@ -6734,7 +6734,7 @@ describe('Store', () => {
 
   it('reads legacy terminal scrollback snapshots for explicit profile data files', async () => {
     const profileDataDirectory = join(testState.dir, 'profiles', 'local-default')
-    const profileDataFile = join(profileDataDirectory, 'orca-data.json')
+    const profileDataFile = join(profileDataDirectory, 'sbbgt-data.json')
     const ref = 'v1-11111111111111111111111111111111'
     const legacySnapshotDir = join(testState.dir, 'terminal-scrollback')
     mkdirSync(profileDataDirectory, { recursive: true })

@@ -7,6 +7,11 @@ import { getRuntimePathBasename } from '../shared/cross-platform-path'
 import { resolveHookCommandSourcePolicy } from '../shared/hook-command-source-policy'
 import { shouldWaitForSetupBeforeAgentStartup } from '../shared/setup-agent-startup-policy'
 import { parseOrcaYaml } from '../shared/orca-yaml'
+import {
+  LEGACY_PRODUCT_IDENTITY,
+  PRODUCT_PRIVATE_DIRECTORY,
+  PRODUCT_PROJECT_CONFIG_FILE
+} from '../shared/product-identity'
 import { gitExecFileSync } from './git/runner'
 import { isWslPath, parseWslPath, toWindowsWslPath, toLinuxPath } from './wsl'
 import type {
@@ -36,12 +41,28 @@ function getHookShell(): string | undefined {
 
 export { parseOrcaYaml }
 
-/**
- * Load hooks from orca.yaml in the given repo root.
- */
+export type ProjectConfigFileResolution = {
+  filePath: string | null
+  source: 'current' | 'legacy' | 'none'
+  hasConflict: boolean
+}
+
+export function resolveProjectConfigFile(repoPath: string): ProjectConfigFileResolution {
+  const currentPath = join(repoPath, PRODUCT_PROJECT_CONFIG_FILE)
+  const legacyPath = join(repoPath, LEGACY_PRODUCT_IDENTITY.projectConfigFile)
+  const hasCurrent = existsSync(currentPath)
+  const hasLegacy = existsSync(legacyPath)
+  return {
+    filePath: hasCurrent ? currentPath : hasLegacy ? legacyPath : null,
+    source: hasCurrent ? 'current' : hasLegacy ? 'legacy' : 'none',
+    hasConflict: hasCurrent && hasLegacy
+  }
+}
+
+/** 读取仓库级配置，新文件优先，旧文件仅兼容读取。 */
 export function loadHooks(repoPath: string): OrcaHooks | null {
-  const yamlPath = join(repoPath, 'orca.yaml')
-  if (!existsSync(yamlPath)) {
+  const yamlPath = resolveProjectConfigFile(repoPath).filePath
+  if (!yamlPath) {
     return null
   }
 
@@ -53,11 +74,8 @@ export function loadHooks(repoPath: string): OrcaHooks | null {
   }
 }
 
-/**
- * Check whether an orca.yaml exists for a repo.
- */
 export function hasHooksFile(repoPath: string): boolean {
-  return existsSync(join(repoPath, 'orca.yaml'))
+  return resolveProjectConfigFile(repoPath).filePath !== null
 }
 
 // Why: when a newer Orca release adds a top-level key to `orca.yaml` (like
@@ -78,7 +96,11 @@ const RECOGNIZED_ORCA_YAML_KEYS = new Set([
  */
 export function hasUnrecognizedOrcaYamlKeys(repoPath: string): boolean {
   try {
-    const content = readFileSync(join(repoPath, 'orca.yaml'), 'utf-8')
+    const configPath = resolveProjectConfigFile(repoPath).filePath
+    if (!configPath) {
+      return false
+    }
+    const content = readFileSync(configPath, 'utf-8')
     for (const line of iterateLfScriptLines(content)) {
       // Why: bare `key:` at end-of-line (no trailing space) is valid YAML for
       // a mapping with a block value on the next line. Match both forms so
@@ -99,11 +121,14 @@ export function hasUnrecognizedOrcaYamlKeys(repoPath: string): boolean {
 // `.orca/issue-command` remains the per-user override. Keeping the local file in
 // `.orca/` lets users customize agent automation without editing committed config.
 
-const ORCA_DIR = '.orca'
 const ISSUE_COMMAND_FILENAME = 'issue-command'
 
 export function getIssueCommandFilePath(repoPath: string): string {
-  return join(repoPath, ORCA_DIR, ISSUE_COMMAND_FILENAME)
+  return join(repoPath, PRODUCT_PRIVATE_DIRECTORY, ISSUE_COMMAND_FILENAME)
+}
+
+function getLegacyIssueCommandFilePath(repoPath: string): string {
+  return join(repoPath, LEGACY_PRODUCT_IDENTITY.privateDirectory, ISSUE_COMMAND_FILENAME)
 }
 
 export function getSharedIssueCommand(repoPath: string): string | null {
@@ -123,11 +148,17 @@ export type ResolvedIssueCommand = {
  */
 export function readIssueCommand(repoPath: string): ResolvedIssueCommand {
   const filePath = getIssueCommandFilePath(repoPath)
+  const legacyFilePath = getLegacyIssueCommandFilePath(repoPath)
+  const readableFilePath = existsSync(filePath)
+    ? filePath
+    : existsSync(legacyFilePath)
+      ? legacyFilePath
+      : null
   let localContent: string | null = null
 
-  if (existsSync(filePath)) {
+  if (readableFilePath) {
     try {
-      const content = readFileSync(filePath, 'utf-8').trim()
+      const content = readFileSync(readableFilePath, 'utf-8').trim()
       localContent = content || null
     } catch {
       localContent = null
@@ -162,9 +193,9 @@ export function writeIssueCommand(repoPath: string, content: string): void {
       return
     }
 
-    const orcaDir = join(repoPath, ORCA_DIR)
-    if (!existsSync(orcaDir)) {
-      mkdirSync(orcaDir, { recursive: true })
+    const productDir = join(repoPath, PRODUCT_PRIVATE_DIRECTORY)
+    if (!existsSync(productDir)) {
+      mkdirSync(productDir, { recursive: true })
     }
     ensureOrcaDirIgnored(repoPath)
     writeFileSync(filePath, `${trimmed}\n`, 'utf-8')
@@ -182,19 +213,21 @@ export function writeIssueCommand(repoPath: string, content: string): void {
  */
 function ensureOrcaDirIgnored(repoPath: string): void {
   const gitignorePath = join(repoPath, '.gitignore')
+  const escapedDirectory = PRODUCT_PRIVATE_DIRECTORY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const ignoredDirectoryPattern = new RegExp(`^${escapedDirectory}\\/?$`, 'm')
   try {
     if (existsSync(gitignorePath)) {
       const content = readFileSync(gitignorePath, 'utf-8')
-      if (/^\.orca\/?$/m.test(content)) {
+      if (ignoredDirectoryPattern.test(content)) {
         return
       }
       const separator = content.endsWith('\n') ? '' : '\n'
-      writeFileSync(gitignorePath, `${content}${separator}.orca\n`, 'utf-8')
+      writeFileSync(gitignorePath, `${content}${separator}${PRODUCT_PRIVATE_DIRECTORY}\n`, 'utf-8')
     } else {
-      writeFileSync(gitignorePath, '.orca\n', 'utf-8')
+      writeFileSync(gitignorePath, `${PRODUCT_PRIVATE_DIRECTORY}\n`, 'utf-8')
     }
   } catch {
-    console.warn('[hooks] Could not update .gitignore to exclude .orca')
+    console.warn(`[hooks] Could not update .gitignore to exclude ${PRODUCT_PRIVATE_DIRECTORY}`)
   }
 }
 
@@ -341,6 +374,9 @@ export function getSetupCommandSource(
 
 function getSetupEnvVars(repo: Repo, worktreePath: string): Record<string, string> {
   return {
+    SBBGT_ROOT_PATH: repo.path,
+    SBBGT_WORKTREE_PATH: worktreePath,
+    SBBGT_WORKSPACE_NAME: getRuntimePathBasename(worktreePath),
     ORCA_ROOT_PATH: repo.path,
     ORCA_WORKTREE_PATH: worktreePath,
     ORCA_WORKSPACE_NAME: getRuntimePathBasename(worktreePath),

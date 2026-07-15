@@ -41,11 +41,11 @@ function writeIndex(activeProfileId = 'personal'): void {
     activeProfileId,
     profiles: [profile('personal', 'Personal'), profile('work', 'Work')]
   }
-  writeFileSync(join(testState.dir, 'orca-profile-index.json'), JSON.stringify(index), 'utf-8')
+  writeFileSync(join(testState.dir, 'sbbgt-profile-index.json'), JSON.stringify(index), 'utf-8')
 }
 
 function profileDataPath(profileId: string): string {
-  return join(testState.dir, 'profiles', profileId, 'orca-data.json')
+  return join(testState.dir, 'profiles', profileId, 'sbbgt-data.json')
 }
 
 function writeProfileState(profileId: string, state: PersistedState): void {

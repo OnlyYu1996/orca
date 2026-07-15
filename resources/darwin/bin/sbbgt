@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+function app_realpath() {
+	SOURCE=$1
+	while [ -h "$SOURCE" ]; do
+		DIR=$(dirname "$SOURCE")
+		SOURCE=$(readlink "$SOURCE")
+		[[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE
+	done
+	SOURCE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+	echo "${SOURCE_DIR%%${SOURCE_DIR#*.app}}"
+}
+
+APP_PATH="$(app_realpath "${BASH_SOURCE[0]}")"
+if [ -z "$APP_PATH" ]; then
+	echo "无法从符号链接确定赛博包工头应用路径：${BASH_SOURCE[0]}"
+	exit 1
+fi
+
+CONTENTS="$APP_PATH/Contents"
+ELECTRON=""
+for candidate in "赛博包工头" sbbgt Orca; do
+	if [ -f "$CONTENTS/MacOS/$candidate" ] && [ -x "$CONTENTS/MacOS/$candidate" ]; then
+		ELECTRON="$CONTENTS/MacOS/$candidate"
+		break
+	fi
+done
+if [ -z "$ELECTRON" ]; then
+	echo "无法定位赛博包工头可执行文件。" >&2
+	exit 1
+fi
+# Why: Orca packages the CLI entrypoint outside app.asar so the public shell
+# command can execute it directly with ELECTRON_RUN_AS_NODE, mirroring VS Code's
+# launcher model instead of requiring a separate npm-distributed binary.
+CLI="$CONTENTS/Resources/app.asar.unpacked/out/cli/index.js"
+
+export SBBGT_NODE_OPTIONS="${NODE_OPTIONS-}"
+export SBBGT_NODE_REPL_EXTERNAL_MODULE="${NODE_REPL_EXTERNAL_MODULE-}"
+export ORCA_NODE_OPTIONS="$SBBGT_NODE_OPTIONS"
+export ORCA_NODE_REPL_EXTERNAL_MODULE="$SBBGT_NODE_REPL_EXTERNAL_MODULE"
+unset NODE_OPTIONS
+unset NODE_REPL_EXTERNAL_MODULE
+
+ELECTRON_RUN_AS_NODE=1 "$ELECTRON" "$CLI" "$@"

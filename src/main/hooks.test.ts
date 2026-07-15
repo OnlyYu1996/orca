@@ -2,7 +2,7 @@
 import type { Repo } from '../shared/types'
 
 import { join } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultTabsLaunch, parseOrcaYaml } from './hooks'
 
 // Mock fs and path used by loadHooks
@@ -35,9 +35,11 @@ vi.mock('./git/runner', () => ({
 
 const TEST_REPO_PATH = join('/test/repo')
 const TEST_WORKTREE_PATH = join('/test/worktree')
+const TEST_REPO_SBBGT_YAML_PATH = join(TEST_REPO_PATH, 'sbbgt.yaml')
 const TEST_REPO_ORCA_YAML_PATH = join(TEST_REPO_PATH, 'orca.yaml')
 const TEST_WORKTREE_ORCA_YAML_PATH = join(TEST_WORKTREE_PATH, 'orca.yaml')
-const TEST_ISSUE_COMMAND_PATH = join(TEST_REPO_PATH, '.orca', 'issue-command')
+const TEST_ISSUE_COMMAND_PATH = join(TEST_REPO_PATH, '.sbbgt', 'issue-command')
+const TEST_LEGACY_ISSUE_COMMAND_PATH = join(TEST_REPO_PATH, '.orca', 'issue-command')
 const TEST_GITIGNORE_PATH = join(TEST_REPO_PATH, '.gitignore')
 
 describe('parseOrcaYaml', () => {
@@ -293,6 +295,11 @@ describe('parseOrcaYaml', () => {
 })
 
 describe('hasUnrecognizedOrcaYamlKeys', () => {
+  beforeEach(async () => {
+    const fs = await import('node:fs')
+    vi.mocked(fs.existsSync).mockImplementation((path) => path === TEST_REPO_ORCA_YAML_PATH)
+  })
+
   it('returns true when the file contains only keys this version does not handle', async () => {
     const fs = await import('node:fs')
     vi.mocked(fs.readFileSync).mockReturnValue('futureFeature: |\n  some config\n')
@@ -405,13 +412,29 @@ describe('readIssueCommand', () => {
       source: 'shared'
     })
   })
+
+  it('reads a legacy local override only when the new override is absent', async () => {
+    const fs = await import('node:fs')
+    vi.mocked(fs.existsSync).mockImplementation((path) => path === TEST_LEGACY_ISSUE_COMMAND_PATH)
+    vi.mocked(fs.readFileSync).mockImplementation((path) =>
+      path === TEST_LEGACY_ISSUE_COMMAND_PATH ? 'legacy command\n' : ''
+    )
+
+    const { readIssueCommand } = await import('./hooks')
+    expect(readIssueCommand(TEST_REPO_PATH)).toMatchObject({
+      localContent: 'legacy command',
+      effectiveContent: 'legacy command',
+      localFilePath: TEST_ISSUE_COMMAND_PATH,
+      source: 'local'
+    })
+  })
 })
 
 describe('writeIssueCommand', () => {
-  it('writes only the local override file and keeps .orca ignored locally', async () => {
+  it('writes only the new local override file and keeps .sbbgt ignored locally', async () => {
     const fs = await import('node:fs')
     vi.mocked(fs.existsSync).mockImplementation(
-      (path) => path === TEST_GITIGNORE_PATH || path === join(TEST_REPO_PATH, '.orca')
+      (path) => path === TEST_GITIGNORE_PATH || path === join(TEST_REPO_PATH, '.sbbgt')
     )
     vi.mocked(fs.readFileSync).mockImplementation((path) => {
       if (path === TEST_GITIGNORE_PATH) {
@@ -425,7 +448,7 @@ describe('writeIssueCommand', () => {
 
     expect(vi.mocked(fs.writeFileSync)).toHaveBeenCalledWith(
       TEST_GITIGNORE_PATH,
-      'node_modules/\n.orca\n',
+      'node_modules/\n.sbbgt\n',
       'utf-8'
     )
     expect(vi.mocked(fs.writeFileSync)).toHaveBeenCalledWith(
@@ -442,6 +465,22 @@ describe('writeIssueCommand', () => {
 
     expect(vi.mocked(fs.rmSync)).toHaveBeenCalledWith(TEST_ISSUE_COMMAND_PATH, {
       force: true
+    })
+  })
+})
+
+describe('resolveProjectConfigFile', () => {
+  it('prefers sbbgt.yaml and reports a conflict when both files exist', async () => {
+    const fs = await import('node:fs')
+    vi.mocked(fs.existsSync).mockImplementation(
+      (path) => path === TEST_REPO_SBBGT_YAML_PATH || path === TEST_REPO_ORCA_YAML_PATH
+    )
+
+    const { resolveProjectConfigFile } = await import('./hooks')
+    expect(resolveProjectConfigFile(TEST_REPO_PATH)).toEqual({
+      filePath: TEST_REPO_SBBGT_YAML_PATH,
+      source: 'current',
+      hasConflict: true
     })
   })
 })

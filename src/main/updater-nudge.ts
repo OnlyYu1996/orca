@@ -8,8 +8,12 @@ export type NudgeConfig = {
 }
 
 export async function fetchNudge(): Promise<NudgeConfig | null> {
+  const endpoint = process.env.SBBGT_UPDATE_NUDGE_URL?.trim()
+  if (!endpoint) {
+    return null
+  }
   try {
-    const res = await net.fetch('https://onorca.dev/whats-new/nudge.json', {
+    const res = await net.fetch(endpoint, {
       signal: AbortSignal.timeout(5000)
     })
     if (!res.ok) {

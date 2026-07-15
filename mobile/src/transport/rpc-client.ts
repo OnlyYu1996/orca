@@ -304,7 +304,7 @@ export function connect(
             if (index !== -1) {
               connectWaiters.splice(index, 1)
             }
-            reject(new Error('Timed out while connecting to the remote Orca runtime.'))
+            reject(new Error('连接远程赛博包工头运行时超时。'))
           },
           Math.max(0, timeoutMs)
         )

@@ -3,9 +3,11 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { getVersionManagerBinPaths } from '../codex-cli/command'
 import { getMainE2EConfig } from '../e2e-config'
+import { migrateLegacyUserDataDirectory } from './product-storage-migration'
 
 const DEV_PARENT_SHUTDOWN_GRACE_MS = 3000
-const HTTP1_COMPATIBILITY_ENV_VAR = 'ORCA_DISABLE_HTTP2'
+const HTTP1_COMPATIBILITY_ENV_VAR = 'SBBGT_DISABLE_HTTP2'
+const LEGACY_HTTP1_COMPATIBILITY_ENV_VAR = 'ORCA_DISABLE_HTTP2'
 const TRUE_ENV_VALUES = new Set(['1', 'true', 'yes', 'on'])
 const FALSE_ENV_VALUES = new Set(['0', 'false', 'no', 'off'])
 let devParentShutdownRequested = false
@@ -30,8 +32,10 @@ function parseBooleanEnvFlag(value: string | undefined): boolean | null {
 }
 
 function readPersistedHttp1CompatibilityMode(userDataPath: string): boolean {
-  const dataFile = join(userDataPath, 'orca-data.json')
-  if (!existsSync(dataFile)) {
+  const dataFile = ['sbbgt-data.json', 'orca-data.json']
+    .map((fileName) => join(userDataPath, fileName))
+    .find((candidatePath) => existsSync(candidatePath))
+  if (!dataFile) {
     return false
   }
 
@@ -48,7 +52,9 @@ function readPersistedHttp1CompatibilityMode(userDataPath: string): boolean {
 export function shouldDisableHttp2ForElectronNetworking(
   options: NetworkCompatibilityOptions = {}
 ): boolean {
-  const envValue = parseBooleanEnvFlag(options.env?.[HTTP1_COMPATIBILITY_ENV_VAR])
+  const envValue = parseBooleanEnvFlag(
+    options.env?.[HTTP1_COMPATIBILITY_ENV_VAR] ?? options.env?.[LEGACY_HTTP1_COMPATIBILITY_ENV_VAR]
+  )
   if (envValue !== null) {
     return envValue
   }
@@ -187,10 +193,9 @@ export function configureDevUserDataPath(isDev: boolean): void {
     return
   }
 
-  if (!isDev) {
-    return
-  }
-  const overrideUserDataPath = process.env.ORCA_DEV_USER_DATA_PATH
+  const overrideUserDataPath = isDev
+    ? (process.env.SBBGT_DEV_USER_DATA_PATH ?? process.env.ORCA_DEV_USER_DATA_PATH)
+    : (process.env.SBBGT_USER_DATA_PATH ?? process.env.ORCA_USER_DATA_PATH)
   if (overrideUserDataPath) {
     // Why: automated Electron repros need an isolated profile so persisted
     // tabs/worktrees from the developer's normal `orca-dev` session do not
@@ -198,18 +203,37 @@ export function configureDevUserDataPath(isDev: boolean): void {
     app.setPath('userData', overrideUserDataPath)
     return
   }
-  // Why: development runs share the same machine as packaged Orca, and both
-  // publish runtime bootstrap files under userData. Without a dev-only path,
-  // `pnpm dev` can overwrite the packaged app's runtime pointer and make the
-  // public `orca` CLI look broken even though the packaged app is still open.
-  app.setPath('userData', join(app.getPath('appData'), 'orca-dev'))
+  app.setPath('userData', join(app.getPath('appData'), isDev ? 'sbbgt-dev' : 'sbbgt'))
 }
 
 export function configureOrcaUserDataPathEnv(): void {
   // Why: app relaunches can inherit an ORCA_USER_DATA_PATH from an older CLI or
   // updater process. Main must canonicalize it before CLI-shared modules build
   // runtime-home paths, or migrations can bridge two Orca app-data directories.
-  process.env.ORCA_USER_DATA_PATH = app.getPath('userData')
+  const userDataPath = app.getPath('userData')
+  process.env.SBBGT_USER_DATA_PATH = userDataPath
+  process.env.ORCA_USER_DATA_PATH = userDataPath
+}
+
+export function migrateLegacyProductUserData(isDev: boolean): void {
+  const e2eConfig = getMainE2EConfig()
+  const hasExplicitOverride = isDev
+    ? Boolean(process.env.SBBGT_DEV_USER_DATA_PATH ?? process.env.ORCA_DEV_USER_DATA_PATH)
+    : Boolean(process.env.SBBGT_USER_DATA_PATH ?? process.env.ORCA_USER_DATA_PATH)
+  if (e2eConfig.userDataDir || hasExplicitOverride) {
+    return
+  }
+
+  const result = migrateLegacyUserDataDirectory({
+    appDataPath: app.getPath('appData'),
+    targetUserDataPath: app.getPath('userData'),
+    isDev,
+    appVersion: app.getVersion()
+  })
+  if (result.status === 'failed') {
+    // 原因：继续启动会在新目录写入空状态，之后无法再自动判断迁移是否可以重试。
+    throw new Error(`旧版用户数据迁移失败：${result.error}（保留目录：${result.stagingPath}）`)
+  }
 }
 
 export function shouldInstallManagedHooks(isDev: boolean): boolean {

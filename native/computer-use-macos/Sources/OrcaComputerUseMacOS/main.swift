@@ -606,7 +606,7 @@ final class Provider {
             // should open macOS privacy prompts/settings; runtime calls stay quiet.
             throw ProviderError.coded(
                 "permission_denied",
-                "Accessibility permission is required for Orca Computer Use. Run `orca computer permissions` or open Settings > Computer Use, grant Accessibility to Orca Computer Use, then retry."
+                "赛博包工头电脑控制需要“辅助功能”权限。请运行 `sbbgt computer permissions`，或打开“设置 > 电脑控制”为赛博包工头电脑控制授权，然后重试。"
             )
         }
         let appElement = AXUIElementCreateApplication(app.pid)
@@ -643,7 +643,7 @@ final class Provider {
         let screenshotStatus: ScreenshotStatus = if screenshot != nil {
             .captured
         } else if includeScreenshot && !canCaptureScreenshot {
-            .failed("Screen Recording permission is required for Orca Computer Use; grant permission or pass --no-screenshot to inspect accessibility state only.")
+            .failed("赛博包工头电脑控制需要“屏幕录制”权限；请授权，或传入 --no-screenshot 仅检查辅助功能状态。")
         } else if includeScreenshot {
             .failed("window screenshot capture returned no image; retry with --no-screenshot if accessibility state is sufficient.")
         } else {
@@ -1075,7 +1075,7 @@ private func focusedWindow(appElement: AXUIElement, app: AppDescriptor, visibleW
         }
     }
     let permissionHint = visibleWindowCount > 0
-        ? " The app has visible windows, so macOS Accessibility may need Orca Computer Use toggled off and on again in System Settings."
+        ? " 应用存在可见窗口，可能需要在 macOS“系统设置”的“辅助功能”中关闭再重新启用赛博包工头电脑控制。"
         : ""
     if visibleWindowCount > 0 {
         throw ProviderError.coded("permission_denied", "app '\(app.name)' has visible windows but no accessibility window.\(permissionHint)")
@@ -2599,7 +2599,7 @@ private final class PermissionWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "Enable Orca Computer Use"
+        window.title = "启用赛博包工头电脑控制"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.backgroundColor = PermissionPalette.background
@@ -2713,36 +2713,36 @@ private enum PermissionKind: CaseIterable {
     var dragInstruction: String {
         switch self {
         case .accessibility:
-            "Drag Orca Computer Use into the list above to allow Accessibility."
+            "将赛博包工头电脑控制拖入上方列表，以允许使用辅助功能。"
         case .screenshots:
-            "Drag Orca Computer Use into the list above to allow Screenshots."
+            "将赛博包工头电脑控制拖入上方列表，以允许截取屏幕。"
         }
     }
 
     var title: String {
         switch self {
         case .accessibility:
-            "Accessibility"
+            "辅助功能"
         case .screenshots:
-            "Screenshots"
+            "屏幕录制"
         }
     }
 
     var detail: String {
         switch self {
         case .accessibility:
-            "Read and control app interfaces"
+            "读取并操作应用界面"
         case .screenshots:
-            "Capture windows for visual state"
+            "捕获窗口以读取视觉状态"
         }
     }
 
     var icon: NSImage {
         switch self {
         case .accessibility:
-            NSImage(systemSymbolName: "figure", accessibilityDescription: "Accessibility") ?? NSImage()
+            NSImage(systemSymbolName: "figure", accessibilityDescription: "辅助功能") ?? NSImage()
         case .screenshots:
-            NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "Screen Recording") ?? NSImage()
+            NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "屏幕录制") ?? NSImage()
         }
     }
 
@@ -2811,9 +2811,9 @@ private final class PermissionView: NSView {
         let missingPermissions = PermissionKind.allCases.filter { !$0.isGranted }
         let ready = missingPermissions.isEmpty
 
-        let title = label(ready ? "Computer Use is Ready" : "Enable Orca Computer Use", size: 22, weight: .bold)
+        let title = label(ready ? "电脑控制已就绪" : "启用赛博包工头电脑控制", size: 22, weight: .bold)
         let subtitle = label(
-            ready ? "Orca can use local apps when you ask." : "Grant permissions so Orca can use apps when you ask.",
+            ready ? "赛博包工头可在您明确请求时操作本地应用。" : "请授予权限，以便赛博包工头在您明确请求时操作应用。",
             size: 12,
             weight: .regular
         )
@@ -2878,7 +2878,7 @@ private final class PermissionView: NSView {
         textStack.spacing = 4
         textStack.translatesAutoresizingMaskIntoConstraints = false
 
-        let button = NSButton(title: "Allow", target: nil, action: nil)
+        let button = NSButton(title: "允许", target: nil, action: nil)
         button.bezelStyle = .rounded
         button.controlSize = .regular
         button.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
@@ -2888,8 +2888,8 @@ private final class PermissionView: NSView {
             .foregroundColor: NSColor.white,
             .font: NSFont.systemFont(ofSize: 13, weight: .semibold)
         ]
-        button.attributedTitle = NSAttributedString(string: "Allow", attributes: buttonTitleAttributes)
-        button.attributedAlternateTitle = NSAttributedString(string: "Allow", attributes: buttonTitleAttributes)
+        button.attributedTitle = NSAttributedString(string: "允许", attributes: buttonTitleAttributes)
+        button.attributedAlternateTitle = NSAttributedString(string: "允许", attributes: buttonTitleAttributes)
         let target = ButtonTarget(action)
         button.target = target
         button.action = #selector(ButtonTarget.run)
@@ -2917,7 +2917,7 @@ private final class PermissionView: NSView {
     }
 
     private func doneButton() -> NSView {
-        let button = NSButton(title: "Done", target: nil, action: nil)
+        let button = NSButton(title: "完成", target: nil, action: nil)
         button.bezelStyle = .rounded
         button.controlSize = .regular
         button.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
@@ -2927,8 +2927,8 @@ private final class PermissionView: NSView {
             .foregroundColor: NSColor.white,
             .font: NSFont.systemFont(ofSize: 13, weight: .semibold)
         ]
-        button.attributedTitle = NSAttributedString(string: "Done", attributes: buttonTitleAttributes)
-        button.attributedAlternateTitle = NSAttributedString(string: "Done", attributes: buttonTitleAttributes)
+        button.attributedTitle = NSAttributedString(string: "完成", attributes: buttonTitleAttributes)
+        button.attributedAlternateTitle = NSAttributedString(string: "完成", attributes: buttonTitleAttributes)
         let target = ButtonTarget(close)
         button.target = target
         button.action = #selector(ButtonTarget.run)
@@ -2975,7 +2975,7 @@ private final class PermissionDragAssistantController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "Drag Orca Computer Use"
+        window.title = "拖入赛博包工头电脑控制"
         window.backgroundColor = .clear
         window.isOpaque = false
         window.isReleasedWhenClosed = false
@@ -3387,7 +3387,7 @@ private final class DraggableAppTile: NSView, NSDraggingSource {
         icon.imageScaling = .scaleProportionallyUpOrDown
         icon.translatesAutoresizingMaskIntoConstraints = false
 
-        let title = NSTextField(labelWithString: "Orca Computer Use")
+        let title = NSTextField(labelWithString: "赛博包工头电脑控制")
         title.font = NSFont.systemFont(ofSize: 15, weight: .semibold)
         title.textColor = PermissionPalette.primaryText
         title.translatesAutoresizingMaskIntoConstraints = false
@@ -3603,9 +3603,10 @@ private func isTrustedOrcaApplication(_ pid: pid_t) -> Bool {
     else {
         return false
     }
-    // Why: dev validation runs from per-worktree wrapper apps with stable
-    // Orca-owned bundle ids; the sidecar peer check must still authorize them.
-    return bundleId == "com.stablyai.orca" ||
+    // 开发验证由每个工作树的包装应用启动，必须同时允许新品牌和旧版兼容 Bundle ID。
+    return bundleId == "com.onlyyu.sbbgt" ||
+        bundleId.hasPrefix("com.onlyyu.sbbgt.dev") ||
+        bundleId == "com.stablyai.orca" ||
         bundleId.hasPrefix("com.stablyai.orca.dev.") ||
         bundleId == "com.github.Electron"
 }
@@ -3682,7 +3683,7 @@ private func writePermissionStatus(to path: String) {
 }
 
 private func runStdio() {
-    fputs("Orca Computer Use provider must be launched by Orca in app-agent mode.\n", stderr)
+    fputs("赛博包工头电脑控制提供器必须由赛博包工头以 app-agent 模式启动。\n", stderr)
     exit(13)
 }
 

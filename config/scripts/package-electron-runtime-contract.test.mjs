@@ -313,7 +313,7 @@ describe('Electron runtime package contract', () => {
     // Why fail-open: unsigned inner binaries must warn, not block, until the
     // flow is proven on a real release (issue #7785). Flip this to 'true'
     // together with the workflow env to make the gate required.
-    expect(steps[innerVerifyIndex].env.ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED).toBe('false')
+    expect(steps[innerVerifyIndex].env.SBBGT_WINDOWS_INNER_SIGNATURE_REQUIRED).toBe('false')
 
     // Why: every step in the inner-signing chain must be unable to fail the
     // release — a SignPath outage or timeout falls through to today's
@@ -413,15 +413,15 @@ describe('Electron runtime package contract', () => {
     const renderStep = homebrewWorkflow.jobs['bump-cask'].steps.find(
       (step) => step.name === 'Render updated cask file'
     )
-    const copyStep = homebrewWorkflow.jobs['bump-cask'].steps.find(
-      (step) => step.name === 'Copy cask into tap and open PR'
+    const commitStep = homebrewWorkflow.jobs['bump-cask'].steps.find(
+      (step) => step.name === 'Commit updated cask'
     )
 
     expect(resolveCaskStep.run).toContain('token="orca@rc"')
     expect(resolveCaskStep.run).toContain('token="orca"')
     expect(renderStep.env.CASK_PATH).toBe('${{ steps.cask.outputs.path }}')
-    expect(copyStep.run).toContain('cp "$CASK_PATH" "tap/$CASK_PATH"')
-    expect(copyStep.run).toContain('git add "$CASK_PATH"')
+    expect(commitStep.run).toContain('git add "$CASK_PATH"')
+    expect(commitStep.run).toContain('git push origin HEAD:main')
   })
 
   it('installs the Electron package binary in PR checks without changing native module ABI', () => {

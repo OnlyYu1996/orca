@@ -640,6 +640,15 @@ import {
 import type { AddWorktreeOptions, AddWorktreeResult } from '../git/worktree'
 import { isENOENT } from '../ipc/filesystem-auth'
 import {
+  readPreferredProjectConfiguration,
+  readPreferredProjectPrivateFile
+} from '../project-configuration-filesystem'
+import {
+  LEGACY_PRODUCT_IDENTITY,
+  PRODUCT_PRIVATE_DIRECTORY,
+  PRODUCT_PROJECT_CONFIG_FILE
+} from '../../shared/product-identity'
+import {
   createSetupRunnerScript,
   getDefaultTabCommandTrustContent,
   getDefaultTabsLaunch,
@@ -13687,13 +13696,18 @@ export class OrcaRuntimeService {
         }
       }
       try {
-        const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
-        const hooks = result.isBinary ? null : parseOrcaYaml(result.content)
+        const preferred = await readPreferredProjectConfiguration(fsProvider, repo.path)
+        const hooks =
+          !preferred || preferred.result.isBinary ? null : parseOrcaYaml(preferred.result.content)
         return {
-          hasHooksFile: Boolean(hooks),
+          hasHooksFile: preferred !== null,
           hooks,
           setupRunPolicy: getEffectiveSetupRunPolicy(repo),
-          source: hooks ? 'orca.yaml' : null,
+          source: preferred
+            ? preferred.source === 'current'
+              ? PRODUCT_PROJECT_CONFIG_FILE
+              : LEGACY_PRODUCT_IDENTITY.projectConfigFile
+            : null,
           setupTrust: this.getSharedSetupHookTrustPayload(
             repo,
             getDefaultTabCommandTrustContent(hooks)
@@ -13716,7 +13730,7 @@ export class OrcaRuntimeService {
       hasHooksFile: hasFile,
       hooks,
       setupRunPolicy,
-      source: hasFile ? 'orca.yaml' : hooks ? 'legacy' : null,
+      source: hasFile ? PRODUCT_PROJECT_CONFIG_FILE : hooks ? 'legacy' : null,
       setupTrust: this.getSharedSetupHookTrustPayload(
         repo,
         getDefaultTabCommandTrustContent(sharedHooks)
@@ -13736,11 +13750,15 @@ export class OrcaRuntimeService {
         return { hasHooks: false, hooks: null, mayNeedUpdate: false }
       }
       try {
-        const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
-        if (result.isBinary) {
+        const preferred = await readPreferredProjectConfiguration(fsProvider, repo.path)
+        if (!preferred || preferred.result.isBinary) {
           return { hasHooks: false, hooks: null, mayNeedUpdate: false }
         }
-        return { hasHooks: true, hooks: parseOrcaYaml(result.content), mayNeedUpdate: false }
+        return {
+          hasHooks: true,
+          hooks: parseOrcaYaml(preferred.result.content),
+          mayNeedUpdate: false
+        }
       } catch {
         return { hasHooks: false, hooks: null, mayNeedUpdate: false }
       }
@@ -13800,7 +13818,10 @@ export class OrcaRuntimeService {
     }
 
     if (repo.connectionId) {
-      const issueCommandPath = joinWorktreeRelativePath(repo.path, '.orca/issue-command')
+      const issueCommandPath = joinWorktreeRelativePath(
+        repo.path,
+        `${PRODUCT_PRIVATE_DIRECTORY}/issue-command`
+      )
       const fsProvider = getSshFilesystemProvider(repo.connectionId)
       if (!fsProvider) {
         return {
@@ -13811,7 +13832,7 @@ export class OrcaRuntimeService {
           source: 'none' as const
         }
       }
-      const localContent = await this.readRemoteIssueCommandOverride(fsProvider, issueCommandPath)
+      const localContent = await this.readRemoteIssueCommandOverride(fsProvider, repo.path)
       const sharedContent = await this.readRemoteSharedIssueCommand(fsProvider, repo.path)
       const effectiveContent = localContent ?? sharedContent
       return {
@@ -13832,14 +13853,14 @@ export class OrcaRuntimeService {
 
   private async readRemoteIssueCommandOverride(
     fsProvider: IFilesystemProvider,
-    issueCommandPath: string
+    repoPath: string
   ): Promise<string | null> {
     try {
-      const result = await fsProvider.readFile(issueCommandPath)
-      if (result.isBinary) {
+      const preferred = await readPreferredProjectPrivateFile(fsProvider, repoPath, 'issue-command')
+      if (!preferred || preferred.result.isBinary) {
         return null
       }
-      return result.content.trim() || null
+      return preferred.result.content.trim() || null
     } catch {
       return null
     }
@@ -13850,11 +13871,11 @@ export class OrcaRuntimeService {
     repoPath: string
   ): Promise<string | null> {
     try {
-      const result = await fsProvider.readFile(joinWorktreeRelativePath(repoPath, 'orca.yaml'))
-      if (result.isBinary) {
+      const preferred = await readPreferredProjectConfiguration(fsProvider, repoPath)
+      if (!preferred || preferred.result.isBinary) {
         return null
       }
-      return parseOrcaYaml(result.content)?.issueCommand?.trim() || null
+      return parseOrcaYaml(preferred.result.content)?.issueCommand?.trim() || null
     } catch {
       return null
     }
@@ -13867,7 +13888,10 @@ export class OrcaRuntimeService {
     }
 
     if (repo.connectionId) {
-      const issueCommandPath = joinWorktreeRelativePath(repo.path, '.orca/issue-command')
+      const issueCommandPath = joinWorktreeRelativePath(
+        repo.path,
+        `${PRODUCT_PRIVATE_DIRECTORY}/issue-command`
+      )
       const fsProvider = getSshFilesystemProvider(repo.connectionId)
       if (!fsProvider) {
         return { ok: true }
@@ -13881,7 +13905,7 @@ export class OrcaRuntimeService {
         })
         return { ok: true }
       }
-      await fsProvider.createDir(joinWorktreeRelativePath(repo.path, '.orca'))
+      await fsProvider.createDir(joinWorktreeRelativePath(repo.path, PRODUCT_PRIVATE_DIRECTORY))
       await this.ensureRemoteOrcaDirIgnored(fsProvider, repo.path)
       await fsProvider.writeFile(issueCommandPath, `${trimmed}\n`)
       return { ok: true }
@@ -13905,36 +13929,51 @@ export class OrcaRuntimeService {
         if (options.required) {
           throw error
         }
-        console.warn('[runtime] Could not inspect remote .gitignore for .orca', error)
+        console.warn(
+          `[runtime] Could not inspect remote .gitignore for ${PRODUCT_PRIVATE_DIRECTORY}`,
+          error
+        )
         return
       }
       try {
-        await fsProvider.writeFile(gitignorePath, '.orca\n')
+        await fsProvider.writeFile(gitignorePath, `${PRODUCT_PRIVATE_DIRECTORY}\n`)
       } catch (writeError) {
         if (options.required) {
           throw writeError
         }
-        console.warn('[runtime] Could not update remote .gitignore to exclude .orca', writeError)
+        console.warn(
+          `[runtime] Could not update remote .gitignore to exclude ${PRODUCT_PRIVATE_DIRECTORY}`,
+          writeError
+        )
       }
       return
     }
     if (result.isBinary) {
       if (options.required) {
-        throw new Error('Remote .gitignore is binary; cannot verify .orca is ignored')
+        throw new Error(
+          `Remote .gitignore is binary; cannot verify ${PRODUCT_PRIVATE_DIRECTORY} is ignored`
+        )
       }
       return
     }
-    if (/^\.orca\/?$/m.test(result.content)) {
+    const escapedDirectory = PRODUCT_PRIVATE_DIRECTORY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (new RegExp(`^${escapedDirectory}\\/?$`, 'm').test(result.content)) {
       return
     }
     const separator = result.content.endsWith('\n') ? '' : '\n'
     try {
-      await fsProvider.writeFile(gitignorePath, `${result.content}${separator}.orca\n`)
+      await fsProvider.writeFile(
+        gitignorePath,
+        `${result.content}${separator}${PRODUCT_PRIVATE_DIRECTORY}\n`
+      )
     } catch (writeError) {
       if (options.required) {
         throw writeError
       }
-      console.warn('[runtime] Could not update remote .gitignore to exclude .orca', writeError)
+      console.warn(
+        `[runtime] Could not update remote .gitignore to exclude ${PRODUCT_PRIVATE_DIRECTORY}`,
+        writeError
+      )
     }
   }
 
@@ -15410,7 +15449,7 @@ export class OrcaRuntimeService {
       }
     } else if (hooks?.scripts.setup && effectiveDecision !== 'skip') {
       // Runtime RPC calls have no renderer trust prompt, so hooks require explicit CLI opt-in.
-      warning = `orca.yaml setup hook skipped for ${worktreePath}; pass --setup run to run it.`
+      warning = `${PRODUCT_PROJECT_CONFIG_FILE} setup hook skipped for ${worktreePath}; pass --setup run to run it.`
       console.warn(`[hooks] ${warning}`)
     }
 
@@ -17290,7 +17329,7 @@ export class OrcaRuntimeService {
         }
       } else if (hooks?.scripts.archive) {
         // Runtime RPC calls have no renderer trust prompt, so hooks require explicit CLI opt-in.
-        warning = `orca.yaml archive hook skipped for ${canonicalWorktreePath}; pass --run-hooks to run it.`
+        warning = `${PRODUCT_PROJECT_CONFIG_FILE} archive hook skipped for ${canonicalWorktreePath}; pass --run-hooks to run it.`
         console.warn(`[hooks] ${warning}`)
       }
 

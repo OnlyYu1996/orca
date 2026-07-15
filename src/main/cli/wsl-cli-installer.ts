@@ -15,14 +15,16 @@ import {
   getPosixDirname,
   getWslBridgeMarker,
   getWslLauncherMarker,
+  isManagedWslBridge,
+  isManagedWslLauncher,
   parseManagedLauncherTarget,
   quoteShell
 } from './wsl-cli-scripts'
 
 const MANAGED_MARKER = getWslLauncherMarker()
 const BRIDGE_MANAGED_MARKER = getWslBridgeMarker()
-const WSL_COMMAND_NAME = 'orca-ide'
-const LEGACY_WSL_COMMAND_NAME = 'orca'
+const WSL_COMMAND_NAME = 'sbbgt'
+const LEGACY_WSL_COMMAND_NAME = 'orca-ide'
 const WSL_COMMAND_TIMEOUT_MS = 10_000
 
 function normalizeManagedScriptContent(content: string): string {
@@ -91,13 +93,12 @@ export class WslCliInstaller {
     }
 
     const expected = buildWslLauncher(ready.launcherPath, ready.bridgePath)
-    const managed = content.includes(MANAGED_MARKER)
+    const managed = isManagedWslLauncher(content)
     const currentTarget = managed ? parseManagedLauncherTarget(content) : null
     if (managedScriptMatches(content, expected, managed)) {
       const bridgeContent = await this.readCommandFile(ready.distro, ready.bridgePath)
       const expectedBridge = buildWslBridgeScript()
-      const bridgeManaged =
-        typeof bridgeContent === 'string' && bridgeContent.includes(BRIDGE_MANAGED_MARKER)
+      const bridgeManaged = typeof bridgeContent === 'string' && isManagedWslBridge(bridgeContent)
       if (
         typeof bridgeContent === 'string' &&
         managedScriptMatches(bridgeContent, expectedBridge, bridgeManaged)
@@ -151,7 +152,7 @@ export class WslCliInstaller {
     if (bridgeContent === null) {
       return false
     }
-    return bridgeContent === 'not_file' || !bridgeContent.includes(BRIDGE_MANAGED_MARKER)
+    return bridgeContent === 'not_file' || !isManagedWslBridge(bridgeContent)
   }
 
   async repairManagedRegistration(): Promise<ManagedWslCliRepairResult> {
@@ -177,8 +178,7 @@ export class WslCliInstaller {
     }
 
     const legacyContent = await this.readCommandFile(this.distro, legacyCommandPath)
-    const legacyManaged =
-      typeof legacyContent === 'string' && legacyContent.includes(MANAGED_MARKER)
+    const legacyManaged = typeof legacyContent === 'string' && isManagedWslLauncher(legacyContent)
     if (!legacyManaged) {
       return { changed: false, managed: status.state === 'installed', status }
     }
@@ -262,9 +262,7 @@ export class WslCliInstaller {
         `mv -f "$command_tmp" ${quoteShell(status.commandPath)}`,
         'committed=1',
         'rm -f "$bridge_backup"',
-        // Why: the command was renamed to avoid GNOME Orca; remove only the
-        // old Orca-managed WSL wrapper after the replacement has committed.
-        buildManagedLegacyRemoveCommand('"$legacy_command_path"'),
+        // 原因：旧 orca-ide 在兼容周期内继续代理到同一 Windows 启动器。
         'trap - EXIT'
       ].join('\n')
     )
@@ -357,7 +355,6 @@ export class WslCliInstaller {
     }
 
     const pathDirectory = `${home}/.local/bin`
-    // Why: matches the Linux CLI rename to `orca-ide` (avoids GNOME Orca conflict).
     const commandPath = `${pathDirectory}/${WSL_COMMAND_NAME}`
     const pathConfigured =
       (

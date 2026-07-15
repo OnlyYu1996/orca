@@ -60,7 +60,7 @@ describe('profile index store', () => {
     expect(activeProfile.profile.id).toBe(DEFAULT_LOCAL_ORCA_PROFILE_ID)
     expect(activeProfile.profile.name).toBe(DEFAULT_LOCAL_ORCA_PROFILE_NAME)
     expect(activeProfile.dataFile).toBe(
-      join(testState.dir, 'profiles', DEFAULT_LOCAL_ORCA_PROFILE_ID, 'orca-data.json')
+      join(testState.dir, 'profiles', DEFAULT_LOCAL_ORCA_PROFILE_ID, 'sbbgt-data.json')
     )
     expect(readJson(activeProfile.dataFile)).toEqual(legacyState)
     expect(readJson(`${activeProfile.dataFile}.bak.0`)).toEqual(legacyBackup)
@@ -110,7 +110,7 @@ describe('profile index store', () => {
     const activeProfile = ensureActiveOrcaProfile()
 
     expect(activeProfile.profile.id).toBe(profileId)
-    expect(activeProfile.dataFile).toBe(join(profileDirectory, 'orca-data.json'))
+    expect(activeProfile.dataFile).toBe(join(profileDirectory, 'sbbgt-data.json'))
     expect(readJson(activeProfile.dataFile)).toEqual(profileData)
   })
 

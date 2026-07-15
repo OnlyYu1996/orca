@@ -7,7 +7,7 @@ export const getRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
   (): SettingsSearchEntry => ({
     title: translate(
       'auto.components.settings.runtime.environments.search.3517fb2ec0',
-      'Remote Orca Servers'
+      'Remote 赛博包工头 Servers'
     ),
     description: translate(
       'auto.components.settings.runtime.environments.search.4575341c77',
@@ -66,7 +66,7 @@ export const getWebRuntimeEnvironmentsSearchEntry = createLocalizedCatalog(
   (): SettingsSearchEntry => ({
     title: translate(
       'auto.components.settings.runtime.environments.search.3517fb2ec0',
-      'Remote Orca Servers'
+      'Remote 赛博包工头 Servers'
     ),
     description: translate(
       'auto.components.settings.runtime.environments.search.baec27aa8f',

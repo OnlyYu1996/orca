@@ -18,6 +18,7 @@ import type { Store } from '../persistence'
 import { loadKnownUsageWorktreesByRepo, type UsageWorktreeRef } from '../usage-worktree-metadata'
 import type { ClaudeUsagePersistedState } from './types'
 import { createWorktreeRefs, getSessionProjectLabel, scanClaudeUsageFiles } from './scanner'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 // Why: v5 widens Claude ownership keys (message-id / uuid fallbacks). Older
 // caches either lack ownership or used narrower keys and can under/over-count
@@ -29,6 +30,13 @@ const AUTOMATION_ATTRIBUTION_WINDOW_MS = 5 * 60_000
 // Why: capture the path after configureDevUserDataPath() but before app.setName()
 // mutates Electron's derived userData location, matching the persistence/store pattern.
 let _claudeUsageFile: string | null = null
+
+function resolveClaudeUsageFile(): string {
+  const userDataPath = app.getPath('userData')
+  const usageFile = join(userDataPath, 'sbbgt-claude-usage.json')
+  migrateLegacyStorageFile(usageFile, [join(userDataPath, 'orca-claude-usage.json')])
+  return usageFile
+}
 
 type ClaudeModelPricing = {
   input: number
@@ -124,12 +132,12 @@ function getDefaultState(): ClaudeUsagePersistedState {
 }
 
 export function initClaudeUsagePath(): void {
-  _claudeUsageFile = join(app.getPath('userData'), 'orca-claude-usage.json')
+  _claudeUsageFile = resolveClaudeUsageFile()
 }
 
 function getClaudeUsageFile(): string {
   if (!_claudeUsageFile) {
-    _claudeUsageFile = join(app.getPath('userData'), 'orca-claude-usage.json')
+    _claudeUsageFile = resolveClaudeUsageFile()
   }
   return _claudeUsageFile
 }

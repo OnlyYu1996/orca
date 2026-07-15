@@ -14,6 +14,7 @@
 
 import type { EventName, EventProps } from '../../../shared/telemetry-events'
 import type { TelemetryConsentState } from '../../../shared/telemetry-consent-types'
+import { PRODUCT_PRIVACY_URL } from '../../../shared/product-links'
 
 // Re-exported so renderer call sites can import the mapper from this lib
 // alongside `track`. The implementation lives in `src/shared/agent-kind.ts`
@@ -25,7 +26,7 @@ export { tuiAgentToAgentKind } from '../../../shared/agent-kind'
 // telemetry surfaces (FirstLaunchBanner, PrivacyPane). Keeping it here — in
 // the shared telemetry lib — prevents the surfaces from drifting if the doc
 // ever moves.
-export const PRIVACY_URL = 'https://www.onorca.dev/docs/telemetry'
+export const PRIVACY_URL = PRODUCT_PRIVACY_URL
 
 // Why: the IPC boundary is untyped at runtime, so a malformed payload from
 // main would otherwise let the Privacy pane render on garbage. Validate the

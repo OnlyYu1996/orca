@@ -10,11 +10,11 @@ import { getBundledLauncherPath } from './cli-installer'
 const DISPATCHER_MARKER = '# orca-serve-bare-orca-dispatcher'
 
 export type LinuxBareOrcaDispatcherOptions = {
-  /** Packaged app resources root; the bundled `orca-ide` launcher lives under it. */
+  /** 打包应用资源根目录；其下包含 `sbbgt` 主启动器。 */
   resourcesPath: string
-  /** Test seam — defaults to the real home directory. */
+  /** 测试注入点，默认使用真实用户主目录。 */
   homePath?: string
-  /** Test seam — defaults to $APPIMAGE (set only when running from an AppImage). */
+  /** 测试注入点，默认使用仅在 AppImage 中存在的 $APPIMAGE。 */
   appImagePath?: string | null
 }
 
@@ -26,7 +26,7 @@ export type LinuxBareOrcaDispatcherState =
 export type LinuxBareOrcaDispatcherResult = {
   state: LinuxBareOrcaDispatcherState
   dispatcherPath: string
-  /** What the dispatcher execs: the stable AppImage, or the bundled orca-ide. */
+  /** 分发器的最终目标：稳定 AppImage 或已打包的 sbbgt 启动器。 */
   target: string | null
 }
 
@@ -60,9 +60,7 @@ export async function installLinuxBareOrcaDispatcher(
   return { state: 'installed', dispatcherPath, target: resolved.target }
 }
 
-/** Bare-`orca` script that execs the Orca CLI: the stable AppImage when running
- *  from one, otherwise the bundled `orca-ide` launcher. Shared by the serve
- *  dispatcher and the managed-terminal PATH shim. */
+/** 旧版 CLI 命令的兼容脚本：代理到稳定 AppImage 或已打包的 `sbbgt` 启动器。 */
 export function buildBareOrcaCliScript(
   resourcesPath: string,
   appImagePath: string | null

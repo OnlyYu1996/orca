@@ -13,6 +13,7 @@ import { fetchNudge, versionMatchesRange, shouldApplyNudge } from './updater-nud
 describe('updater-nudge', () => {
   beforeEach(() => {
     netFetchMock.mockReset()
+    process.env.SBBGT_UPDATE_NUDGE_URL = 'https://example.test/nudge.json'
   })
 
   describe('fetchNudge', () => {

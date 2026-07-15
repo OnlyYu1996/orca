@@ -332,7 +332,7 @@ describe('buildProjectHostSetupOptions', () => {
     expect(options.at(-1)).toMatchObject({
       id: 'needs-setup:runtime:gpu',
       kind: 'needs-setup',
-      detail: 'Update Orca on this host to set up projects',
+      detail: 'Update 赛博包工头 on this host to set up projects',
       isAvailable: false
     })
   })
@@ -354,7 +354,7 @@ describe('buildProjectHostSetupOptions', () => {
     expect(options.at(-1)).toMatchObject({
       id: 'needs-setup:runtime:gpu',
       kind: 'needs-setup',
-      detail: 'Update Orca on this host to set up projects',
+      detail: 'Update 赛博包工头 on this host to set up projects',
       isAvailable: false
     })
   })

@@ -4741,7 +4741,7 @@ describe('OrcaRuntimeService', () => {
       await expect(runtime.getRepoHooks('id:repo-1')).resolves.toMatchObject({
         hasHooksFile: true,
         hooks: { scripts: { setup: 'pnpm install' } },
-        source: 'orca.yaml',
+        source: 'sbbgt.yaml',
         setupTrust: {
           contentHash: '005d0b7e5c261dcc5e2f8568e69a0b30e889a3275b55b18ec20a7deef0081e90',
           scriptContent: 'pnpm install'
@@ -4751,6 +4751,7 @@ describe('OrcaRuntimeService', () => {
       unregisterSshFilesystemProvider('ssh-1')
     }
 
+    expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\sbbgt.yaml')
     expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\orca.yaml')
     expect(hasHooksFile).not.toHaveBeenCalled()
     expect(getEffectiveHooks).not.toHaveBeenCalled()
@@ -4827,7 +4828,7 @@ describe('OrcaRuntimeService', () => {
       await expect(runtime.readRepoIssueCommand('id:repo-1')).resolves.toMatchObject({
         localContent: 'Fix it',
         effectiveContent: 'Fix it',
-        localFilePath: 'C:\\remote\\repo\\.orca\\issue-command'
+        localFilePath: 'C:\\remote\\repo\\.sbbgt\\issue-command'
       })
       await expect(runtime.writeRepoIssueCommand('id:repo-1', 'Ship it')).resolves.toEqual({
         ok: true
@@ -4836,16 +4837,18 @@ describe('OrcaRuntimeService', () => {
       unregisterSshFilesystemProvider('ssh-1')
     }
 
+    expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\sbbgt.yaml')
     expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\orca.yaml')
+    expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\.sbbgt\\issue-command')
     expect(fsProvider.readFile).toHaveBeenCalledWith('C:\\remote\\repo\\.orca\\issue-command')
-    expect(fsProvider.createDir).toHaveBeenCalledWith('C:\\remote\\repo\\.orca')
+    expect(fsProvider.createDir).toHaveBeenCalledWith('C:\\remote\\repo\\.sbbgt')
     expect(fsProvider.writeFile).toHaveBeenCalledWith(
-      'C:\\remote\\repo\\.orca\\issue-command',
+      'C:\\remote\\repo\\.sbbgt\\issue-command',
       'Ship it\n'
     )
     expect(fsProvider.writeFile).toHaveBeenCalledWith(
       'C:\\remote\\repo\\.gitignore',
-      'node_modules\n.orca\n'
+      'node_modules\n.sbbgt\n'
     )
   })
 
@@ -4889,7 +4892,7 @@ describe('OrcaRuntimeService', () => {
         localContent: null,
         sharedContent: 'claude -p "Fix #{{issue}}"',
         effectiveContent: 'claude -p "Fix #{{issue}}"',
-        localFilePath: '/remote/repo/.orca/issue-command',
+        localFilePath: '/remote/repo/.sbbgt/issue-command',
         source: 'shared'
       })
       await expect(runtime.writeRepoIssueCommand('id:repo-1', '   ')).resolves.toEqual({
@@ -4899,10 +4902,11 @@ describe('OrcaRuntimeService', () => {
       unregisterSshFilesystemProvider('ssh-1')
     }
 
+    expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo/sbbgt.yaml')
     expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo/orca.yaml')
-    expect(fsProvider.deletePath).toHaveBeenCalledWith('/remote/repo/.orca/issue-command', false)
+    expect(fsProvider.deletePath).toHaveBeenCalledWith('/remote/repo/.sbbgt/issue-command', false)
     expect(fsProvider.writeFile).not.toHaveBeenCalledWith(
-      '/remote/repo/.orca/issue-command',
+      '/remote/repo/.sbbgt/issue-command',
       expect.anything()
     )
   })
@@ -28322,7 +28326,7 @@ describe('OrcaRuntimeService', () => {
     )
     expect(deleteWorktreeHistoryDirMock).toHaveBeenCalledWith(TEST_WORKTREE_ID)
     expect(result.warning).toBe(
-      `orca.yaml archive hook skipped for ${TEST_WORKTREE_PATH}; pass --run-hooks to run it.`
+      `sbbgt.yaml archive hook skipped for ${TEST_WORKTREE_PATH}; pass --run-hooks to run it.`
     )
   })
 
@@ -28355,7 +28359,7 @@ describe('OrcaRuntimeService', () => {
 
       expect(result).toEqual({
         preservedBranch: { branchName: 'feature/foo', head: 'abc' },
-        warning: `orca.yaml archive hook skipped for ${TEST_WORKTREE_PATH}; pass --run-hooks to run it.`
+        warning: `sbbgt.yaml archive hook skipped for ${TEST_WORKTREE_PATH}; pass --run-hooks to run it.`
       })
       expect(gitSpy).toHaveBeenCalledWith(['worktree', 'prune'], {
         cwd: TEST_REPO_PATH

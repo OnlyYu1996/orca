@@ -96,7 +96,7 @@ export class MacOSNativeProviderClient {
     const id = this.nextId++
     const helperExecutablePath = resolveMacOSComputerUseExecutablePath()
     if (!helperExecutablePath) {
-      throw new RuntimeClientError('accessibility_error', 'Orca Computer Use.app was not found')
+      throw new RuntimeClientError('accessibility_error', '未找到赛博包工头电脑控制.app')
     }
     const transport = await this.ensureSocketStarted(helperExecutablePath)
     const token = this.socketToken

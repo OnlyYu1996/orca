@@ -1,17 +1,19 @@
 {
-  "name": "orca",
+  "name": "sbbgt",
   "version": "1.4.139-rc.1",
-  "description": "Next-gen IDE for parallel agentic development",
-  "homepage": "https://github.com/stablyai/orca",
-  "author": "stablyai",
+  "description": "面向并行智能体开发的下一代 IDE",
+  "homepage": "https://github.com/OnlyYu1996/orca",
+  "author": "OnlyYu1996",
   "bin": {
     "orca": "./out/cli/index.js",
-    "orca-dev": "./config/scripts/orca-dev.mjs"
+    "orca-dev": "./config/scripts/orca-dev.mjs",
+    "sbbgt": "./out/cli/index.js",
+    "sbbgt-dev": "./config/scripts/sbbgt-dev.mjs"
   },
   "main": "./out/main/index.js",
   "scripts": {
     "format": "oxfmt --write .",
-    "lint": "oxlint && pnpm run lint:switch-exhaustiveness && node config/scripts/check-styled-scrollbars.mjs && pnpm run check:reliability-gates && pnpm run check:max-lines-ratchet && pnpm run verify:localization-catalog && pnpm run verify:localization-coverage",
+    "lint": "oxlint && pnpm run lint:switch-exhaustiveness && node config/scripts/check-styled-scrollbars.mjs && pnpm run check:reliability-gates && pnpm run check:max-lines-ratchet && pnpm run verify:localization-catalog && pnpm run verify:localization-coverage && pnpm run verify:brand-boundaries",
     "lint:react-doctor": "oxlint --config config/oxlint-react-doctor.json",
     "lint:react-doctor:changed": "node config/scripts/lint-react-doctor-changed.mjs",
     "lint:switch-exhaustiveness": "oxlint --type-aware --config config/oxlint-switch-exhaustiveness.json src/main src/preload src/shared src/relay src/cli src/renderer/src config tests --quiet",
@@ -49,6 +51,7 @@
     "verify:cli-bin": "node config/scripts/verify-cli-bin.mjs",
     "verify:localization-catalog": "node config/scripts/verify-localization-catalog.mjs",
     "sync:localization-catalog": "node config/scripts/verify-localization-catalog.mjs --fix",
+    "sync:brand-locales": "node config/scripts/rebrand-localization-catalogs.mjs",
     "bootstrap:locale-catalog": "node config/scripts/bootstrap-locale-catalog.mjs",
     "bootstrap:zh-catalog": "node config/scripts/bootstrap-zh-catalog.mjs",
     "bootstrap:ko-catalog": "node config/scripts/bootstrap-locale-catalog.mjs --locale ko",
@@ -56,6 +59,7 @@
     "bootstrap:es-catalog": "node config/scripts/bootstrap-locale-catalog.mjs --locale es",
     "repair:locale-catalog": "node config/scripts/repair-locale-catalog.mjs",
     "verify:localization-coverage": "node config/scripts/audit-localization-coverage.mjs --check",
+    "verify:brand-boundaries": "node config/scripts/verify-brand-boundaries.mjs",
     "audit:localization": "node config/scripts/audit-localization-coverage.mjs",
     "build:cli": "tsc -p config/tsconfig.cli.json --outDir out --composite false --incremental false && node config/scripts/verify-cli-bin.mjs --fix-executable --fix-package-json && node config/scripts/install-dev-cli.mjs",
     "build:electron-vite": "node config/scripts/run-electron-vite-build.mjs",

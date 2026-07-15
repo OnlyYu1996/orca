@@ -488,7 +488,9 @@ export class Coordinator {
       taskSpec: strippedSpec,
       coordinatorHandle: this.opts.coordinatorHandle,
       workerHandle: targetHandle,
-      devMode: process.env.ORCA_USER_DATA_PATH?.includes('orca-dev'),
+      devMode: /(?:sbbgt|orca)-dev/.test(
+        process.env.SBBGT_USER_DATA_PATH ?? process.env.ORCA_USER_DATA_PATH ?? ''
+      ),
       ...(this.runtime.getTerminalOrchestrationCliCommand
         ? { cliCommand: this.runtime.getTerminalOrchestrationCliCommand(targetHandle) }
         : {}),

@@ -7,13 +7,13 @@ describe('CLI error recovery', () => {
   it('prints did-you-mean next steps for an unknown-command error carrying data', () => {
     const error = new RuntimeClientError('invalid_argument', 'Unknown command: worktree remov', {
       suggestions: ['worktree rm'],
-      nextSteps: ['Did you mean: orca worktree rm']
+      nextSteps: ['Did you mean: sbbgt worktree rm']
     })
 
     const output = formatCliError(error)
 
     expect(output).toContain('Unknown command: worktree remov')
-    expect(output).toContain('Next step: Did you mean: orca worktree rm')
+    expect(output).toContain('下一步：Did you mean: sbbgt worktree rm')
   })
 
   it('prefers structured recovery over generic computer hints in text output', () => {
@@ -23,7 +23,7 @@ describe('CLI error recovery', () => {
 
     const output = formatCliError(error, { commandPath: ['computer', 'click'] })
 
-    expect(output).toContain('Next step: Did you mean: --force')
+    expect(output).toContain('下一步：Did you mean: --force')
     expect(output).not.toContain('Fix the command flags or RPC params')
   })
 
@@ -41,7 +41,7 @@ describe('CLI error recovery', () => {
 
     const output = formatCliError(error, { commandPath: ['computer', 'click'] })
 
-    expect(output).toContain('Next step: Use the runtime-specific option')
+    expect(output).toContain('下一步：Use the runtime-specific option')
     expect(output).not.toContain('Fix the command flags or RPC params')
   })
 

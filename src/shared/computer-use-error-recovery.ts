@@ -45,7 +45,7 @@ export function computerUseErrorRecoveryData(
       )
     case 'permission_denied':
       return recoverWith(
-        'Run `orca computer permissions --json`, or `orca computer permissions --id accessibility --json` / `--id screenshots --json` when the message names one missing permission.',
+        '运行 `sbbgt computer permissions --json`；如果消息指出缺少具体权限，请运行 `sbbgt computer permissions --id accessibility --json` 或 `--id screenshots --json`。',
         'For remote or SSH targets, verify the command is running inside an active graphical desktop session.'
       )
     case 'element_not_found':
@@ -81,13 +81,13 @@ export function computerUseErrorRecoveryData(
     case 'screenshot_failed':
       return recoverWith(
         'If the accessibility tree is sufficient, rerun the command with `--no-screenshot` instead of retrying the same screenshot capture.',
-        'If the message mentions Screen Recording or screenshots permission, run `orca computer permissions --id screenshots --json` and grant access before retrying.',
+        '如果消息提到屏幕录制或截图权限，请运行 `sbbgt computer permissions --id screenshots --json`，授权后再重试。',
         'If the message mentions the payload cap, target a smaller/current window or use `--no-screenshot`.'
       )
     case 'accessibility_error':
       return recoverWith(
         'Run `orca computer capabilities --json` to confirm the provider is available before retrying.',
-        'If the message mentions permissions, run `orca computer permissions --id accessibility --json` and grant access.',
+        '如果消息提到权限，请运行 `sbbgt computer permissions --id accessibility --json` 并完成授权。',
         'Do not loop on the same action if provider availability or permissions remain unchanged.'
       )
     default:

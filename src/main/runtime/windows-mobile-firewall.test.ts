@@ -122,7 +122,7 @@ describe('windows mobile firewall', () => {
     }
   })
 
-  it('repairs only Orca mobile pairing on private networks after elevation', async () => {
+  it('repairs only branded mobile pairing on private networks after elevation', async () => {
     const runPowerShell = vi.fn().mockResolvedValue('{"launched":true,"exitCode":0}')
     await expect(repairWindowsMobileFirewall(6769, environment(runPowerShell))).resolves.toEqual({
       ok: true
@@ -132,7 +132,9 @@ describe('windows mobile firewall', () => {
     const encoded = outerScript.match(/'-EncodedCommand', '([^']+)'/)?.[1]
     expect(encoded).toBeTruthy()
     const repairScript = Buffer.from(encoded!, 'base64').toString('utf16le')
+    expect(repairScript).toContain("-Name 'Sbbgt.MobilePairing'")
     expect(repairScript).toContain("-Name 'Orca.MobilePairing'")
+    expect(repairScript).toContain("-DisplayName '赛博包工头移动配对'")
     expect(repairScript).toContain('-Profile Private')
     expect(repairScript).toContain('-Protocol TCP')
     expect(repairScript).toContain('-LocalPort 6769')

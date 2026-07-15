@@ -16,6 +16,7 @@ import {
 } from '../src/transport/client-context'
 import { buildConnectionDiagnosticsReport } from '../src/diagnostics/connection-diagnostics-report'
 import type { ConnectionLogEntry, HostProfile } from '../src/transport/types'
+import { useMobileLocale } from '../src/i18n/mobile-locale-context'
 
 // Why: getSnapshot must be referentially stable when there's no data —
 // a fresh [] per call would make useSyncExternalStore re-render forever.
@@ -27,6 +28,7 @@ const EMPTY_ENTRIES: readonly ConnectionLogEntry[] = []
 export default function ConnectionLogScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
+  const { t } = useMobileLocale()
   const [hosts, setHosts] = useState<HostProfile[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -86,7 +88,7 @@ export default function ConnectionLogScreen() {
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <ChevronLeft size={22} color={colors.textSecondary} />
         </Pressable>
-        <Text style={styles.heading}>Connection log</Text>
+        <Text style={styles.heading}>{t('connectionLog.title')}</Text>
       </View>
 
       {hosts.length > 1 && (
@@ -113,7 +115,9 @@ export default function ConnectionLogScreen() {
           <View style={styles.statusRow}>
             <Text style={styles.statusText}>
               {state}
-              {reconnectAttempts > 0 ? ` · attempt ${reconnectAttempts}` : ''}
+              {reconnectAttempts > 0
+                ? ` · ${t('connectionLog.attempt', { count: reconnectAttempts })}`
+                : ''}
             </Text>
             <Pressable style={styles.copyButton} onPress={() => void copyDiagnostics()}>
               {copied ? (
@@ -121,19 +125,19 @@ export default function ConnectionLogScreen() {
               ) : (
                 <Copy size={14} color={colors.textSecondary} />
               )}
-              <Text style={styles.copyButtonText}>{copied ? 'Copied' : 'Copy diagnostics'}</Text>
+              <Text style={styles.copyButtonText}>
+                {copied ? t('connectionLog.copied') : t('connectionLog.copyDiagnostics')}
+              </Text>
             </Pressable>
           </View>
           {entries.length > 0 ? (
             <ConnectionLog entries={[...entries]} title={selected.name} />
           ) : (
-            <Text style={styles.emptyText}>
-              No connection events yet this session. Events appear as the app dials this host.
-            </Text>
+            <Text style={styles.emptyText}>{t('connectionLog.empty')}</Text>
           )}
         </>
       ) : (
-        <Text style={styles.emptyText}>No paired hosts.</Text>
+        <Text style={styles.emptyText}>{t('connectionLog.noHosts')}</Text>
       )}
     </View>
   )

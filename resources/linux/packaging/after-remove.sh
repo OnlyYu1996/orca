@@ -1,18 +1,16 @@
 #!/bin/bash
-# Why: remove the PATH symlink that after-install.sh created, but only if it
-# still points into an Orca install dir — never delete an unrelated
-# /usr/bin/orca-ide a user or other package may own.
+# 原因：只移除指向本产品安装目录的链接，不能删除用户或其他软件拥有的命令。
 set -e
 
-link="/usr/bin/orca-ide"
-
-if [ -L "$link" ]; then
-  target="$(readlink "$link" || true)"
-  case "$target" in
-    /opt/Orca/*|/opt/orca-ide/*|/opt/orca/*)
-      rm -f "$link"
-      ;;
-  esac
-fi
+for link in /usr/bin/sbbgt /usr/bin/orca-ide; do
+  if [ -L "$link" ]; then
+    target="$(readlink "$link" || true)"
+    case "$target" in
+      /opt/赛博包工头/*|/opt/sbbgt/*|/opt/Orca/*|/opt/orca-ide/*|/opt/orca/*)
+        rm -f "$link"
+        ;;
+    esac
+  fi
+done
 
 exit 0

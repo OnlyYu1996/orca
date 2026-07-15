@@ -3,6 +3,7 @@ import { computerUseErrorRecoveryData } from '../shared/computer-use-error-recov
 import { prepareComputerCliJsonResult } from './computer-format'
 import type { RuntimeRpcFailure, RuntimeRpcSuccess } from './runtime-client'
 import { RuntimeClientError, RuntimeRpcFailureError } from './runtime-client'
+import { formatCliProductTextZh } from './cli-help-copy-zh'
 
 export {
   formatBrowserProfileList,
@@ -78,7 +79,7 @@ export function printResult<TResult>(
 export function formatCliError(error: unknown, context: CliErrorContext = {}): string {
   const message = error instanceof Error ? error.message : String(error)
   if (error instanceof RuntimeClientError && error.code === 'runtime_unavailable') {
-    return `${message}\nOrca is not running. Run 'orca open' first.`
+    return `${message}\n赛博包工头尚未运行，请先执行 'sbbgt open'。`
   }
   // Why: error-specific recovery must win over the generic computer fallback.
   if (error instanceof RuntimeClientError) {
@@ -97,7 +98,7 @@ export function formatCliError(error: unknown, context: CliErrorContext = {}): s
     error instanceof RuntimeRpcFailureError &&
     error.response.error.code === 'runtime_unavailable'
   ) {
-    return `${message}\nOrca is not running. Run 'orca open' first.`
+    return `${message}\n赛博包工头尚未运行，请先执行 'sbbgt open'。`
   }
   if (error instanceof RuntimeRpcFailureError) {
     return formatMessageWithNextSteps(message, nextStepsFromData(error.response.error.data))
@@ -131,9 +132,11 @@ export function reportCliError(error: unknown, json: boolean, context: CliErrorC
 
 function formatMessageWithNextSteps(message: string, nextSteps: readonly string[]): string {
   if (nextSteps.length === 0) {
-    return message
+    return formatCliProductTextZh(message)
   }
-  return `${message}\n${nextSteps.map((step) => `Next step: ${step}`).join('\n')}`
+  return `${formatCliProductTextZh(message)}\n${nextSteps
+    .map((step) => `下一步：${formatCliProductTextZh(step)}`)
+    .join('\n')}`
 }
 
 function nextStepsFromData(data: unknown): string[] {

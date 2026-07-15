@@ -91,7 +91,7 @@ function getHostSetupAvailability(host: ExecutionHostRegistryEntry): {
         isAvailable: false,
         detail: translate(
           'auto.components.settings.RepositoryPane.hostSetupMissingCapability',
-          'Update Orca on this host to set up projects'
+          'Update 赛博包工头 on this host to set up projects'
         )
       }
     }

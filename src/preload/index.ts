@@ -458,7 +458,8 @@ document.addEventListener(
   true
 )
 
-const startupDiagnosticsEnabled = process.env.ORCA_STARTUP_DIAGNOSTICS === '1'
+const startupDiagnosticsEnabled =
+  process.env.SBBGT_STARTUP_DIAGNOSTICS === '1' || process.env.ORCA_STARTUP_DIAGNOSTICS === '1'
 
 // Custom APIs for renderer
 const api = {
@@ -1155,6 +1156,7 @@ const api = {
   },
 
   feedback: {
+    getStatus: (): Promise<{ configured: boolean }> => ipcRenderer.invoke('feedback:getStatus'),
     submit: (args: {
       feedback: string
       submitAnonymously?: boolean

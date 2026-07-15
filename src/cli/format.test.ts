@@ -84,7 +84,7 @@ describe('formatCliError', () => {
     const output = formatCliError(error)
 
     expect(output).toContain('app not found: Gmail')
-    expect(output).toContain('Next step: Run `orca computer list-apps --json`')
+    expect(output).toContain('下一步：Run `sbbgt computer list-apps --json`')
     expect(output).toContain('desktop browser app/window')
     expect(output).toContain('--app <web app>')
     expect(output).not.toContain('orca goto')
@@ -111,8 +111,8 @@ describe('formatCliError', () => {
     expect(formatCliError(error)).toBe(
       [
         'Parent selector was not found.',
-        'Next step: Pass a valid --parent-worktree selector such as folder:<id>, worktree:<worktreeId>, id:<repo-id>::<path>, branch:<branch>, issue:<number>, path:<absolute-path>, or active/current.',
-        'Next step: Retry with --no-parent to create without lineage.'
+        '下一步：Pass a valid --parent-worktree selector such as folder:<id>, worktree:<worktreeId>, id:<repo-id>::<path>, branch:<branch>, issue:<number>, path:<absolute-path>, or active/current.',
+        '下一步：Retry with --no-parent to create without lineage.'
       ].join('\n')
     )
   })

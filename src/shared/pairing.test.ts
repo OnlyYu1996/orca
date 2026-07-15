@@ -16,7 +16,7 @@ describe('pairing offer', () => {
 
   it('encode then decode round-trips correctly', () => {
     const url = encodePairingOffer(offer)
-    expect(url).toMatch(/^orca:\/\/pair\?code=/)
+    expect(url).toMatch(/^sbbgt:\/\/pair\?code=/)
 
     const decoded = decodePairingOffer(url)
     expect(decoded).toEqual(offer)
@@ -56,6 +56,13 @@ describe('pairing offer', () => {
     expect(decodePairingOffer(`orca://pair#${code}`)).toEqual(offer)
   })
 
+  it('accepts the legacy query scheme during the compatibility window', () => {
+    const url = encodePairingOffer(offer)
+    const code = new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('code')!
+
+    expect(decodePairingOffer(`orca://pair?code=${code}`)).toEqual(offer)
+  })
+
   it('rejects payloads with missing fields', () => {
     const partial = { v: 2, endpoint: 'ws://host:1234' }
     const base64 = Buffer.from(JSON.stringify(partial)).toString('base64')
@@ -83,7 +90,7 @@ describe('parsePairingCode', () => {
     publicKeyB64: 'pubkey-xyz'
   }
 
-  it('parses a full orca://pair# URL', () => {
+  it('parses a full sbbgt://pair URL', () => {
     const url = encodePairingOffer(offer)
     expect(parsePairingCode(url)).toEqual(offer)
   })

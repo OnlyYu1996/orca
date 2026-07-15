@@ -129,7 +129,7 @@ function verifyMacOSHelperApp() {
     'computer-use-macos',
     '.build',
     'release',
-    'Orca Computer Use.app'
+    '赛博包工头电脑控制.app'
   )
   if (!existsSync(appPath)) {
     console.error(

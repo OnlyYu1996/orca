@@ -24,7 +24,11 @@ function getLifecycleGroupRecipientError(type: 'worker_done' | 'heartbeat'): str
 // should never set this — there is no surface documentation. A bogus value
 // falls back to the default rather than disabling the keepalive.
 function resolveKeepaliveIntervalMs(): number {
-  const raw = process.env.ORCA_KEEPALIVE_INTERVAL_MS ?? process.env.ORCA_HEARTBEAT_INTERVAL_MS
+  const raw =
+    process.env.SBBGT_KEEPALIVE_INTERVAL_MS ??
+    process.env.ORCA_KEEPALIVE_INTERVAL_MS ??
+    process.env.SBBGT_HEARTBEAT_INTERVAL_MS ??
+    process.env.ORCA_HEARTBEAT_INTERVAL_MS
   if (!raw) {
     return DEFAULT_KEEPALIVE_INTERVAL_MS
   }
@@ -149,7 +153,7 @@ async function resolveOrchestrationTerminalHandle(
   if (explicit) {
     return explicit
   }
-  const envHandle = process.env.ORCA_TERMINAL_HANDLE
+  const envHandle = process.env.SBBGT_TERMINAL_HANDLE ?? process.env.ORCA_TERMINAL_HANDLE
   if (envHandle && envHandle.length > 0) {
     if (flagName === 'from' && options.validateEnvHandle) {
       // Why: long-lived shells can retain an ORCA_TERMINAL_HANDLE after the
@@ -175,7 +179,7 @@ async function resolveOrchestrationTerminalHandle(
 async function resolveTaskCreatorTerminalHandle(
   client: Parameters<CommandHandler>[0]['client']
 ): Promise<string | undefined> {
-  const envHandle = process.env.ORCA_TERMINAL_HANDLE
+  const envHandle = process.env.SBBGT_TERMINAL_HANDLE ?? process.env.ORCA_TERMINAL_HANDLE
   if (!envHandle || envHandle.length === 0) {
     return undefined
   }
@@ -237,7 +241,7 @@ async function resolveOrchestrationPaneTerminalHandle(
   client: Parameters<CommandHandler>[0]['client'],
   options: { optional?: boolean } = {}
 ): Promise<string | undefined> {
-  const paneKey = process.env.ORCA_PANE_KEY
+  const paneKey = process.env.SBBGT_PANE_KEY ?? process.env.ORCA_PANE_KEY
   if (!paneKey || paneKey.length === 0) {
     return undefined
   }
@@ -315,13 +319,15 @@ async function resolveImplicitOrchestrationSender(
 function throwNoActiveSenderTerminal(): never {
   throw new RuntimeClientError(
     'no_active_sender_terminal',
-    'Could not determine the sender terminal for this orchestration command. ' +
-      'Pass --from <terminal-handle> or run the command inside a live Orca terminal with ORCA_TERMINAL_HANDLE set.'
+    '无法确定该编排命令的发送方终端。' +
+      '请传入 --from <terminal-handle>，或在已设置 SBBGT_TERMINAL_HANDLE 的赛博包工头活动终端中运行。'
   )
 }
 
 function isDevCliInvocation(): boolean {
-  return process.env.ORCA_USER_DATA_PATH?.includes('orca-dev') ?? false
+  return /(?:sbbgt|orca)-dev/.test(
+    process.env.SBBGT_USER_DATA_PATH ?? process.env.ORCA_USER_DATA_PATH ?? ''
+  )
 }
 
 function getOptionalPositiveIntegerValueFlag(
@@ -360,7 +366,7 @@ export const ORCHESTRATION_HANDLERS: Record<string, CommandHandler> = {
     if (
       (type === 'worker_done' || type === 'heartbeat') &&
       !getOptionalStringFlag(flags, 'from') &&
-      !process.env.ORCA_TERMINAL_HANDLE
+      !(process.env.SBBGT_TERMINAL_HANDLE ?? process.env.ORCA_TERMINAL_HANDLE)
     ) {
       // Why: focus is not lifecycle authority; injected dispatches carry an
       // explicit worker handle so an identity-less subprocess must fail closed.
@@ -385,7 +391,7 @@ export const ORCHESTRATION_HANDLERS: Record<string, CommandHandler> = {
       payload: getOptionalStructuredMessagePayload(flags),
       // Why: the pane key is the remint-stable sender identity the runtime
       // verifies lifecycle ownership against; older runtimes strip it.
-      senderPaneKey: process.env.ORCA_PANE_KEY || undefined,
+      senderPaneKey: process.env.SBBGT_PANE_KEY ?? process.env.ORCA_PANE_KEY ?? undefined,
       devMode: isDevCliInvocation()
     })
     if ('message' in result.result && result.result.lifecycle?.action === 'rejected') {

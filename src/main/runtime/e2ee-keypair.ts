@@ -5,7 +5,8 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import nacl from 'tweetnacl'
 import { hardenExistingSecureFile, writeSecureJsonFile } from '../../shared/secure-file'
-import { E2EE_KEYPAIR_FILENAME } from './mobile-pairing-files'
+import { E2EE_KEYPAIR_FILENAME, LEGACY_E2EE_KEYPAIR_FILENAME } from './mobile-pairing-files'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 const KEYPAIR_FILENAME = E2EE_KEYPAIR_FILENAME
 const KEYPAIR_VERSION = 1
@@ -25,6 +26,11 @@ export type E2EEKeypair = {
 
 export function loadOrCreateE2EEKeypair(userDataPath: string): E2EEKeypair {
   const filePath = join(userDataPath, KEYPAIR_FILENAME)
+  const legacyFilePath = join(userDataPath, LEGACY_E2EE_KEYPAIR_FILENAME)
+  if (existsSync(legacyFilePath)) {
+    hardenExistingSecureFile(legacyFilePath)
+  }
+  migrateLegacyStorageFile(filePath, [legacyFilePath])
 
   if (existsSync(filePath)) {
     try {

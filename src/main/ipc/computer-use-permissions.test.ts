@@ -30,7 +30,7 @@ describe('registerComputerUsePermissionHandlers', () => {
   it('launches the computer-use helper setup', async () => {
     const result = {
       platform: 'darwin',
-      helperAppPath: '/Applications/Orca Computer Use.app',
+      helperAppPath: '/Applications/赛博包工头电脑控制.app',
       permissionId: 'accessibility',
       openedSettings: false,
       launchedHelper: true

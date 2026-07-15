@@ -2749,7 +2749,7 @@ export default function SessionScreen() {
     void (async () => {
       const reportActivationOutcome = (response: RpcSuccess | null): void => {
         if (!disposed && response && headlessActivationNeedsHostRenderer(response.result)) {
-          showToast('Open Orca on the host to wake sleeping agents.', 3000)
+          showToast('请在主机上打开赛博包工头，以唤醒休眠中的智能体。', 3000)
         }
       }
       if (client && created !== '1') {

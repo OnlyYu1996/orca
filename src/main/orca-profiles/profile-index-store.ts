@@ -27,9 +27,10 @@ import {
   getOrcaProfileIndexPath,
   getProfileUserDataPath,
   LEGACY_BACKUP_COUNT,
-  legacyBackupPath,
   legacyBrowserSessionMetaPath,
   legacyDataFilePath,
+  migrateLegacyOrcaProfileStorage,
+  productDataFilePath,
   profileBackupPath
 } from './profile-storage-paths'
 
@@ -147,13 +148,17 @@ function copyIfPresent(source: string, target: string): void {
 
 function copyLegacyStateToProfile(userDataPath: string, profileId: string): void {
   const profileDataFile = getOrcaProfileDataFile(profileId, userDataPath)
-  copyIfPresent(legacyDataFilePath(userDataPath), profileDataFile)
+  const sourceDataFile = existsSync(productDataFilePath(userDataPath))
+    ? productDataFilePath(userDataPath)
+    : legacyDataFilePath(userDataPath)
+  copyIfPresent(sourceDataFile, profileDataFile)
   copyIfPresent(
     legacyBrowserSessionMetaPath(userDataPath),
     getOrcaProfileBrowserSessionMetaFile(profileId, userDataPath)
   )
   for (let i = 0; i < LEGACY_BACKUP_COUNT; i++) {
-    copyIfPresent(legacyBackupPath(userDataPath, i), profileBackupPath(profileDataFile, i))
+    const sourceBackupPath = `${sourceDataFile}.bak.${i}`
+    copyIfPresent(sourceBackupPath, profileBackupPath(profileDataFile, i))
   }
 }
 
@@ -189,6 +194,7 @@ function createInitialProfileIndex(now = Date.now()): OrcaProfileIndex {
 }
 
 export function loadOrCreateProfileIndex(userDataPath: string): OrcaProfileIndex {
+  migrateLegacyOrcaProfileStorage(userDataPath)
   const indexPath = getOrcaProfileIndexPath(userDataPath)
   const index = existsSync(indexPath) ? readProfileIndex(indexPath) : null
   if (index) {
@@ -210,6 +216,7 @@ function getActiveProfile(index: OrcaProfileIndex): OrcaProfileSummary {
 export function ensureActiveOrcaProfile(
   userDataPath = getProfileUserDataPath()
 ): ActiveOrcaProfileState {
+  migrateLegacyOrcaProfileStorage(userDataPath)
   const indexPath = getOrcaProfileIndexPath(userDataPath)
   let index = existsSync(indexPath) ? readProfileIndex(indexPath) : null
   let shouldWriteIndex = false

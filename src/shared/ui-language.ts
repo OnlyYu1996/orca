@@ -23,5 +23,5 @@ const UI_LANGUAGE_VALUES = new Set<UiLanguage>([
 ])
 
 export function normalizeUiLanguage(value: unknown): UiLanguage {
-  return UI_LANGUAGE_VALUES.has(value as UiLanguage) ? (value as UiLanguage) : UI_LANGUAGE_SYSTEM
+  return UI_LANGUAGE_VALUES.has(value as UiLanguage) ? (value as UiLanguage) : UI_LANGUAGE_CHINESE
 }

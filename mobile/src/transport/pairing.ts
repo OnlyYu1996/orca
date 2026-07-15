@@ -1,4 +1,8 @@
 import { PairingOfferSchema, type PairingOffer } from './types'
+import productIdentity from '../../../src/shared/product-identity.json'
+
+const PAIRING_SCHEMES = [productIdentity.urlScheme, productIdentity.legacy.urlScheme] as const
+const PAIRING_SCHEME_PATTERN = PAIRING_SCHEMES.join('|')
 
 // Why: this file mirrors src/shared/pairing.ts (which is covered by CI
 // vitest) but uses atob/btoa because Metro/Hermes don't ship Node's
@@ -22,7 +26,9 @@ export function decodePairingUrl(url: string): PairingOffer | null {
 // accept the same URL shapes.
 export function extractPairingCodeFromUrl(url: string): string | null {
   const trimmed = url.trim()
-  const match = /^orca:\/\/([^/?#]*)([^?#]*)?/i.exec(trimmed)
+  const match = new RegExp(`^(?:${PAIRING_SCHEME_PATTERN}):\\/\\/([^/?#]*)([^?#]*)?`, 'i').exec(
+    trimmed
+  )
   if (!match) {
     return null
   }
@@ -49,16 +55,14 @@ export function extractPairingCodeFromUrl(url: string): string | null {
   return null
 }
 
-// Why: accept either an `orca://pair?...` URL or the bare base64
-// string so the paste-pair flow can take whichever the user actually
-// copied from desktop.
+// 新旧 Scheme 在兼容窗口内双读，裸 Base64 继续支持移动端粘贴配对。
 export function parsePairingCode(input: string): PairingOffer | null {
   const trimmed = input.trim()
   if (!trimmed) {
     return null
   }
   try {
-    if (/^orca:\/\//i.test(trimmed)) {
+    if (PAIRING_SCHEMES.some((scheme) => trimmed.toLowerCase().startsWith(`${scheme}://`))) {
       return decodePairingUrl(trimmed)
     }
     return decodePairingBase64(trimmed)

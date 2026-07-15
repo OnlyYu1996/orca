@@ -65,11 +65,11 @@ export const CORE_HANDLERS: Record<string, CommandHandler> = {
         'Claude Agent Teams native panes are not supported on Windows.'
       )
     }
-    const paneKey = process.env.ORCA_PANE_KEY
+    const paneKey = process.env.SBBGT_PANE_KEY ?? process.env.ORCA_PANE_KEY
     if (!paneKey) {
       throw new RuntimeClientError(
         'invalid_environment',
-        'orca claude-teams must be run inside an Orca terminal.'
+        'sbbgt claude-teams 必须在赛博包工头终端内运行。'
       )
     }
     const response = await client.call<{ launch: { env: Record<string, string> } }>(

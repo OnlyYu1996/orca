@@ -18,11 +18,12 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { promisify } from 'node:util'
 import type { CliInstallMethod, CliInstallStatus } from '../../shared/cli-install-types'
 import { buildAppImageCliWrapper } from './appimage-cli-wrapper'
+import { PRODUCT_CLI_COMMAND, PRODUCT_DEV_CLI_COMMAND } from '../../shared/product-identity'
 
 const execFileAsync = promisify(execFile)
-const DEFAULT_MAC_COMMAND_PATH = '/usr/local/bin/orca'
-const DEV_COMMAND_NAME = 'orca-dev'
-const LINUX_COMMAND_NAME = 'orca-ide'
+const DEFAULT_MAC_COMMAND_PATH = `/usr/local/bin/${PRODUCT_CLI_COMMAND}`
+const DEV_COMMAND_NAME = PRODUCT_DEV_CLI_COMMAND
+const LINUX_COMMAND_NAME = PRODUCT_CLI_COMMAND
 const LEGACY_LINUX_COMMAND_NAME = 'orca'
 const DEV_LAUNCHER_DIR = ['cli', 'bin']
 const WINDOWS_PATH_COMMAND_TIMEOUT_MS = 5_000
@@ -74,8 +75,7 @@ export class CliInstaller {
       // Why: development builds must not claim the production shell command.
       return DEV_COMMAND_NAME
     }
-    // Why: packaged Linux uses `orca-ide` to avoid shadowing GNOME Orca's /usr/bin/orca.
-    return this.platform === 'linux' ? LINUX_COMMAND_NAME : 'orca'
+    return PRODUCT_CLI_COMMAND
   }
 
   constructor(options: CliInstallerOptions = {}) {
@@ -92,7 +92,10 @@ export class CliInstaller {
       join(this.homePath, 'AppData', 'Local')
     this.processPathEnv = options.processPathEnv ?? process.env.PATH ?? process.env.Path ?? null
     this.commandPathOverride =
-      options.commandPathOverride ?? process.env.ORCA_CLI_INSTALL_PATH ?? null
+      options.commandPathOverride ??
+      process.env.SBBGT_CLI_INSTALL_PATH ??
+      process.env.ORCA_CLI_INSTALL_PATH ??
+      null
     // Why: resolved once at construction — existsSync must not run on every
     // getStatus() call (hot path). /usr/local/bin is absent by default on Apple
     // Silicon Macs (Homebrew moved to /opt/homebrew); fall back to ~/.local/bin
@@ -103,7 +106,7 @@ export class CliInstaller {
     const candidateMacPath = options.defaultMacCommandPath ?? DEFAULT_MAC_COMMAND_PATH
     this.macCommandPath = existsSync(dirname(candidateMacPath))
       ? candidateMacPath
-      : join(this.homePath, '.local', 'bin', 'orca')
+      : join(this.homePath, '.local', 'bin', PRODUCT_CLI_COMMAND)
     this.privilegedRunner = options.privilegedRunner ?? runMacPrivilegedCommand
     this.userPathReader = options.userPathReader ?? (() => readWindowsUserPath())
     this.userPathWriter = options.userPathWriter ?? ((value) => writeWindowsUserPath(value))
@@ -337,7 +340,13 @@ export class CliInstaller {
         return join(this.homePath, '.local', 'bin', DEV_COMMAND_NAME)
       }
       if (this.platform === 'win32') {
-        return join(this.localAppDataPath, 'Programs', 'Orca Dev', 'bin', `${DEV_COMMAND_NAME}.cmd`)
+        return join(
+          this.localAppDataPath,
+          'Programs',
+          'sbbgt-dev',
+          'bin',
+          `${DEV_COMMAND_NAME}.cmd`
+        )
       }
     }
 
@@ -349,9 +358,7 @@ export class CliInstaller {
       // Why: Linux does not have a single privileged global shell-command flow
       // equivalent to macOS's /usr/local/bin integration. ~/.local/bin is the
       // least surprising user-scoped location that many distros already expose.
-      // Why `orca-ide`: GNOME Orca (the screen reader) ships /usr/bin/orca on
-      // most Linux distros. Using `orca-ide` avoids shadowing that system
-      // command, matching the executableName already used for the Electron binary.
+      // 原因：sbbgt 不占用发行版的 /usr/bin/orca，可在所有平台保持同一个主命令。
       return join(this.homePath, '.local', 'bin', LINUX_COMMAND_NAME)
     }
 
@@ -904,7 +911,7 @@ async function ensureDevLauncher(args: {
     // Why: dev PTYs prepend userData/cli/bin to PATH, and product-owned
     // commands are documented as `orca ...`. Keep that local alias fresh
     // without claiming the global production command.
-    await writeFile(join(dirname(launcherPath), 'orca'), content, {
+    await writeFile(join(dirname(launcherPath), PRODUCT_CLI_COMMAND), content, {
       encoding: 'utf8',
       mode: 0o755
     })
@@ -921,11 +928,16 @@ function buildUnixDevLauncher(
 set -euo pipefail
 ELECTRON=${quoteShell(execPathValue)}
 CLI=${quoteShell(cliEntryPath)}
-export ORCA_USER_DATA_PATH=${quoteShell(userDataPath)}
-if [ -z "\${ORCA_APP_EXECUTABLE:-}" ]; then
-  export ORCA_APP_EXECUTABLE="$ELECTRON"
-  export ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT=1
+export SBBGT_USER_DATA_PATH=${quoteShell(userDataPath)}
+export ORCA_USER_DATA_PATH="$SBBGT_USER_DATA_PATH"
+if [ -z "\${SBBGT_APP_EXECUTABLE:-\${ORCA_APP_EXECUTABLE:-}}" ]; then
+  export SBBGT_APP_EXECUTABLE="$ELECTRON"
+  export SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT=1
 fi
+export ORCA_APP_EXECUTABLE="\${SBBGT_APP_EXECUTABLE:-\${ORCA_APP_EXECUTABLE:-}}"
+export ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT="\${SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT:-\${ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT:-}}"
+export SBBGT_NODE_OPTIONS="\${NODE_OPTIONS-}"
+export SBBGT_NODE_REPL_EXTERNAL_MODULE="\${NODE_REPL_EXTERNAL_MODULE-}"
 export ORCA_NODE_OPTIONS="\${NODE_OPTIONS-}"
 export ORCA_NODE_REPL_EXTERNAL_MODULE="\${NODE_REPL_EXTERNAL_MODULE-}"
 unset NODE_OPTIONS
@@ -943,11 +955,16 @@ function buildWindowsDevLauncher(
 setlocal
 set "ELECTRON=${escapeWindowsBatchValue(execPathValue)}"
 set "CLI=${escapeWindowsBatchValue(cliEntryPath)}"
-set "ORCA_USER_DATA_PATH=${escapeWindowsBatchValue(userDataPath)}"
-if not defined ORCA_APP_EXECUTABLE (
-  set "ORCA_APP_EXECUTABLE=%ELECTRON%"
-  set "ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT=1"
+set "SBBGT_USER_DATA_PATH=${escapeWindowsBatchValue(userDataPath)}"
+set "ORCA_USER_DATA_PATH=%SBBGT_USER_DATA_PATH%"
+if not defined SBBGT_APP_EXECUTABLE if not defined ORCA_APP_EXECUTABLE (
+  set "SBBGT_APP_EXECUTABLE=%ELECTRON%"
+  set "SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT=1"
 )
+if defined SBBGT_APP_EXECUTABLE set "ORCA_APP_EXECUTABLE=%SBBGT_APP_EXECUTABLE%"
+if defined SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT set "ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT=%SBBGT_APP_EXECUTABLE_NEEDS_APP_ROOT%"
+set "SBBGT_NODE_OPTIONS=%NODE_OPTIONS%"
+set "SBBGT_NODE_REPL_EXTERNAL_MODULE=%NODE_REPL_EXTERNAL_MODULE%"
 set "ORCA_NODE_OPTIONS=%NODE_OPTIONS%"
 set "ORCA_NODE_REPL_EXTERNAL_MODULE=%NODE_REPL_EXTERNAL_MODULE%"
 set NODE_OPTIONS=
@@ -1179,13 +1196,13 @@ export function getBundledLauncherPath(
   resourcesPath: string
 ): string | null {
   if (platform === 'darwin') {
-    return join(resourcesPath, 'bin', 'orca')
+    return join(resourcesPath, 'bin', PRODUCT_CLI_COMMAND)
   }
   if (platform === 'linux') {
     return join(resourcesPath, 'bin', LINUX_COMMAND_NAME)
   }
   if (platform === 'win32') {
-    return join(resourcesPath, 'bin', 'orca.exe')
+    return join(resourcesPath, 'bin', `${PRODUCT_CLI_COMMAND}.exe`)
   }
   return null
 }

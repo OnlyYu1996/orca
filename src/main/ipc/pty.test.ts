@@ -1283,9 +1283,13 @@ describe('registerPtyHandlers', () => {
       }))
 
       expect(env.ORCA_ENABLE_GIT_ATTRIBUTION).toBe('1')
-      expect(env.ORCA_GIT_COMMIT_TRAILER).toBe('Co-authored-by: Orca <help@stably.ai>')
-      expect(env.ORCA_GH_PR_FOOTER).toBe('Made with [Orca](https://github.com/stablyai/orca) 🐋')
-      expect(env.ORCA_GH_ISSUE_FOOTER).toBe('Made with [Orca](https://github.com/stablyai/orca) 🐋')
+      expect(env.ORCA_GIT_COMMIT_TRAILER).toBe(
+        'Co-authored-by: 赛博包工头 <OnlyYu1996@users.noreply.github.com>'
+      )
+      expect(env.ORCA_GH_PR_FOOTER).toBe('由 [赛博包工头](https://github.com/OnlyYu1996/orca) 创建')
+      expect(env.ORCA_GH_ISSUE_FOOTER).toBe(
+        '由 [赛博包工头](https://github.com/OnlyYu1996/orca) 创建'
+      )
       expect(env.PATH).toContain(expectedAttributionShimDir())
     })
 

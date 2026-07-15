@@ -1,18 +1,9 @@
-# Orca Mobile iOS release lane.
+# 赛博包工头 iOS 发布 Lane。
 #
-# Builds the prebuilt iOS workspace, signs it with the distribution identity
-# imported into the CI keychain plus an explicit App Store provisioning profile
-# fetched via the App Store Connect API key, then uploads the .ipa to
-# TestFlight. All Apple credentials come from CI env vars
-# (see .github/workflows/mobile-ios-release.yml) so nothing secret lives in the
-# repo.
+# 构建预生成的 iOS Workspace，使用 CI 钥匙串中的分发身份和 App Store Connect
+# API Key 获取的描述文件签名，再将 IPA 上传到 TestFlight。Apple 凭据全部来自 CI。
 #
-# Why manual signing (not -allowProvisioningUpdates / automatic cloud signing):
-# mixing a pre-imported distribution .p12 with xcodebuild's cloud-managed
-# automatic signing produced "Cloud signing permission error / No profiles
-# found" at exportArchive (cloud signing also needs an Admin-role API key).
-# Instead we fetch an explicit profile with the API key (sigh) and sign
-# manually against the imported cert — works with any team API key.
+# 手动签名可避免预导入 .p12 与云签名混用时出现权限或描述文件错误。
 
 require "base64"
 require "json"
@@ -20,15 +11,14 @@ require "json"
 default_platform(:ios)
 
 MOBILE_ROOT = File.expand_path("..", __dir__)
-# Why: fastlane executes lanes from mobile/fastlane even when GitHub Actions
-# starts in mobile/, so release file paths must be rooted at the mobile app.
+# Fastlane 从 mobile/fastlane 执行，所有发布路径必须以移动端根目录为基准。
 APP_CONFIG_PATH = File.join(MOBILE_ROOT, "app.json")
-WORKSPACE = File.join(MOBILE_ROOT, "ios", "Orca.xcworkspace")
+WORKSPACE = File.join(MOBILE_ROOT, "ios", ENV.fetch("IOS_WORKSPACE_NAME", "app.xcworkspace"))
 BUILD_OUTPUT_DIRECTORY = File.join(MOBILE_ROOT, "build")
-SCHEME = "Orca"
-BUNDLE_ID = "com.stably.orca.mobile"
+SCHEME = ENV.fetch("IOS_SCHEME", "app")
+BUNDLE_ID = ENV.fetch("IOS_BUNDLE_IDENTIFIER", "com.onlyyu.sbbgt.mobile")
 TESTFLIGHT_GROUPS = ["peeps"].freeze
-DEFAULT_TESTFLIGHT_CHANGELOG = "Latest Orca Mobile updates and fixes.".freeze
+DEFAULT_TESTFLIGHT_CHANGELOG = "赛博包工头移动端更新与问题修复。".freeze
 
 # App Store version states in which the version "train" is terminally closed to
 # new TestFlight build uploads (altool rejects with 90186 "train ... is
@@ -143,35 +133,30 @@ platform :ios do
     )
     build_number = latest_build_number.to_i + 1
 
-    # Keep app.json authoritative because Expo prebuild copies these values into
-    # the native project and runtime manifest used by the About screen.
+    # app.json 是版本信息的唯一来源，Expo prebuild 会将其复制到原生工程和运行时清单。
     config.fetch("expo")["version"] = version
     config.fetch("expo").fetch("ios")["buildNumber"] = build_number.to_s
     write_mobile_app_config(config)
 
-    UI.message("Prepared Orca Mobile iOS #{version} (#{build_number})")
+    UI.message("已准备赛博包工头移动版 iOS #{version} (#{build_number})")
   end
 
-  desc "Build, sign, upload, and share Orca Mobile on TestFlight"
+  desc "构建、签名、上传并通过 TestFlight 分发赛博包工头移动版"
   lane :release do
     api_key = app_store_connect_api_key_from_env
 
     team_id = ENV.fetch("APPLE_TEAM_ID")
 
-    # Fetch (or create) the App Store distribution profile via the API key and
-    # install it locally, then feed its name to the manual archive + export.
+    # 通过 API Key 获取或创建 App Store 描述文件，并将其用于手动归档和导出。
     get_provisioning_profile(
       api_key: api_key,
       app_identifier: BUNDLE_ID,
       force: true,
     )
-    # sigh exposes the chosen profile's name in SIGH_NAME (SIGH_PROFILE_MAPPING
-    # doesn't exist in this fastlane version).
+    # 当前 fastlane 版本不提供 SIGH_PROFILE_MAPPING，需从 SIGH_NAME 读取描述文件名。
     profile_name = lane_context[SharedValues::SIGH_NAME]
 
-    # Manual signing: the archive needs the team, profile, and signing style set
-    # explicitly (no -allowProvisioningUpdates). Without DEVELOPMENT_TEAM the
-    # archive fails: "Signing for Orca requires a development team".
+    # 手动签名必须显式传入团队、描述文件和签名方式，不能依赖自动更新描述文件。
     build_app(
       workspace: WORKSPACE,
       scheme: SCHEME,
@@ -189,20 +174,18 @@ platform :ios do
         },
       },
       output_directory: BUILD_OUTPUT_DIRECTORY,
-      output_name: "Orca.ipa",
+      output_name: "sbbgt.ipa",
       clean: true,
     )
 
     upload_to_testflight(
       api_key: api_key,
-      # Why: fastlane can only assign external TestFlight groups after Apple
-      # finishes processing the uploaded build.
+      # Apple 完成构建处理后，fastlane 才能分配外部 TestFlight 群组。
       skip_waiting_for_build_processing: false,
       distribute_external: true,
       groups: TESTFLIGHT_GROUPS,
       notify_external_testers: true,
-      # Why: fastlane requires release notes when distributing to external
-      # TestFlight testers, even for CI-triggered smoke releases.
+      # 面向外部测试员分发时，fastlane 要求提供发布说明，包括 CI 触发的冒烟发布。
       changelog: testflight_changelog,
     )
   end

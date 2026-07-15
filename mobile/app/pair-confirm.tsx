@@ -13,6 +13,7 @@ import { saveHost, getNextHostName } from '../src/transport/host-store'
 import type { ConnectionLogEntry, RpcResponse } from '../src/transport/types'
 import { colors, spacing, radii, typography } from '../src/theme/mobile-theme'
 import { ConnectionLog } from '../src/components/ConnectionLog'
+import { useMobileLocale } from '../src/i18n/mobile-locale-context'
 
 type Status = 'awaiting-confirm' | 'connecting' | 'error'
 
@@ -27,6 +28,7 @@ export default function PairConfirmScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ code?: string }>()
+  const { t } = useMobileLocale()
   const [status, setStatus] = useState<Status>('awaiting-confirm')
   const [errorMessage, setErrorMessage] = useState('')
   const [logs, setLogs] = useState<ConnectionLogEntry[]>([])
@@ -43,7 +45,9 @@ export default function PairConfirmScreen() {
     status === 'awaiting-confirm' && routeState.kind === 'error' ? 'error' : status
   const resolvedErrorMessage =
     status === 'awaiting-confirm' && routeState.kind === 'error'
-      ? routeState.errorMessage
+      ? routeState.errorMessage === 'Missing pairing code'
+        ? t('pair.missingCode')
+        : t('pair.invalidCode')
       : errorMessage
 
   const cancel = useCallback(() => {
@@ -124,8 +128,8 @@ export default function PairConfirmScreen() {
       setStatus('error')
       setErrorMessage(
         timedOut
-          ? `Couldn't connect within ${PAIRING_OVERALL_TIMEOUT_MS / 1000}s — see log below for where it stalled`
-          : 'Cannot connect — check that your computer is on the same network'
+          ? t('pair.timeout', { seconds: PAIRING_OVERALL_TIMEOUT_MS / 1000 })
+          : t('pair.networkError')
       )
       return
     }
@@ -137,8 +141,8 @@ export default function PairConfirmScreen() {
       setStatus('error')
       setErrorMessage(
         response.error.code === 'unauthorized'
-          ? 'Authentication failed — token may be expired'
-          : `Server error: ${response.error.message}`
+          ? t('pair.authError')
+          : t('pair.serverError', { message: response.error.message })
       )
       return
     }
@@ -165,7 +169,7 @@ export default function PairConfirmScreen() {
       console.warn('[pair-confirm] save failed', err)
       setStatus('error')
       setErrorMessage(
-        `Pairing succeeded but couldn't save the host: ${err instanceof Error ? err.message : String(err)}`
+        t('pair.saveError', { message: err instanceof Error ? err.message : String(err) })
       )
     }
   }
@@ -181,16 +185,14 @@ export default function PairConfirmScreen() {
       <View style={styles.content}>
         {offer && resolvedStatus === 'awaiting-confirm' && (
           <>
-            <Text style={styles.title}>Pair with this desktop?</Text>
-            <Text style={styles.subtitle}>
-              You opened a pairing link from your desktop. Confirm to add it to your hosts.
-            </Text>
+            <Text style={styles.title}>{t('pair.confirmTitle')}</Text>
+            <Text style={styles.subtitle}>{t('pair.confirmDescription')}</Text>
             <View style={styles.actionStack}>
               <Pressable style={styles.primaryButton} onPress={() => void confirm()}>
-                <Text style={styles.primaryButtonText}>Pair</Text>
+                <Text style={styles.primaryButtonText}>{t('pair.pair')}</Text>
               </Pressable>
               <Pressable style={styles.secondaryButton} onPress={cancel}>
-                <Text style={styles.secondaryButtonText}>Cancel</Text>
+                <Text style={styles.secondaryButtonText}>{t('common.cancel')}</Text>
               </Pressable>
             </View>
           </>
@@ -199,9 +201,9 @@ export default function PairConfirmScreen() {
         {resolvedStatus === 'connecting' && (
           <>
             <ActivityIndicator size="large" color={colors.textSecondary} />
-            <Text style={styles.connectingText}>Connecting…</Text>
+            <Text style={styles.connectingText}>{t('pair.connecting')}</Text>
             <View style={styles.logSlot}>
-              <ConnectionLog entries={logs} title="Pairing log" />
+              <ConnectionLog entries={logs} title={t('pair.log')} />
             </View>
           </>
         )}
@@ -211,12 +213,12 @@ export default function PairConfirmScreen() {
             <Text style={styles.errorText}>{resolvedErrorMessage}</Text>
             {logs.length > 0 && (
               <View style={styles.logSlot}>
-                <ConnectionLog entries={logs} title="Pairing log" />
+                <ConnectionLog entries={logs} title={t('pair.log')} />
               </View>
             )}
             <View style={styles.actionStack}>
               <Pressable style={styles.primaryButton} onPress={cancel}>
-                <Text style={styles.primaryButtonText}>Back to home</Text>
+                <Text style={styles.primaryButtonText}>{t('common.backToHome')}</Text>
               </Pressable>
             </View>
           </>

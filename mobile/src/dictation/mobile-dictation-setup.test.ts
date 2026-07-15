@@ -111,7 +111,7 @@ describe('rpc wrappers', () => {
     ])
 
     await expect(fetchDictationSetup(client)).rejects.toThrow(
-      'Update the paired desktop Orca app to use mobile voice settings.'
+      '请更新已配对电脑上的赛博包工头，以便使用移动端语音设置。'
     )
   })
 
@@ -124,7 +124,7 @@ describe('rpc wrappers', () => {
     ])
 
     await expect(fetchDictationSetup(client)).rejects.toThrow(
-      'Update the paired desktop Orca app to use mobile voice settings.'
+      '请更新已配对电脑上的赛博包工头，以便使用移动端语音设置。'
     )
   })
 

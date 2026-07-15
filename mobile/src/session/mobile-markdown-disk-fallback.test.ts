@@ -57,7 +57,7 @@ describe('buildMarkdownDiskFallbackDoc', () => {
       isDirty: false,
       editable: false,
       stale: false,
-      readOnlyReason: 'Editing needs Orca desktop running.'
+      readOnlyReason: '编辑文件需要电脑端赛博包工头正在运行。'
     })
   })
 

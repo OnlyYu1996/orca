@@ -11,9 +11,9 @@ const ensuredShimDirs = new Map<string, string>()
 
 export type LinuxTerminalOrcaCliShimOptions = {
   userDataPath: string
-  /** Test seam — defaults to the packaged resources root. */
+  /** 测试注入点，默认使用打包应用资源根目录。 */
   resourcesPath?: string | null
-  /** Test seam — defaults to $APPIMAGE (set only when running from an AppImage). */
+  /** 测试注入点，默认使用仅在 AppImage 中存在的 $APPIMAGE。 */
   appImagePath?: string | null
 }
 

@@ -3,8 +3,9 @@ import { Check, ExternalLink, Loader2, Star, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
+import { PRODUCT_REPOSITORY_URL } from '../../../../shared/product-links'
 
-const ORCA_REPO_URL = 'https://github.com/stablyai/orca'
+const ORCA_REPO_URL = PRODUCT_REPOSITORY_URL
 type StarNagMode = 'gh' | 'web'
 type StarNagToastStatus = 'idle' | 'busy' | 'starred' | 'opened'
 
@@ -122,7 +123,7 @@ function StarNagToast({
           <p className="text-sm leading-5 text-muted-foreground">
             {translate(
               'auto.components.star.nag.StarNagToastHost.body',
-              'If you’re enjoying Orca so far, a GitHub star helps other developers discover it.'
+              'If you’re enjoying 赛博包工头 so far, a GitHub star helps other developers discover it.'
             )}
           </p>
         </div>

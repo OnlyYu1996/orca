@@ -1,4 +1,6 @@
-export const ORCA_SKILLS_REPOSITORY_URL = 'https://github.com/stablyai/orca'
+import { PRODUCT_REPOSITORY_URL } from './product-links'
+
+export const ORCA_SKILLS_REPOSITORY_URL = PRODUCT_REPOSITORY_URL
 
 export const ORCA_CLI_SKILL_NAME = 'orca-cli'
 export const COMPUTER_USE_SKILL_NAME = 'computer-use'

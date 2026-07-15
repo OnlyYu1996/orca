@@ -102,8 +102,8 @@ import {
 import { isENOENT, registerWorktreeRootsForRepo } from './filesystem-auth'
 import { createWorktreeLinkedPaths } from './worktree-symlinks'
 import { normalizeSparseDirectories } from './sparse-checkout-directories'
-import { joinWorktreeRelativePath } from '../runtime/runtime-relative-paths'
 import type { IFilesystemProvider } from '../providers/types'
+import { readPreferredProjectConfiguration } from '../project-configuration-filesystem'
 import {
   buildSetupRunnerCommand,
   getSetupRunnerCommandPlatformForPath
@@ -1202,8 +1202,8 @@ async function readRemoteOrcaYaml(
   hooksRootPath: string
 ): Promise<ReturnType<typeof parseOrcaYaml>> {
   try {
-    const result = await fsProvider.readFile(joinWorktreeRelativePath(hooksRootPath, 'orca.yaml'))
-    return result.isBinary ? null : parseOrcaYaml(result.content)
+    const preferred = await readPreferredProjectConfiguration(fsProvider, hooksRootPath)
+    return !preferred || preferred.result.isBinary ? null : parseOrcaYaml(preferred.result.content)
   } catch {
     return null
   }

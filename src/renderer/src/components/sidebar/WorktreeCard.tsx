@@ -1462,7 +1462,7 @@ const WorktreeCard = React.memo(function WorktreeCard({
                         )
                       : translate(
                           'auto.components.sidebar.WorktreeCard.runtimeHostProject',
-                          'Project on Orca server'
+                          'Project on 赛博包工头 server'
                         )}
                   </TooltipContent>
                 </Tooltip>

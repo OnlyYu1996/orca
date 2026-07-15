@@ -242,27 +242,20 @@ describe('SidebarSettingsHelpMenu', () => {
     expect(html).toContain('GitHub')
   })
 
-  it('renders Discord link', () => {
+  it('hides Discord when no product community URL is configured', () => {
     const html = renderToStaticMarkup(<SidebarSettingsHelpMenu />)
-    expect(html).toContain('Discord')
-    expect(html).toContain('viewBox="0 0 20 20"')
-    expect(html).toContain('M16.0742 4.45014C14.9244 3.92097 13.7106 3.54556 12.4638 3.3335')
+    expect(html).not.toContain('Discord')
   })
 
-  it('opens Discord invite through the shell bridge', async () => {
+  it('does not expose a Discord action without a product community URL', async () => {
     const container = await renderMenu()
-    const discordButton = findMenuItem(container, 'Discord')
-
-    await act(async () => {
-      discordButton.click()
-    })
-
-    expect(mocks.shellOpenUrl).toHaveBeenCalledWith('https://discord.gg/fzjDKHxv8Q')
+    expect(container.textContent).not.toContain('Discord')
+    expect(mocks.shellOpenUrl).not.toHaveBeenCalled()
   })
 
-  it('renders X link', () => {
+  it('hides X when no product account URL is configured', () => {
     const html = renderToStaticMarkup(<SidebarSettingsHelpMenu />)
-    expect(html).toContain('>X<')
+    expect(html).not.toContain('>X<')
   })
 
   it('renders Check for Updates menu item', () => {

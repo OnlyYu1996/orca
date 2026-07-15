@@ -1,51 +1,33 @@
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 import { router } from 'expo-router'
 import { colors, radii, spacing, typography } from '../theme/mobile-theme'
 import type { CompatVerdict } from '../transport/protocol-compat'
-
-const RELEASES_URL = 'https://github.com/stablyai/orca/releases'
-const IOS_APP_STORE_URL = 'itms-apps://apps.apple.com/app/orca-ide/id6766130217'
+import { PRODUCT_RELEASES_URL } from '../../../src/shared/product-links'
+import { useMobileLocale } from '../i18n/mobile-locale-context'
 
 type Props = {
   verdict: Extract<CompatVerdict, { kind: 'blocked' }>
 }
 
 export function ProtocolBlockScreen({ verdict }: Props) {
+  const { t } = useMobileLocale()
   const isMobileTooOld = verdict.reason === 'mobile-too-old'
-  const mobileUpdateTarget =
-    Platform.OS === 'ios'
-      ? { label: 'Open App Store', url: IOS_APP_STORE_URL, storeName: 'the App Store' }
-      : { label: null, url: null, storeName: 'your mobile app store' }
-  const primaryAction = isMobileTooOld
-    ? mobileUpdateTarget.url && mobileUpdateTarget.label
-      ? { label: mobileUpdateTarget.label, url: mobileUpdateTarget.url }
-      : null
-    : { label: 'Open GitHub Releases', url: RELEASES_URL }
-
-  const title = isMobileTooOld ? 'Update Orca Mobile' : 'Update Orca on your computer'
-  const body = isMobileTooOld
-    ? `This desktop needs a newer Orca Mobile app. Update Orca Mobile from ${mobileUpdateTarget.storeName}, then try this host again.`
-    : 'This paired desktop app is too old for your current Orca Mobile app. Update Orca on your computer, then try this host again.'
-  const recoveryNote =
-    'Already updated? Go back to Hosts and refresh the connection. If this message stays, remove this host and pair it again.'
+  const title = isMobileTooOld ? t('protocol.updateMobileTitle') : t('protocol.updateDesktopTitle')
+  const body = isMobileTooOld ? t('protocol.updateMobileBody') : t('protocol.updateDesktopBody')
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.body}>{body}</Text>
-        {/* Why: desktop updates come from GitHub; mobile update links depend
-            on the native store available for this platform. */}
-        {primaryAction ? (
-          <Pressable
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
-            onPress={() => {
-              void Linking.openURL(primaryAction.url)
-            }}
-          >
-            <Text style={styles.primaryButtonText}>{primaryAction.label}</Text>
-          </Pressable>
-        ) : null}
+        <Pressable
+          style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
+          onPress={() => {
+            void Linking.openURL(PRODUCT_RELEASES_URL)
+          }}
+        >
+          <Text style={styles.primaryButtonText}>{t('protocol.openReleases')}</Text>
+        </Pressable>
         <Pressable
           style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
           onPress={() => {
@@ -54,9 +36,9 @@ export function ProtocolBlockScreen({ verdict }: Props) {
             router.replace('/')
           }}
         >
-          <Text style={styles.secondaryButtonText}>Back to hosts</Text>
+          <Text style={styles.secondaryButtonText}>{t('protocol.backToHosts')}</Text>
         </Pressable>
-        <Text style={styles.recoveryNote}>{recoveryNote}</Text>
+        <Text style={styles.recoveryNote}>{t('protocol.recovery')}</Text>
       </View>
     </View>
   )

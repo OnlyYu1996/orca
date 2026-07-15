@@ -17,8 +17,8 @@ Usage:
   node tools/win-update-e2e/run.mjs --from-release <tag> --to-release <tag> --expect <profile>
 
 Installer source (version N, then N+1) — path or release tag on each side:
-  --from <path>            Local orca-windows-setup.exe for the base version (N)
-  --to <path>              Local orca-windows-setup.exe for the update (N+1)
+  --from <path>            Local sbbgt-windows-setup.exe for the base version (N)
+  --to <path>              Local sbbgt-windows-setup.exe for the update (N+1)
   --from-release <tag>     Download N's setup asset via gh (e.g. v1.4.124-rc.9)
   --to-release <tag>       Download N+1's setup asset via gh
 
@@ -105,7 +105,10 @@ function pathsOverlap(a, b) {
 
 /** A prior harness install directory carries both the app exe and its uninstaller. */
 function looksLikeHarnessInstall(dir) {
-  return existsSync(path.join(dir, 'Orca.exe')) && existsSync(path.join(dir, 'Uninstall Orca.exe'))
+  return (
+    existsSync(path.join(dir, 'sbbgt.exe')) &&
+    existsSync(path.join(dir, 'Uninstall 赛博包工头.exe'))
+  )
 }
 
 /**
@@ -150,7 +153,7 @@ export function validateInstallDir(installDir) {
     if (entries.length > 0 && !looksLikeHarnessInstall(installDir)) {
       errors.push(
         `--install-dir "${installDir}" is a non-empty directory that does not look like a ` +
-          `prior harness install (no Orca.exe + "Uninstall Orca.exe"). Refusing to overwrite ` +
+          `prior harness install (no sbbgt.exe + "Uninstall 赛博包工头.exe"). Refusing to overwrite ` +
           `unrelated files. Point at an empty or non-existent directory.`
       )
     }

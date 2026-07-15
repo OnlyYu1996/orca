@@ -103,7 +103,7 @@ describe('NotificationsPane', () => {
     expect(toastMessage).toHaveBeenCalledWith(
       'Test notification requested',
       expect.objectContaining({
-        description: 'If no macOS banner appeared, enable Allow notifications for Orca.',
+        description: 'If no macOS banner appeared, enable Allow notifications for 赛博包工头.',
         action: expect.objectContaining({ label: 'Open Settings' })
       })
     )

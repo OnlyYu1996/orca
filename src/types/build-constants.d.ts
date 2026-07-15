@@ -11,6 +11,10 @@
 //
 declare const ORCA_BUILD_IDENTITY: 'stable' | 'rc' | null
 declare const ORCA_POSTHOG_WRITE_KEY: string | null
+declare const ORCA_POSTHOG_HOST: string | null
+declare const SBBGT_BUILD_IDENTITY: 'stable' | 'rc' | null
+declare const SBBGT_POSTHOG_WRITE_KEY: string | null
+declare const SBBGT_POSTHOG_HOST: string | null
 
 // Diagnostic-bundle upload endpoint for Mode 3 (telemetry-error-tracking.md
 // §Endpoint contract). Substituted by CI; `null` in contributor builds, at
@@ -20,3 +24,4 @@ declare const ORCA_POSTHOG_WRITE_KEY: string | null
 // point a packaged build at a staging server without re-running the
 // release pipeline.
 declare const ORCA_DIAGNOSTICS_TOKEN_URL: string | null
+declare const SBBGT_DIAGNOSTICS_TOKEN_URL: string | null

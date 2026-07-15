@@ -165,7 +165,7 @@ async function getCreateRepoSelector(
   }
   throw new RuntimeClientError(
     'invalid_argument',
-    'Missing repo selector. Pass --repo or run from inside an Orca-managed worktree.'
+    '缺少仓库选择器。请传入 --repo，或在赛博包工头管理的工作树中运行。'
   )
 }
 

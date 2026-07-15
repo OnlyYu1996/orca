@@ -50,20 +50,18 @@ export const COMPUTER_HANDLERS: Record<string, CommandHandler> = {
     }>('computer.permissions', id ? { id } : {})
     printResult(result, json, (value) => {
       if (value.platform !== 'darwin') {
-        return 'Computer-use permission setup is only required on macOS.'
+        return '仅 macOS 需要配置电脑控制权限。'
       }
       const firstLine = value.launchedHelper
-        ? 'Opened Orca Computer Use permission setup.'
-        : 'Computer Use permissions checked.'
+        ? '已打开赛博包工头电脑控制权限设置。'
+        : '已检查电脑控制权限。'
       return [
         firstLine,
-        `Helper app: ${value.helperAppPath}`,
-        `Permissions: ${value.permissions?.map((permission) => `${permission.id}=${permission.status}`).join(', ') ?? 'unknown'}`,
-        value.nextStep
-          ? `Next: ${value.nextStep}`
-          : 'Computer Use permissions are already granted.',
+        `辅助应用：${value.helperAppPath}`,
+        `权限：${value.permissions?.map((permission) => `${permission.id}=${permission.status}`).join(', ') ?? '未知'}`,
+        value.nextStep ? `下一步：${value.nextStep}` : '电脑控制权限已授予。',
         value.launchedHelper
-          ? 'Use the Allow buttons or drag "Orca Computer Use" into the macOS permission list.'
+          ? '请使用“允许”按钮，或将“赛博包工头电脑控制”拖入 macOS 权限列表。'
           : null
       ]
         .filter((line) => line !== null)

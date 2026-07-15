@@ -178,9 +178,7 @@ export function registerAutoUpdaterHandlers({
       return
     }
 
-    // Why: fetching changelog in the main process avoids CORS issues that
-    // would block a renderer-side fetch to onorca.dev, and ensures the
-    // card can render immediately without an async loading gap.
+    // 主进程读取当前 Fork 的 Changelog 可规避 CORS，并让更新卡片立即渲染。
     markUpdateAvailableEventPending(attemptId)
     void (async () => {
       try {

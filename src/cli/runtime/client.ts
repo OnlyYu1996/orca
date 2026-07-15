@@ -34,8 +34,12 @@ export class RuntimeClient {
   constructor(
     userDataPath = getDefaultUserDataPath(),
     requestTimeoutMs = 60_000,
-    remotePairingCode = process.env.ORCA_PAIRING_CODE ?? process.env.ORCA_REMOTE_PAIRING ?? null,
-    environmentSelector = process.env.ORCA_ENVIRONMENT ?? null
+    remotePairingCode = process.env.SBBGT_PAIRING_CODE ??
+      process.env.SBBGT_REMOTE_PAIRING ??
+      process.env.ORCA_PAIRING_CODE ??
+      process.env.ORCA_REMOTE_PAIRING ??
+      null,
+    environmentSelector = process.env.SBBGT_ENVIRONMENT ?? process.env.ORCA_ENVIRONMENT ?? null
   ) {
     this.userDataPath = userDataPath
     this.requestTimeoutMs = requestTimeoutMs
@@ -185,7 +189,7 @@ export class RuntimeClient {
 
     throw new RuntimeClientError(
       'runtime_open_timeout',
-      'Timed out waiting for Orca to start. Run the Orca app manually and try again.'
+      '等待赛博包工头启动超时。请手动启动赛博包工头应用后重试。'
     )
   }
 }
@@ -198,7 +202,7 @@ function resolveRemotePairing(
   if (pairingCode && environmentSelector) {
     throw new RuntimeClientError(
       'invalid_argument',
-      'Use either --pairing-code or --environment, not both.'
+      '--pairing-code 与 --environment 只能使用一个。'
     )
   }
   if (environmentSelector) {
@@ -211,7 +215,7 @@ function resolveRemotePairing(
   if (!pairing) {
     throw new RuntimeClientError(
       'invalid_argument',
-      'Invalid remote pairing code. Expected an orca://pair?... URL or bare pairing payload.'
+      '远程配对码无效。应提供 sbbgt://pair?... 或兼容的 orca://pair?... URL，也可提供裸配对载荷。'
     )
   }
   return pairing

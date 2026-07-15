@@ -22,7 +22,7 @@ import { findDaemonProcesses } from './daemon-processes.mjs'
  */
 export function findAppProcesses() {
   const command = [
-    `$procs = @(Get-CimInstance Win32_Process -Filter "Name = 'Orca.exe'" -ErrorAction SilentlyContinue |`,
+    `$procs = @(Get-CimInstance Win32_Process -Filter "Name = 'sbbgt.exe'" -ErrorAction SilentlyContinue |`,
     `  Where-Object { -not ($_.CommandLine -match 'daemon-entry\\.js') })`,
     `$out = @($procs | ForEach-Object {`,
     `  [pscustomobject]@{ pid = $_.ProcessId; path = $_.ExecutablePath; commandLine = $_.CommandLine } })`,

@@ -292,7 +292,7 @@ export function validateCommandAndFlags(specs: CommandSpec[], parsed: ParsedArgs
   if (!spec) {
     throw new RuntimeClientError(
       'invalid_argument',
-      `Unknown command: ${parsed.commandPath.join(' ')}`,
+      `未知命令：${parsed.commandPath.join(' ')}`,
       unknownCommandData(specs, parsed.commandPath)
     )
   }
@@ -300,9 +300,9 @@ export function validateCommandAndFlags(specs: CommandSpec[], parsed: ParsedArgs
   if (parsed.positionalFlagConflicts && parsed.positionalFlagConflicts.length > 0) {
     throw new RuntimeClientError(
       'invalid_argument',
-      `Pass ${parsed.positionalFlagConflicts
+      `${parsed.positionalFlagConflicts
         .map((flag) => `--${flag}`)
-        .join(', ')} either positionally or as a flag, not both.`
+        .join('、')} 只能使用位置参数或 Flag 之一，不能重复传入。`
     )
   }
 
@@ -310,12 +310,12 @@ export function validateCommandAndFlags(specs: CommandSpec[], parsed: ParsedArgs
   for (const [flag, value] of parsed.flags) {
     const isGlobalFlag = GLOBAL_FLAGS.includes(flag)
     if (GLOBAL_VALUE_FLAGS.has(flag) && (typeof value !== 'string' || value.length === 0)) {
-      throw new RuntimeClientError('invalid_argument', `Flag --${flag} requires a value.`)
+      throw new RuntimeClientError('invalid_argument', `Flag --${flag} 需要一个值。`)
     }
     if (!isGlobalFlag && !spec.allowedFlags.includes(flag) && !(flag === 'page' && pageAllowed)) {
       throw new RuntimeClientError(
         'invalid_argument',
-        `Unknown flag --${flag} for command: ${spec.path.join(' ')}`,
+        `命令 ${spec.path.join(' ')} 不支持 Flag --${flag}。`,
         unknownFlagData(flag, effectiveAllowedFlags(spec))
       )
     }

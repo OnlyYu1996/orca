@@ -13,7 +13,7 @@ export function getSystemNotificationSettingsCopy(
   if (platform === 'darwin') {
     return {
       failureTitle: 'macOS did not show the notification',
-      failureDescription: 'Enable Allow notifications for Orca in System Settings.'
+      failureDescription: 'Enable Allow notifications for 赛博包工头 in System Settings.'
     }
   }
 
@@ -109,7 +109,7 @@ export async function sendNotificationSettingsTestNotification(
         {
           description: translate(
             'auto.components.settings.NotificationsPane.115437bc35',
-            'If no macOS banner appeared, enable Allow notifications for Orca.'
+            'If no macOS banner appeared, enable Allow notifications for 赛博包工头.'
           ),
           action: {
             label: translate(

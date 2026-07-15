@@ -232,14 +232,14 @@ describe('SidebarNav', () => {
     const container = await renderSidebarNav()
 
     expect(queryButtonByText(container, 'Automations')).not.toBeNull()
-    expect(queryButtonByText(container, 'Orca Mobile')).not.toBeNull()
+    expect(queryButtonByText(container, '赛博包工头 Mobile')).not.toBeNull()
 
     await act(async () => {
       await i18n.changeLanguage('zh')
     })
 
     expect(queryButtonByText(container, '自动化')).not.toBeNull()
-    expect(queryButtonByText(container, 'Orca 手机端')).not.toBeNull()
+    expect(queryButtonByText(container, '赛博包工头 手机端')).not.toBeNull()
   })
 
   it('updates labels when pseudo-localization is enabled after mount', async () => {
@@ -250,7 +250,7 @@ describe('SidebarNav', () => {
     })
 
     expect(queryButtonByText(container, '[Automations]')).not.toBeNull()
-    expect(queryButtonByText(container, '[Orca Mobile]')).not.toBeNull()
+    expect(queryButtonByText(container, '[赛博包工头 Mobile]')).not.toBeNull()
   })
 
   it('shows the Automations entry by default for older settings', () => {
@@ -291,7 +291,7 @@ describe('SidebarNav', () => {
   it('hides Mobile from its sidebar context menu', async () => {
     const container = await renderSidebarNav()
 
-    const mobileMenu = getButtonByText(container, 'Orca Mobile').closest(
+    const mobileMenu = getButtonByText(container, '赛博包工头 Mobile').closest(
       '[data-testid="context-menu"]'
     )
     expect(mobileMenu).not.toBeNull()

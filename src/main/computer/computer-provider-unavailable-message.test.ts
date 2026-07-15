@@ -4,10 +4,10 @@ import { computerProviderUnavailableMessage } from './computer-provider-unavaila
 describe('computerProviderUnavailableMessage', () => {
   it('gives macOS developers the helper build and restart step', () => {
     expect(computerProviderUnavailableMessage('darwin')).toContain(
-      'run pnpm build:computer-macos and restart Orca from this worktree'
+      '请运行 pnpm build:computer-macos，然后从当前工作树重启赛博包工头'
     )
     expect(computerProviderUnavailableMessage('darwin')).toContain(
-      'Orca Computer Use.app was not found or this macOS version is unsupported'
+      '未找到赛博包工头电脑控制.app，或当前 macOS 版本不受支持'
     )
   })
 

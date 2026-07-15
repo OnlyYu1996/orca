@@ -5,7 +5,7 @@ import path from 'node:path'
 const repoRoot = path.resolve(import.meta.dirname, '../..')
 const packagePath = path.join(repoRoot, 'native', 'computer-use-macos')
 const binaryPath = path.join(packagePath, '.build', 'release', 'orca-computer-use-macos')
-const appPath = path.join(packagePath, '.build', 'release', 'Orca Computer Use.app')
+const appPath = path.join(packagePath, '.build', 'release', '赛博包工头电脑控制.app')
 const appExecutablePath = path.join(appPath, 'Contents', 'MacOS', 'orca-computer-use-macos')
 const appIconPath = path.join(appPath, 'Contents', 'Resources', 'AppIcon.icns')
 const entitlementsPath = path.join(
@@ -14,8 +14,11 @@ const entitlementsPath = path.join(
   'build',
   'entitlements.computer-use.mac.plist'
 )
-const bundleId = process.env.ORCA_COMPUTER_MACOS_BUNDLE_ID ?? 'com.stablyai.orca.computer-use'
-const displayName = 'Orca Computer Use'
+const bundleId =
+  process.env.SBBGT_COMPUTER_MACOS_BUNDLE_ID ??
+  process.env.ORCA_COMPUTER_MACOS_BUNDLE_ID ??
+  'com.onlyyu.sbbgt.computer-use'
+const displayName = '赛博包工头电脑控制'
 const signingIdentity = resolveSigningIdentity()
 const universalTriples = ['arm64-apple-macosx', 'x86_64-apple-macosx']
 
@@ -123,9 +126,9 @@ function infoPlist() {
   <key>LSUIElement</key>
   <true/>
   <key>NSAccessibilityUsageDescription</key>
-  <string>Orca Computer Use needs Accessibility permission to read and interact with app interfaces when you ask Orca to use apps.</string>
+  <string>赛博包工头电脑控制需要“辅助功能”权限，以便在您明确请求时读取并操作应用界面。</string>
   <key>NSScreenCaptureUsageDescription</key>
-  <string>Orca Computer Use needs Screen Recording permission to capture app windows when you ask Orca to inspect your screen.</string>
+  <string>赛博包工头电脑控制需要“屏幕录制”权限，以便在您明确请求时捕获应用窗口。</string>
 </dict>
 </plist>
 `

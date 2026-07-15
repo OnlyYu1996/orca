@@ -59,7 +59,7 @@ describe('orca computer observation CLI handlers', () => {
     expect(output).toContain('permissions')
     expect(output).toContain('set-value')
     expect(output).toContain('press-key')
-    expect(output).toContain('Press a single key such as Return or Escape')
+    expect(output).toContain('按下 Return、Escape 等单个按键')
     expect(output).not.toContain(['Press a key using', 'xdotool-style syntax'].join(' '))
   })
 
@@ -68,10 +68,10 @@ describe('orca computer observation CLI handlers', () => {
 
     const output = vi.mocked(console.log).mock.calls[0][0]
     expect(output).toContain(
-      'orca computer permissions [--id <accessibility|screenshots>] [--json]'
+      'sbbgt computer permissions [--id <accessibility|screenshots>] [--json]'
     )
     expect(output).toContain('--id <id>')
-    expect(output).toContain('Identifier for a target item or permission')
+    expect(output).toContain('目标项目或权限的标识')
   })
 
   it('prints command-specific keyboard action help', async () => {
@@ -79,7 +79,7 @@ describe('orca computer observation CLI handlers', () => {
 
     const hotkeyOutput = vi.mocked(console.log).mock.calls[0][0]
     expect(hotkeyOutput).toContain('--key <key-combo>')
-    expect(hotkeyOutput).toContain('Modifier chord with one key')
+    expect(hotkeyOutput).toContain('修饰键与单键组合')
     expect(hotkeyOutput).not.toContain('CmdOrCtrl+L')
 
     vi.mocked(console.log).mockClear()
@@ -87,7 +87,7 @@ describe('orca computer observation CLI handlers', () => {
 
     const pressKeyOutput = vi.mocked(console.log).mock.calls[0][0]
     expect(pressKeyOutput).toContain('--key <key>')
-    expect(pressKeyOutput).toContain('Single key, e.g. Return, Escape, Tab, Left, or PageUp')
+    expect(pressKeyOutput).toContain('单个按键，例如 Return、Escape、Tab、Left 或 PageUp')
   })
 
   it('passes list-apps through without resolving a worktree', async () => {
@@ -104,7 +104,7 @@ describe('orca computer observation CLI handlers', () => {
 
     expect(callMock).not.toHaveBeenCalled()
     expect(vi.mocked(console.error).mock.calls[0][0]).toContain(
-      'Unknown flag --worktree for command: computer list-apps'
+      '命令 computer list-apps 不支持 Flag --worktree。'
     )
     expect(process.exitCode).toBe(1)
   })
@@ -139,7 +139,7 @@ describe('orca computer observation CLI handlers', () => {
       callMock,
       okFixture('req_permissions', {
         platform: 'darwin',
-        helperAppPath: '/Applications/Orca Computer Use.app',
+        helperAppPath: '/Applications/赛博包工头电脑控制.app',
         openedSettings: false,
         launchedHelper: true
       })
@@ -150,8 +150,8 @@ describe('orca computer observation CLI handlers', () => {
     expect(callMock).toHaveBeenCalledTimes(1)
     expect(callMock).toHaveBeenCalledWith('computer.permissions', {})
     const output = vi.mocked(console.log).mock.calls[0][0]
-    expect(output).toContain('Opened Orca Computer Use permission setup')
-    expect(output).toContain('/Applications/Orca Computer Use.app')
+    expect(output).toContain('已打开赛博包工头电脑控制权限设置')
+    expect(output).toContain('/Applications/赛博包工头电脑控制.app')
   })
 
   it('passes targeted computer permission setup id', async () => {
@@ -159,7 +159,7 @@ describe('orca computer observation CLI handlers', () => {
       callMock,
       okFixture('req_permissions', {
         platform: 'darwin',
-        helperAppPath: '/Applications/Orca Computer Use.app',
+        helperAppPath: '/Applications/赛博包工头电脑控制.app',
         openedSettings: true,
         launchedHelper: true
       })
@@ -177,7 +177,7 @@ describe('orca computer observation CLI handlers', () => {
     expect(callMock).not.toHaveBeenCalled()
     const output = vi.mocked(console.error).mock.calls[0][0]
     expect(output).toContain('--id must be "accessibility" or "screenshots"')
-    expect(output).toContain('Next step: Do not retry the same command unchanged.')
+    expect(output).toContain('下一步：Do not retry the same command unchanged.')
     expect(process.exitCode).toBe(1)
   })
 

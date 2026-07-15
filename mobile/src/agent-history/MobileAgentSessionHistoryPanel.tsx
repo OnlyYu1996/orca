@@ -273,9 +273,7 @@ export function MobileAgentSessionHistoryPanel({
       ) : screenState.kind === 'unsupported' ? (
         <View style={styles.state}>
           <Text style={styles.stateTitle}>Agent Session History Unavailable</Text>
-          <Text style={styles.stateText}>
-            Update Orca on this host to browse agent session history.
-          </Text>
+          <Text style={styles.stateText}>请更新该主机上的赛博包工头，以查看智能体会话历史。</Text>
         </View>
       ) : screenState.kind === 'error' ? (
         <View style={styles.state}>

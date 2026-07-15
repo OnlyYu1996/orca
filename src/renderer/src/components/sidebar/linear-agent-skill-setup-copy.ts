@@ -8,13 +8,13 @@ export function getLinearAgentSkillSetupMissingLabel(
   if (!cliAvailable && !skillInstalled) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.missingCliAndSkill',
-      'Orca CLI and Linear agent skill are missing.'
+      '赛博包工头 CLI and Linear agent skill are missing.'
     )
   }
   if (!cliAvailable) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.missingCli',
-      'Orca CLI is missing.'
+      '赛博包工头 CLI is missing.'
     )
   }
   return translate(
@@ -30,13 +30,13 @@ export function getLinearAgentSkillSetupToastTitle(
   if (!cliAvailable && !skillInstalled) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.toastMissingCliAndSkill',
-      'Orca CLI and Linear skill are missing'
+      '赛博包工头 CLI and Linear skill are missing'
     )
   }
   if (!cliAvailable) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.toastMissingCli',
-      'Orca CLI is missing'
+      '赛博包工头 CLI is missing'
     )
   }
   return translate(
@@ -76,13 +76,13 @@ function getLinearAgentSkillSetupToastBaseDescription(
   if (!cliAvailable && !skillInstalled) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.toastInstallCliAndSkillDescription',
-      'Install the Orca CLI and the Linear skill to enable your agents to read and edit Linear tasks.'
+      'Install the 赛博包工头 CLI and the Linear skill to enable your agents to read and edit Linear tasks.'
     )
   }
   if (!cliAvailable) {
     return translate(
       'auto.components.sidebar.LinearAgentSkillSetupPrompt.toastInstallCliDescription',
-      'Install the Orca CLI to enable your agents to read and edit Linear tasks.'
+      'Install the 赛博包工头 CLI to enable your agents to read and edit Linear tasks.'
     )
   }
   return translate(

@@ -1,10 +1,13 @@
 import { app } from 'electron'
+import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { migrateLegacyStorageFile } from '../startup/product-storage-migration'
 
 const LEGACY_DATA_FILE_NAME = 'orca-data.json'
 const LEGACY_BROWSER_SESSION_META_FILE_NAME = 'browser-session-meta.json'
-const PROFILE_INDEX_FILE_NAME = 'orca-profile-index.json'
-const PROFILE_DATA_FILE_NAME = 'orca-data.json'
+const LEGACY_PROFILE_INDEX_FILE_NAME = 'orca-profile-index.json'
+const PROFILE_INDEX_FILE_NAME = 'sbbgt-profile-index.json'
+const PROFILE_DATA_FILE_NAME = 'sbbgt-data.json'
 const PROFILE_BROWSER_SESSION_META_FILE_NAME = 'browser-session-meta.json'
 const PROFILE_DIRECTORY_NAME = 'profiles'
 
@@ -14,6 +17,33 @@ let profileUserDataPath: string | null = null
 
 export function initOrcaProfilePaths(): void {
   profileUserDataPath = app.getPath('userData')
+  migrateLegacyOrcaProfileStorage(profileUserDataPath)
+}
+
+export function migrateLegacyOrcaProfileStorage(userDataPath: string): void {
+  const indexPath = join(userDataPath, PROFILE_INDEX_FILE_NAME)
+  const legacyIndexPath = join(userDataPath, LEGACY_PROFILE_INDEX_FILE_NAME)
+  migrateLegacyStorageFile(indexPath, [legacyIndexPath])
+  migrateLegacyStorageFile(`${indexPath}.bak`, [`${legacyIndexPath}.bak`])
+
+  const profilesDirectory = join(userDataPath, PROFILE_DIRECTORY_NAME)
+  if (!existsSync(profilesDirectory)) {
+    return
+  }
+  for (const entry of readdirSync(profilesDirectory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue
+    }
+    const profileDirectory = join(profilesDirectory, entry.name)
+    const profileDataFile = join(profileDirectory, PROFILE_DATA_FILE_NAME)
+    const legacyProfileDataFile = join(profileDirectory, LEGACY_DATA_FILE_NAME)
+    migrateLegacyStorageFile(profileDataFile, [legacyProfileDataFile])
+    for (let index = 0; index < LEGACY_BACKUP_COUNT; index++) {
+      migrateLegacyStorageFile(`${profileDataFile}.bak.${index}`, [
+        `${legacyProfileDataFile}.bak.${index}`
+      ])
+    }
+  }
 }
 
 export function getProfileUserDataPath(): string {
@@ -57,6 +87,10 @@ export function getOrcaProfileBrowserSessionMetaFile(
 
 export function legacyDataFilePath(userDataPath: string): string {
   return join(userDataPath, LEGACY_DATA_FILE_NAME)
+}
+
+export function productDataFilePath(userDataPath: string): string {
+  return join(userDataPath, PROFILE_DATA_FILE_NAME)
 }
 
 export function legacyBrowserSessionMetaPath(userDataPath: string): string {
