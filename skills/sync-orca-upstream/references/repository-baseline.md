@@ -146,3 +146,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：根 TypeScript 类型检查通过；完整 Lint 通过（含 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界）；根 Vitest 单 Worker 全量 `29,926 passed / 44 skipped`；Mobile 类型检查通过，Mobile Vitest `1,680 passed / 2 skipped`；冲突及超时专项 `69 passed / 1 skipped`；SSH 系统传输独立 `2 passed`；`git diff --check` 通过；品牌边界检查覆盖 5,035 个产品文本文件。
 - 未覆盖风险：未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调。根测试在 4 Worker 高并发下曾有两项固定时限用例超时，相关文件隔离运行及单 Worker 全量均通过。
 - Push 状态及目标：未 Push；`origin/main` 未变更。
+
+### 2026-07-15：同步到 190ed7d4ed0e43f1e2e543435d4ee09ab40fb7ca
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`b55b93ea86f9a80fe7e719202e45dad7a5416df2`
+- 上游目标 SHA：`190ed7d4ed0e43f1e2e543435d4ee09ab40fb7ca`
+- Merge Base：`6ee2af357b82c8717ad633f1251b6b310486dd7d`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`8e52c6c21d6e37cf8e1c06a05b2ed44de3861136`
+- 同步后 Fetch 节点及待同步提交数：`190ed7d4ed0e43f1e2e543435d4ee09ab40fb7ca`，`0`
+- 备份引用：`refs/backup/upstream-sync/2026-07-15-b55b93ea86f9`
+- 冲突文件：共 19 个：`README.md`、`mobile/app.json`、`mobile/app/_layout.tsx`、`mobile/app/notifications.tsx`、`mobile/app/pair-confirm.tsx`、`mobile/app/pair-scan.tsx`、`mobile/src/components/MobileHostCard.tsx`、`mobile/src/transport/mobile-relay-pairing-journal-store.ts`、`package.json`、`src/main/runtime/windows-mobile-firewall.test.ts`、`src/renderer/src/components/mobile/mobile-platform-copy.ts`、`src/renderer/src/components/settings/MobilePairingConnectionOptions.test.tsx`、`src/renderer/src/components/settings/MobileRelayBetaAvailability.tsx`、`src/renderer/src/components/settings/MobileSettingsPane.tsx` 以及五个 Renderer Locale 目录。
+- 关键取舍：接入上游 Mobile 0.0.31、通知授权、终端恢复、语音下载续传、Markdown 编辑、Windows 防火墙 Block Rule 修复、Kerberos/GSSAPI 和 `csh`/`tcsh` SSH 兼容；继续使用“赛博包工头”、`sbbgt` 包名与 AppID、`OnlyYu1996/orca` 发布和下载地址，不引入上游 App Store、`onorca.dev` 或官方签名声明；Mobile 导航同时保留 Locale Provider 和通知授权页；配对日志同时保留新旧键双读迁移与上游并发串行化；Host Overlay 新写 `sbbgt:*`，旧 `orca:*` 仅作兼容读取；TypeScript 7 配置移除已废弃的 `baseUrl` 并保留等价路径别名。
+- 验证：根 TypeScript 类型检查通过；完整 Lint 通过（含 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,059 个产品文本文件；根 Vitest 并发全量 `30,042 passed / 45 skipped / 16 failed`，失败均在高负载下表现为固定时限或进程资源竞争；失败文件单 Worker 复跑 `87 passed / 1 skipped`，随后根 Vitest 单 Worker 全量 `30,058 passed / 45 skipped`；Mobile 类型检查和 Lint 通过，Mobile Vitest 全量 `1,720 passed / 2 skipped`；冲突专项 Root `19 passed`、Mobile `36 passed`；SSH 系统传输已包含在单 Worker复跑和全量验证中；`git diff --check` 通过。
+- 未覆盖风险：未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调。
+- Push 状态及目标：远端 `origin/main` 已核验为 `8e52c6c21d6e37cf8e1c06a05b2ed44de3861136`；本地 reflog 记录 `2026-07-15T18:28:15+08:00 update by push`。同步流程未显式调用 `git push`，该推送由提交钩子或外部流程完成。机器状态与本记录尚未形成独立元数据提交。
