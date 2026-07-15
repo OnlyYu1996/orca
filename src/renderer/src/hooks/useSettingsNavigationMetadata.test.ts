@@ -72,8 +72,20 @@ describe('settings navigation metadata', () => {
     expect(webIds).not.toContain('computer-use')
     expect(webIds).not.toContain('voice')
     expect(webIds).not.toContain('advanced')
-    expect(webIds).toContain('servers')
+    expect(webIds).not.toContain('servers')
     expect(webIds).toContain('repo-repo-1')
+  })
+
+  it('temporarily hides remote host settings on desktop and web', () => {
+    expect(ids()).not.toContain('ssh')
+    expect(ids()).not.toContain('servers')
+    expect(ids({ isWebClient: true })).not.toContain('ssh')
+    expect(ids({ isWebClient: true })).not.toContain('servers')
+  })
+
+  it('temporarily hides task source settings on desktop and web', () => {
+    expect(ids()).not.toContain('tasks')
+    expect(ids({ isWebClient: true })).not.toContain('tasks')
   })
 
   it('does not mark installable AI capabilities as beta in the sidebar metadata', () => {

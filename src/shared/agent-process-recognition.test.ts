@@ -25,6 +25,26 @@ describe('agent process recognition', () => {
     expect(isExpectedAgentProcess('/usr/local/bin/openclaude', 'claude')).toBe(false)
   })
 
+  it('recognizes interactive CodeBuddy processes and rejects print mode', () => {
+    expect(recognizeAgentProcess('/usr/local/bin/codebuddy')).toEqual({
+      agent: 'codebuddy',
+      processName: 'codebuddy'
+    })
+    expect(
+      recognizeAgentProcess(String.raw`C:\Users\dev\AppData\Roaming\npm\codebuddy.cmd`)
+    ).toEqual({ agent: 'codebuddy', processName: 'codebuddy' })
+    expect(recognizeAgentProcessFromCommandLine('codebuddy "修复登录问题"')).toEqual({
+      agent: 'codebuddy',
+      processName: 'codebuddy'
+    })
+    expect(recognizeAgentProcessFromCommandLine('codebuddy -p "总结项目"')).toBeNull()
+    expect(recognizeAgentProcessFromCommandLine('codebuddy --print="总结项目"')).toBeNull()
+    expect(recognizeAgentProcessFromCommandLine('codebuddy --resume session-1')).toEqual({
+      agent: 'codebuddy',
+      processName: 'codebuddy'
+    })
+  })
+
   it('recognizes the Droid foreground process on Windows', () => {
     expect(recognizeAgentProcess(String.raw`C:\Users\dev\AppData\Roaming\npm\droid.cmd`)).toEqual({
       agent: 'droid',

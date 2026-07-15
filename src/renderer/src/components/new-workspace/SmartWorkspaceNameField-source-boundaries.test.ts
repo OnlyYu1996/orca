@@ -35,8 +35,12 @@ describe('SmartWorkspaceNameField repo-backed source boundaries', () => {
       'const availableModes = getSmartWorkspaceNameModes().filter',
       'const mrStateFilters = getMrStateFilters()'
     )
-    expect(availableModesSection).toContain('return !repoBackedSourcesDisabled')
-    expect(availableModesSection).toContain('return gitlabSourceAvailable')
+    expect(availableModesSection).toContain(
+      "return availableTaskProviders.includes('github') && !repoBackedSourcesDisabled"
+    )
+    expect(availableModesSection).toContain(
+      "return availableTaskProviders.includes('gitlab') && gitlabSourceAvailable"
+    )
     expect(availableModesSection).toContain('branchesEnabled && !repoBackedSourcesDisabled')
     expect(FIELD_SOURCE).toContain('repoBackedSourcesDisabled')
     expect(FIELD_SOURCE).toContain('!textOnly &&\n    gitlabSourceAvailable')

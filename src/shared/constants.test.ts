@@ -48,6 +48,13 @@ describe('getDefaultSettings', () => {
     expect(getDefaultSettings('/tmp').uiLanguage).toBe('zh')
   })
 
+  it('defaults task sources to GitLab only', () => {
+    const settings = getDefaultSettings('/tmp')
+
+    expect(settings.defaultTaskSource).toBe('gitlab')
+    expect(settings.visibleTaskProviders).toEqual(['gitlab'])
+  })
+
   it('confirms before closing pinned tabs by default', () => {
     expect(getDefaultSettings('/tmp').confirmClosePinnedTab).toBe(true)
   })
@@ -103,6 +110,7 @@ describe('getDefaultSettings', () => {
     expect(settings.agentDefaultArgs).toMatchObject({
       claude: '--dangerously-skip-permissions',
       codex: '--dangerously-bypass-approvals-and-sandbox',
+      codebuddy: '--dangerously-skip-permissions',
       gemini: '--yolo',
       cursor: '--yolo',
       copilot: '--yolo',

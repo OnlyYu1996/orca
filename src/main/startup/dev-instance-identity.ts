@@ -74,8 +74,7 @@ export function getDevInstanceIdentity(
     cleanEnvValue(env.SBBGT_DEV_INSTANCE_LABEL ?? env.ORCA_DEV_INSTANCE_LABEL) ??
     formatLabel(branch, worktreeName)
   const dockTitle =
-    cleanEnvValue(env.SBBGT_DEV_DOCK_TITLE ?? env.ORCA_DEV_DOCK_TITLE) ??
-    `${BASE_APP_NAME}: ${branch ?? devLabel ?? 'dev'}`
+    cleanEnvValue(env.SBBGT_DEV_DOCK_TITLE ?? env.ORCA_DEV_DOCK_TITLE) ?? BASE_APP_NAME
 
   return {
     name: dockTitle,

@@ -23,6 +23,7 @@ import { SearchableSetting } from './SearchableSetting'
 import { SettingsSubsectionHeader, SettingsSwitchRow } from './SettingsFormControls'
 import { translate } from '@/i18n/i18n'
 import { DefaultWindowsProjectRuntimeSetting } from './DefaultWindowsProjectRuntimeSetting'
+import { SHOW_SUPPORT_SETTINGS, SHOW_UPDATE_SETTINGS } from './settings-surface-visibility'
 
 export {
   createAutoSaveDelayDraftState,
@@ -189,7 +190,7 @@ export function GeneralPane({
         wslCapabilitiesLoading={wslCapabilitiesLoading}
       />
     ) : null,
-    matchesSettingsSearch(searchQuery, getGeneralUpdateSearchEntries()) ? (
+    SHOW_UPDATE_SETTINGS && matchesSettingsSearch(searchQuery, getGeneralUpdateSearchEntries()) ? (
       <GeneralUpdateSettingsSection key="updates" />
     ) : null
     // Note: the Support section is rendered outside this array so it can own
@@ -206,7 +207,8 @@ export function GeneralPane({
           {section}
         </div>
       ))}
-      {matchesSettingsSearch(searchQuery, getGeneralSupportSearchEntries()) ? (
+      {SHOW_SUPPORT_SETTINGS &&
+      matchesSettingsSearch(searchQuery, getGeneralSupportSearchEntries()) ? (
         <GeneralSupportSection hasPrecedingSections={visibleSections.length > 0} />
       ) : null}
     </div>

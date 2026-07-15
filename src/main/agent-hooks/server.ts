@@ -581,7 +581,7 @@ export class AgentHookServer {
     // Why: keep the listener's Claude lead-turn record in sync — a later
     // child lifecycle event would otherwise re-emit the stale pre-interrupt
     // 'working' lead state and resurrect the cancelled pane.
-    if (agentType === 'claude') {
+    if (agentType === 'claude' || agentType === 'codebuddy') {
       markClaudeLeadTurnInterrupted(this.state, existing.paneKey)
     }
     const inferred = this.applyNormalizedStatus({

@@ -178,6 +178,12 @@
     },
     {
       "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/run-electron-vite-dev.mjs",
+      "contains": "ORCA_DEV_DOCK_TITLE",
+      "reason": "开发包装 App 只写 SBBGT_DEV_DOCK_TITLE，并在兼容周期内读取旧标题变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
       "path": "config/scripts/macos-launch-diagnostics.sh",
       "contains": "ORCA_DIAGNOSTIC",
       "reason": "诊断脚本支持旧调用方传入的仓库和标签变量。"

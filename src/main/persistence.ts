@@ -3076,6 +3076,19 @@ export class Store {
           visibleTaskProviders: migratedVisibleTaskProviders,
           defaultTaskSource: rawTaskProviderSettings.defaultTaskSource
         })
+        const persistedVisibleTaskProviders = parsed.settings?.visibleTaskProviders
+        const taskProviderPolicyChanged =
+          parsed.settings?.defaultTaskSource !== taskProviderSettings.defaultTaskSource ||
+          !Array.isArray(persistedVisibleTaskProviders) ||
+          persistedVisibleTaskProviders.length !==
+            taskProviderSettings.visibleTaskProviders.length ||
+          persistedVisibleTaskProviders.some(
+            (provider, index) => provider !== taskProviderSettings.visibleTaskProviders[index]
+          )
+        // 旧配置也必须落盘为 GitLab-only，避免后续版本再次读到已禁用来源。
+        if (taskProviderPolicyChanged) {
+          this.loadNeedsSave = true
+        }
         const primarySelectionDefaultedForLinux =
           parsed.settings?.primarySelectionMiddleClickPasteDefaultedForLinux === true
         const primarySelectionDefaultedForTerminalDefaults =

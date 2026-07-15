@@ -1,6 +1,6 @@
 import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { afterEach, describe, expect, it } from 'vitest'
 
@@ -102,7 +102,7 @@ function devWrapperTestEnv(extra: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     }
   }
   delete env.ELECTRON_EXEC_PATH
-  return { ...env, ...extra }
+  return { ...env, SBBGT_SKIP_DEV_LAUNCH_SERVICES_REGISTER: '1', ...extra }
 }
 
 describe('run-electron-vite-dev', () => {
@@ -231,7 +231,7 @@ describe('run-electron-vite-dev', () => {
     expect(envSnapshot.worktreeName).toBe('payment-ui')
     expect(envSnapshot.repoRoot).toBe(resolve('.'))
     expect(envSnapshot.badgeLabel).toBeNull()
-    expect(envSnapshot.dockTitle).toBe('Orca: feature/billing-shell')
+    expect(envSnapshot.dockTitle).toBe('赛博包工头')
     expect(envSnapshot.stableName).toBeNull()
     expect(envSnapshot.electronExecPath).toBeNull()
 
@@ -387,6 +387,9 @@ describe('run-electron-vite-dev', () => {
         const firstRun = await runWrapper('first')
         const appPath = dirname(dirname(dirname(firstRun.electronExecPath)))
         distDir = dirname(appPath)
+        expect(basename(appPath)).toBe('赛博包工头.app')
+        const appIconPath = join(appPath, 'Contents', 'Resources', 'sbbgt.icns')
+        const plistPath = join(appPath, 'Contents', 'Info.plist')
         const icuDataPath = join(
           appPath,
           'Contents',
@@ -396,6 +399,13 @@ describe('run-electron-vite-dev', () => {
           'icudtl.dat'
         )
         expect(existsSync(icuDataPath)).toBe(true)
+        expect(readFileSync(appIconPath)).toEqual(
+          readFileSync(resolve('resources/build/icon.icns'))
+        )
+        expect(readFileSync(plistPath, 'utf8')).toContain('<string>sbbgt.icns</string>')
+        expect(readFileSync(plistPath, 'utf8')).toContain(
+          '<string>com.onlyyu.sbbgt.development</string>'
+        )
 
         rmSync(icuDataPath, { force: true })
         expect(existsSync(icuDataPath)).toBe(false)

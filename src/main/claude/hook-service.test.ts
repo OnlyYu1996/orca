@@ -331,7 +331,8 @@ describe('OpenClaudeHookService-compatible install', () => {
     new ClaudeHookService({
       agent: 'openclaude',
       displayName: 'OpenClaude',
-      settings: OPENCLAUDE_HOOK_SETTINGS
+      settings: OPENCLAUDE_HOOK_SETTINGS,
+      hookSource: 'claude'
     })
 
   it('installs managed hooks into OpenClaude settings without touching Claude settings', () => {

@@ -6,6 +6,7 @@ import type { TuiAgent } from '../../../../shared/types'
 const QUICK_COMMAND_AGENT_PRESENTATION_ORDER = [
   'claude',
   'codex',
+  'codebuddy',
   'gemini',
   'copilot',
   'opencode',

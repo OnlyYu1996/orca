@@ -1,6 +1,8 @@
 export type TaskProvider = 'github' | 'gitlab' | 'linear' | 'jira'
 
 export const TASK_PROVIDERS: readonly TaskProvider[] = ['github', 'gitlab', 'linear', 'jira']
+// 当前产品只接收 GitLab 任务；保留完整 Provider 清单，便于后续恢复上游能力。
+export const ACTIVE_TASK_PROVIDERS: readonly TaskProvider[] = ['gitlab']
 
 const TASK_PROVIDER_SET = new Set<TaskProvider>(TASK_PROVIDERS)
 
@@ -8,48 +10,18 @@ export function isTaskProvider(value: unknown): value is TaskProvider {
   return TASK_PROVIDER_SET.has(value as TaskProvider)
 }
 
-export function normalizeTaskProviderSettings(value: {
+export function normalizeTaskProviderSettings(_value: {
   visibleTaskProviders: unknown
   defaultTaskSource: unknown
 }): { visibleTaskProviders: TaskProvider[]; defaultTaskSource: TaskProvider } {
-  const visibleTaskProviders = normalizeVisibleTaskProviders(value.visibleTaskProviders)
-  const defaultTaskSource = isTaskProvider(value.defaultTaskSource)
-    ? value.defaultTaskSource
-    : resolveVisibleTaskProvider('github', visibleTaskProviders)
-
-  if (visibleTaskProviders.includes(defaultTaskSource)) {
-    return { visibleTaskProviders, defaultTaskSource }
-  }
-
-  // Why: older profiles can keep a saved default while the visible-provider
-  // list drifted. Persist the default back into the list so every surface
-  // reads the same settings contract.
   return {
-    defaultTaskSource,
-    visibleTaskProviders: TASK_PROVIDERS.filter(
-      (provider) => provider === defaultTaskSource || visibleTaskProviders.includes(provider)
-    )
+    defaultTaskSource: 'gitlab',
+    visibleTaskProviders: [...ACTIVE_TASK_PROVIDERS]
   }
 }
 
-export function normalizeVisibleTaskProviders(value: unknown): TaskProvider[] {
-  if (!Array.isArray(value)) {
-    return [...TASK_PROVIDERS]
-  }
-
-  const normalized: TaskProvider[] = []
-  for (const provider of value) {
-    if (!TASK_PROVIDER_SET.has(provider as TaskProvider)) {
-      continue
-    }
-    if (!normalized.includes(provider as TaskProvider)) {
-      normalized.push(provider as TaskProvider)
-    }
-  }
-
-  // Why: at least one provider must remain visible so the Tasks surface always
-  // has a valid source to select after settings hydration or manual edits.
-  return normalized.length > 0 ? normalized : [...TASK_PROVIDERS]
+export function normalizeVisibleTaskProviders(_value: unknown): TaskProvider[] {
+  return [...ACTIVE_TASK_PROVIDERS]
 }
 
 export type TaskProviderAvailability = {
@@ -61,33 +33,21 @@ export function filterAvailableTaskProviders(
   visibleProviders: readonly TaskProvider[],
   availability: TaskProviderAvailability
 ): TaskProvider[] {
-  const available = visibleProviders.filter((provider) =>
+  const preferredProviders = normalizeVisibleTaskProviders(visibleProviders)
+  const available = preferredProviders.filter((provider) =>
     isTaskProviderAvailable(provider, availability)
   )
 
-  return available.length > 0 ? available : ['github']
+  // GitLab 未就绪时仍保留其入口，用于展示安装或连接指引，禁止回退到其他来源。
+  return available.length > 0 ? available : [...ACTIVE_TASK_PROVIDERS]
 }
 
 export function restoreAvailableDefaultTaskProvider(
   visibleProviders: readonly TaskProvider[],
   availability: TaskProviderAvailability,
-  preferredProvider: unknown
+  _preferredProvider: unknown
 ): TaskProvider[] {
-  const available = filterAvailableTaskProviders(visibleProviders, availability)
-
-  // Why: older or drifted settings can hide the saved default while another
-  // provider becomes available. Keep that default reachable after hydration.
-  if (
-    isTaskProvider(preferredProvider) &&
-    isTaskProviderAvailable(preferredProvider, availability) &&
-    !available.includes(preferredProvider)
-  ) {
-    return TASK_PROVIDERS.filter(
-      (provider) => provider === preferredProvider || available.includes(provider)
-    )
-  }
-
-  return available
+  return filterAvailableTaskProviders(visibleProviders, availability)
 }
 
 function isTaskProviderAvailable(
@@ -109,11 +69,8 @@ function isTaskProviderAvailable(
 }
 
 export function resolveVisibleTaskProvider(
-  preferred: TaskProvider | null | undefined,
-  visibleProviders: readonly TaskProvider[]
+  _preferred: TaskProvider | null | undefined,
+  _visibleProviders: readonly TaskProvider[]
 ): TaskProvider {
-  if (preferred && visibleProviders.includes(preferred)) {
-    return preferred
-  }
-  return visibleProviders[0] ?? 'github'
+  return 'gitlab'
 }

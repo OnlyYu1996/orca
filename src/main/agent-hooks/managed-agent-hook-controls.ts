@@ -4,6 +4,7 @@ import type { GlobalSettings } from '../../shared/types'
 import { ampHookService } from '../amp/hook-service'
 import { antigravityHookService } from '../antigravity/hook-service'
 import { claudeHookService } from '../claude/hook-service'
+import { codeBuddyHookService } from '../codebuddy/hook-service'
 import { codexHookService } from '../codex/hook-service'
 import { copilotHookService } from '../copilot/hook-service'
 import { cursorHookService } from '../cursor/hook-service'
@@ -24,6 +25,7 @@ export const MANAGED_AGENT_HOOK_INSTALLERS: readonly ManagedAgentHookInstaller[]
   ['claude', () => claudeHookService.install()],
   ['openclaude', () => openClaudeHookService.install()],
   ['codex', () => codexHookService.install()],
+  ['codebuddy', () => codeBuddyHookService.install()],
   ['gemini', () => geminiHookService.install()],
   ['antigravity', () => antigravityHookService.install()],
   ['amp', () => ampHookService.install()],
@@ -41,6 +43,7 @@ const LOCAL_MANAGED_HOOK_REMOVERS: readonly ManagedHookRemover[] = [
   ['claude', () => claudeHookService.remove()],
   ['openclaude', () => openClaudeHookService.remove()],
   ['codex', () => codexHookService.remove()],
+  ['codebuddy', () => codeBuddyHookService.remove()],
   ['gemini', () => geminiHookService.remove()],
   ['antigravity', () => antigravityHookService.remove()],
   ['amp', () => ampHookService.remove()],
@@ -58,6 +61,7 @@ const LOCAL_MANAGED_HOOK_STATUS_READERS: readonly ManagedHookStatusReader[] = [
   ['claude', () => claudeHookService.getStatus()],
   ['openclaude', () => openClaudeHookService.getStatus()],
   ['codex', () => codexHookService.getStatus()],
+  ['codebuddy', () => codeBuddyHookService.getStatus()],
   ['gemini', () => geminiHookService.getStatus()],
   ['antigravity', () => antigravityHookService.getStatus()],
   ['amp', () => ampHookService.getStatus()],

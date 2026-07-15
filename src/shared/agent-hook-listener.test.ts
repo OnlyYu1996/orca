@@ -94,6 +94,7 @@ describe('shared agent-hook-listener', () => {
 
   it('routes pathnames to a known source or null', () => {
     expect(resolveHookSource('/hook/claude')).toBe('claude')
+    expect(resolveHookSource('/hook/codebuddy')).toBe('codebuddy')
     expect(resolveHookSource('/hook/cursor')).toBe('cursor')
     expect(resolveHookSource('/hook/antigravity')).toBe('antigravity')
     expect(resolveHookSource('/hook/grok')).toBe('grok')
@@ -135,6 +136,59 @@ describe('shared agent-hook-listener', () => {
     expect(event!.payload.state).toBe('working')
     expect(event!.payload.prompt).toBe('hello')
     expect(event!.payload.agentType).toBe('claude')
+  })
+
+  it('normalizes CodeBuddy Claude-compatible hooks with CodeBuddy attribution', () => {
+    const submitted = normalizeHookPayload(
+      state,
+      'codebuddy',
+      {
+        paneKey: PANE_KEY,
+        payload: {
+          hook_event_name: 'UserPromptSubmit',
+          prompt: '修复登录问题',
+          session_id: 'codebuddy-session',
+          transcript_path: '/home/dev/.codebuddy/projects/app/session.jsonl'
+        }
+      },
+      'production'
+    )
+    const waiting = normalizeHookPayload(
+      state,
+      'codebuddy',
+      {
+        paneKey: PANE_KEY,
+        payload: {
+          hook_event_name: 'PermissionRequest',
+          tool_name: 'Bash',
+          tool_input: { command: 'pnpm test' }
+        }
+      },
+      'production'
+    )
+    const stopped = normalizeHookPayload(
+      state,
+      'codebuddy',
+      { paneKey: PANE_KEY, payload: { hook_event_name: 'Stop' } },
+      'production'
+    )
+
+    expect(submitted?.payload).toMatchObject({
+      agentType: 'codebuddy',
+      state: 'working',
+      prompt: '修复登录问题'
+    })
+    expect(submitted?.providerSession).toEqual({
+      key: 'session_id',
+      id: 'codebuddy-session',
+      transcriptPath: '/home/dev/.codebuddy/projects/app/session.jsonl'
+    })
+    expect(waiting?.payload).toMatchObject({
+      agentType: 'codebuddy',
+      state: 'waiting',
+      toolName: 'Bash'
+    })
+    expect(stopped?.payload).toMatchObject({ agentType: 'codebuddy', state: 'done' })
   })
 
   it('normalizes Gemini BeforeTool to working with tool fields', () => {

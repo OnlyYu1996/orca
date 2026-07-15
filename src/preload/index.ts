@@ -1985,6 +1985,8 @@ const api = {
       ipcRenderer.invoke('agentHooks:openClaudeStatus'),
     codexStatus: (): Promise<AgentHookInstallStatus> =>
       ipcRenderer.invoke('agentHooks:codexStatus'),
+    codeBuddyStatus: (): Promise<AgentHookInstallStatus> =>
+      ipcRenderer.invoke('agentHooks:codeBuddyStatus'),
     geminiStatus: (): Promise<AgentHookInstallStatus> =>
       ipcRenderer.invoke('agentHooks:geminiStatus'),
     antigravityStatus: (): Promise<AgentHookInstallStatus> =>

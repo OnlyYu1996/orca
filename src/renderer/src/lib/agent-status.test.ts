@@ -899,6 +899,11 @@ describe('formatAgentTypeLabel', () => {
     expect(formatAgentTypeLabel('command-code')).toBe('Command Code')
   })
 
+  it("maps 'codebuddy' to 'CodeBuddy'", () => {
+    expect(formatAgentTypeLabel('codebuddy')).toBe('CodeBuddy')
+    expect(agentTypeToIconAgent('codebuddy')).toBe('codebuddy')
+  })
+
   it("maps 'ante' to 'Ante'", () => {
     expect(formatAgentTypeLabel('ante')).toBe('Ante')
   })

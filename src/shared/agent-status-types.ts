@@ -25,6 +25,7 @@ export type WellKnownAgentType =
   | 'claude'
   | 'openclaude'
   | 'codex'
+  | 'codebuddy'
   | 'gemini'
   | 'antigravity'
   | 'amp'

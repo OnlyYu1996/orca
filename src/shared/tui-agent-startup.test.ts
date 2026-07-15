@@ -50,6 +50,19 @@ describe('tui agent startup plans', () => {
     expect(plan?.launchCommand).toBe("claude 'fix Bob'\\''s branch'")
   })
 
+  it('starts CodeBuddy interactively with its default permission mode', () => {
+    const plan = buildAgentStartupPlan({
+      agent: 'codebuddy',
+      prompt: '修复登录问题',
+      cmdOverrides: {},
+      agentArgs: resolveTuiAgentLaunchArgs('codebuddy', undefined),
+      platform: 'linux'
+    })
+
+    expect(plan?.launchCommand).toBe("codebuddy '--dangerously-skip-permissions' '修复登录问题'")
+    expect(plan?.expectedProcess).toBe('codebuddy')
+  })
+
   it('uses PowerShell quoting by default when the target shell is Windows', () => {
     const plan = buildAgentStartupPlan({
       agent: 'claude',

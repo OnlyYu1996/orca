@@ -15,7 +15,7 @@ import { DEFAULT_TERMINAL_FONT_WEIGHT } from './terminal-fonts'
 import { getDefaultTerminalQuickCommands } from './terminal-quick-commands'
 import type { VoiceSettings } from './speech-types'
 import { cloneDefaultWorkspaceStatuses } from './workspace-statuses'
-import { TASK_PROVIDERS } from './task-providers'
+import { ACTIVE_TASK_PROVIDERS } from './task-providers'
 import { DEFAULT_WORKTREE_CARD_PROPERTIES } from './worktree-card-properties'
 import { getDefaultSourceControlAiSettings } from './source-control-ai'
 import { DEFAULT_APP_ICON_ID } from './app-icon'
@@ -329,8 +329,8 @@ export function getDefaultSettings(homedir: string): GlobalSettings {
     skipDeleteAutomationConfirm: false,
     skipCodexRateLimitResetConfirm: false,
     defaultTaskViewPreset: 'all',
-    defaultTaskSource: 'github',
-    visibleTaskProviders: [...TASK_PROVIDERS],
+    defaultTaskSource: 'gitlab',
+    visibleTaskProviders: [...ACTIVE_TASK_PROVIDERS],
     visibleTaskProvidersDefaultedForJira: true,
     defaultRepoSelection: null,
     defaultLinearTeamSelection: null,

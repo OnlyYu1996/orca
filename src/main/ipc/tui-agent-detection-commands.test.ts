@@ -6,6 +6,20 @@ import {
 } from './tui-agent-detection-commands'
 
 describe('tui agent detection commands', () => {
+  it('detects CodeBuddy from its documented executable on every runtime', () => {
+    const commands = KNOWN_TUI_AGENT_DETECTION_COMMANDS.filter(
+      (command) => command.id === 'codebuddy'
+    )
+
+    expect(commands).toEqual([{ id: 'codebuddy', cmd: 'codebuddy' }])
+    for (const runtime of ['darwin', 'linux', 'win32', 'wsl'] as const) {
+      expect(getTuiAgentDetectionProbeCommands(commands, runtime)).toEqual(['codebuddy'])
+      expect(resolveDetectedTuiAgentIds(commands, new Set(['codebuddy']), runtime)).toEqual([
+        'codebuddy'
+      ])
+    }
+  })
+
   it('requires Claude before reporting Claude Agent Teams', () => {
     const commands = KNOWN_TUI_AGENT_DETECTION_COMMANDS.filter(
       (command) => command.id === 'claude-agent-teams'

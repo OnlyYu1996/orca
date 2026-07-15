@@ -2269,6 +2269,7 @@ function isNewTurnEvent(source: AgentHookSource, eventName: unknown): boolean {
   // typecheck here instead of silently falling through to `false`.
   switch (source) {
     case 'claude':
+    case 'codebuddy':
     // Why: Kimi Code emits Claude-compatible hook events, so UserPromptSubmit
     // is its new-turn boundary too.
     case 'kimi':
@@ -2373,6 +2374,7 @@ function extractToolFields(
   // typecheck here instead of silently routing through OpenCode's extractor.
   switch (source) {
     case 'claude':
+    case 'codebuddy':
     // Why: Kimi Code uses Claude's tool_name/tool_input payload fields verbatim.
     case 'kimi':
       return extractClaudeToolFields(eventName, hookPayload)
@@ -2424,8 +2426,11 @@ function getOrCreateClaudeSubagentRoster(
  *  with the fresh child list so the sidebar reflects spawn/finish immediately
  *  (a background child can outlive the lead turn by minutes with no other
  *  hook traffic). */
+type ClaudeCompatibleHookSource = Extract<AgentHookSource, 'claude' | 'codebuddy'>
+
 function normalizeClaudeSubagentLifecycleEvent(
   state: HookListenerState,
+  source: ClaudeCompatibleHookSource,
   eventName: 'SubagentStart' | 'SubagentStop' | 'TeammateIdle',
   paneKey: string,
   hookPayload: Record<string, unknown>
@@ -2467,7 +2472,7 @@ function normalizeClaudeSubagentLifecycleEvent(
       clearClaudePendingWaitForAgent(state, paneKey, (waitingAgentId) => waitingAgentId === agentId)
     }
   }
-  return buildClaudeChildDrivenStatusPayload(state, eventName, paneKey, hookPayload)
+  return buildClaudeChildDrivenStatusPayload(state, source, eventName, paneKey, hookPayload)
 }
 
 /** Sync the Claude lead-turn record when the SERVER infers an interrupt
@@ -2534,6 +2539,7 @@ function clearClaudePendingWaitForAgent(
  *  churn. */
 function buildClaudeChildDrivenStatusPayload(
   state: HookListenerState,
+  source: ClaudeCompatibleHookSource,
   eventName: unknown,
   paneKey: string,
   hookPayload: Record<string, unknown>
@@ -2543,7 +2549,7 @@ function buildClaudeChildDrivenStatusPayload(
   const lead = state.claudeLeadStateByPaneKey.get(paneKey)
   const leadState = lead?.state ?? 'working'
   const roster = state.claudeSubagentRosterByPaneKey.get(paneKey)
-  return buildClaudeStatusPayload(state, eventName, '', paneKey, hookPayload, {
+  return buildClaudeStatusPayload(state, source, eventName, '', paneKey, hookPayload, {
     stateName:
       leadState === 'done' && claudeRosterHasWorkingSubagent(roster) ? 'working' : leadState,
     updateToolSnapshot: false,
@@ -2553,6 +2559,7 @@ function buildClaudeChildDrivenStatusPayload(
 
 function normalizeClaudeEvent(
   state: HookListenerState,
+  source: ClaudeCompatibleHookSource,
   eventName: unknown,
   promptText: string,
   paneKey: string,
@@ -2563,7 +2570,7 @@ function normalizeClaudeEvent(
     eventName === 'SubagentStop' ||
     eventName === 'TeammateIdle'
   ) {
-    return normalizeClaudeSubagentLifecycleEvent(state, eventName, paneKey, hookPayload)
+    return normalizeClaudeSubagentLifecycleEvent(state, source, eventName, paneKey, hookPayload)
   }
 
   // Why: Claude's AskUserQuestion tool is auto-allowed, so it emits PreToolUse
@@ -2619,7 +2626,7 @@ function normalizeClaudeEvent(
   if (subagentOriginId) {
     const lead = state.claudeLeadStateByPaneKey.get(paneKey)
     if (lead?.state !== 'waiting' || lead.waitingAgentId !== subagentOriginId) {
-      return buildClaudeChildDrivenStatusPayload(state, eventName, paneKey, hookPayload)
+      return buildClaudeChildDrivenStatusPayload(state, source, eventName, paneKey, hookPayload)
     }
     // Why: approval granted — update the tool snapshot exactly as the lead's
     // own next tool event would (dropping the pending card), but restore the
@@ -2629,7 +2636,7 @@ function normalizeClaudeEvent(
     const restored = lead.stateBeforeWait ?? { state: 'working' as const }
     state.claudeLeadStateByPaneKey.set(paneKey, restored)
     const roster = state.claudeSubagentRosterByPaneKey.get(paneKey)
-    return buildClaudeStatusPayload(state, eventName, promptText, paneKey, hookPayload, {
+    return buildClaudeStatusPayload(state, source, eventName, promptText, paneKey, hookPayload, {
       stateName:
         restored.state === 'done' && claudeRosterHasWorkingSubagent(roster)
           ? 'working'
@@ -2648,7 +2655,7 @@ function normalizeClaudeEvent(
     !isWaitingInducing &&
     state.claudeSubagentRosterByPaneKey.get(paneKey)?.has(eventAgentId)
   ) {
-    return buildClaudeChildDrivenStatusPayload(state, eventName, paneKey, hookPayload)
+    return buildClaudeChildDrivenStatusPayload(state, source, eventName, paneKey, hookPayload)
   }
 
   if (eventName === 'Stop' || eventName === 'StopFailure') {
@@ -2698,7 +2705,7 @@ function normalizeClaudeEvent(
   const effectiveState =
     stateName === 'done' && claudeRosterHasWorkingSubagent(roster) ? 'working' : stateName
 
-  return buildClaudeStatusPayload(state, eventName, promptText, paneKey, hookPayload, {
+  return buildClaudeStatusPayload(state, source, eventName, promptText, paneKey, hookPayload, {
     stateName: effectiveState,
     updateToolSnapshot: true,
     interrupted
@@ -2707,6 +2714,7 @@ function normalizeClaudeEvent(
 
 function buildClaudeStatusPayload(
   state: HookListenerState,
+  source: ClaudeCompatibleHookSource,
   eventName: unknown,
   promptText: string,
   paneKey: string,
@@ -2717,8 +2725,8 @@ function buildClaudeStatusPayload(
   // activity. Read the cached tool snapshot without merging so they can't
   // clear a live AskUserQuestion card or clobber the in-flight tool preview.
   const snapshot = options.updateToolSnapshot
-    ? resolveToolState(state, paneKey, extractToolFields('claude', eventName, hookPayload), {
-        resetOnNewTurn: isNewTurnEvent('claude', eventName)
+    ? resolveToolState(state, paneKey, extractToolFields(source, eventName, hookPayload), {
+        resetOnNewTurn: isNewTurnEvent(source, eventName)
       })
     : (state.lastToolByPaneKey.get(paneKey) ?? {})
 
@@ -2732,9 +2740,9 @@ function buildClaudeStatusPayload(
     // Why: only lead-origin events (updateToolSnapshot) may reset the prompt
     // cache; a child-driven refresh must not blank the lead's prompt label.
     prompt: resolvePrompt(state, paneKey, promptText, {
-      resetOnNewTurn: options.updateToolSnapshot && isNewTurnEvent('claude', eventName)
+      resetOnNewTurn: options.updateToolSnapshot && isNewTurnEvent(source, eventName)
     }),
-    agentType: 'claude',
+    agentType: source,
     toolName: snapshot.toolName,
     toolInput: snapshot.toolInput,
     interactivePrompt: snapshot.interactivePrompt,
@@ -3751,7 +3759,24 @@ export function normalizeHookPayload(
   let payload: ParsedAgentStatusPayload | null
   switch (source) {
     case 'claude':
-      payload = normalizeClaudeEvent(state, eventName, promptText, paneKey, hookPayloadRecord)
+      payload = normalizeClaudeEvent(
+        state,
+        'claude',
+        eventName,
+        promptText,
+        paneKey,
+        hookPayloadRecord
+      )
+      break
+    case 'codebuddy':
+      payload = normalizeClaudeEvent(
+        state,
+        'codebuddy',
+        eventName,
+        promptText,
+        paneKey,
+        hookPayloadRecord
+      )
       break
     case 'codex':
       payload = normalizeCodexEvent(state, eventName, promptText, paneKey, hookPayloadRecord)
@@ -3902,6 +3927,7 @@ export function normalizeHookPayload(
 
 export const HOOK_SOURCE_BY_PATHNAME: Readonly<Record<string, AgentHookSource>> = Object.freeze({
   '/hook/claude': 'claude',
+  '/hook/codebuddy': 'codebuddy',
   '/hook/codex': 'codex',
   '/hook/gemini': 'gemini',
   '/hook/antigravity': 'antigravity',

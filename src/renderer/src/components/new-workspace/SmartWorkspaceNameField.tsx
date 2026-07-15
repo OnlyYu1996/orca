@@ -345,10 +345,10 @@ export default function SmartWorkspaceNameField({
       return item.id === 'text'
     }
     if (item.id === 'github') {
-      return !repoBackedSourcesDisabled
+      return availableTaskProviders.includes('github') && !repoBackedSourcesDisabled
     }
     if (item.id === 'gitlab') {
-      return gitlabSourceAvailable
+      return availableTaskProviders.includes('gitlab') && gitlabSourceAvailable
     }
     if (item.id === 'linear') {
       return linearAvailable

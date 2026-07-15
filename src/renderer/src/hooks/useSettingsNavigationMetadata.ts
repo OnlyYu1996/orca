@@ -79,6 +79,10 @@ import {
 } from '@/lib/windows-terminal-capabilities'
 import { getActiveRuntimeTarget } from '@/runtime/runtime-rpc-client'
 import { translate } from '@/i18n/i18n'
+import {
+  SHOW_REMOTE_HOST_SETTINGS,
+  SHOW_TASK_SOURCE_SETTINGS
+} from '@/components/settings/settings-surface-visibility'
 
 export { isWebClientLocation } from '@/lib/web-client-location'
 
@@ -295,17 +299,21 @@ export function buildSettingsNavigationMetadata({
       ],
       group: 'workflows'
     },
-    {
-      id: 'tasks',
-      title: translate('auto.hooks.useSettingsNavigationMetadata.85f4fd7710', 'Task Sources'),
-      description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.5235c215ca',
-        'Choose which task providers appear in the Tasks page and sidebar.'
-      ),
-      icon: ListChecks,
-      searchEntries: getTasksPaneSearchEntries(),
-      group: 'workflows'
-    },
+    ...(SHOW_TASK_SOURCE_SETTINGS
+      ? [
+          {
+            id: 'tasks',
+            title: translate('auto.hooks.useSettingsNavigationMetadata.85f4fd7710', 'Task Sources'),
+            description: translate(
+              'auto.hooks.useSettingsNavigationMetadata.5235c215ca',
+              'Choose which task providers appear in the Tasks page and sidebar.'
+            ),
+            icon: ListChecks,
+            searchEntries: getTasksPaneSearchEntries(),
+            group: 'workflows'
+          }
+        ]
+      : []),
     {
       id: 'terminal',
       title: translate('auto.hooks.useSettingsNavigationMetadata.a9fb10afca', 'Terminal'),
@@ -437,7 +445,7 @@ export function buildSettingsNavigationMetadata({
       searchEntries: getStatsPaneSearchEntries(),
       group: 'interface'
     },
-    ...(showDesktopOnlySettings
+    ...(showDesktopOnlySettings && SHOW_REMOTE_HOST_SETTINGS
       ? [
           {
             id: 'ssh',
@@ -452,20 +460,24 @@ export function buildSettingsNavigationMetadata({
           }
         ]
       : []),
-    {
-      id: 'servers',
-      title: translate(
-        'auto.hooks.useSettingsNavigationMetadata.de0c2907a1',
-        'Remote 赛博包工头 Servers'
-      ),
-      description: isWebClient
-        ? 'Connect this browser to a saved Orca server.'
-        : 'Pair remote Orca runtimes for persistent sessions, richer remote state, and web or mobile handoff.',
-      icon: Server,
-      searchEntries: [runtimeEnvironmentsSearchEntry],
-      group: 'remote',
-      badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
-    },
+    ...(SHOW_REMOTE_HOST_SETTINGS
+      ? [
+          {
+            id: 'servers',
+            title: translate(
+              'auto.hooks.useSettingsNavigationMetadata.de0c2907a1',
+              'Remote 赛博包工头 Servers'
+            ),
+            description: isWebClient
+              ? 'Connect this browser to a saved Orca server.'
+              : 'Pair remote Orca runtimes for persistent sessions, richer remote state, and web or mobile handoff.',
+            icon: Server,
+            searchEntries: [runtimeEnvironmentsSearchEntry],
+            group: 'remote',
+            badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
+          }
+        ]
+      : []),
     ...(showDesktopOnlySettings && isMac
       ? [
           {

@@ -11,6 +11,7 @@ import type { TuiAgent } from '../../../src/shared/types'
 // building the path from the agent id.
 export const MOBILE_AGENT_ICON_ASSETS: Partial<Record<TuiAgent, ImageSourcePropType>> = {
   openclaude: require('../../../src/shared/agent-icons/openclaude.png'),
+  codebuddy: require('../../../src/shared/agent-icons/codebuddy.png'),
   grok: require('../../../src/shared/agent-icons/grok.png'),
   copilot: require('../../../src/shared/agent-icons/copilot.png'),
   opencode: require('../../../src/shared/agent-icons/opencode.png'),

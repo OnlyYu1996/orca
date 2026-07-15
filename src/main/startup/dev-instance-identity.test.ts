@@ -26,7 +26,7 @@ describe('dev-instance-identity', () => {
       devWorktreeName: 'dev-indicator',
       devRepoRoot: '/repo/worktrees/dev-indicator'
     })
-    expect(identity.name).toBe('赛博包工头: nwparker/dev-indicator')
+    expect(identity.name).toBe('赛博包工头')
     expect(identity.dockBadgeLabel).toBeNull()
     expect(identity.appUserModelId).toMatch(/^com\.onlyyu\.sbbgt\.dev\.[a-f0-9]{10}$/)
   })
@@ -39,7 +39,7 @@ describe('dev-instance-identity', () => {
     })
 
     expect(identity.devLabel).toBe('payment-ui @ feature/billing-shell')
-    expect(identity.name).toBe('赛博包工头: feature/billing-shell')
+    expect(identity.name).toBe('赛博包工头')
     expect(identity.dockBadgeLabel).toBeNull()
   })
 
@@ -51,7 +51,7 @@ describe('dev-instance-identity', () => {
     })
 
     expect(identity.devLabel).toBe('manual label')
-    expect(identity.name).toBe('赛博包工头: feature/other')
+    expect(identity.name).toBe('赛博包工头')
     expect(identity.dockBadgeLabel).toBeNull()
   })
 
@@ -72,7 +72,16 @@ describe('dev-instance-identity', () => {
       devWorktreeName: 'new-worktree',
       devBranch: 'feature/new',
       devLabel: 'new label',
-      name: '赛博包工头: feature/new'
+      name: '赛博包工头'
     })
+  })
+
+  it('keeps an explicit development app title override', () => {
+    expect(
+      getDevInstanceIdentity(true, {
+        SBBGT_DEV_DOCK_TITLE: '赛博包工头预览',
+        SBBGT_DEV_BRANCH: 'feature/preview'
+      }).name
+    ).toBe('赛博包工头预览')
   })
 })

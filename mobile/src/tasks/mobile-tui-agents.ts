@@ -8,6 +8,7 @@ export const MOBILE_TUI_AGENT_AUTO_PICK_ORDER = [
   'claude-agent-teams',
   'openclaude',
   'codex',
+  'codebuddy',
   'grok',
   'copilot',
   'opencode',
@@ -45,6 +46,7 @@ export const MOBILE_TUI_AGENT_LABELS: Record<TuiAgent, string> = {
   'claude-agent-teams': 'Claude Agent Teams',
   openclaude: 'OpenClaude',
   codex: 'Codex',
+  codebuddy: 'CodeBuddy',
   grok: 'Grok',
   copilot: 'GitHub Copilot',
   opencode: 'OpenCode',
@@ -79,6 +81,7 @@ export const MOBILE_TUI_AGENT_LABELS: Record<TuiAgent, string> = {
 
 export const MOBILE_TUI_AGENT_FAVICON_DOMAINS: Partial<Record<TuiAgent, string>> = {
   openclaude: 'openclaude.gitlawb.com',
+  codebuddy: 'codebuddy.ai',
   grok: 'x.ai',
   copilot: 'github.com',
   opencode: 'opencode.ai',
@@ -114,6 +117,7 @@ export const MOBILE_TUI_AGENT_LAUNCH_COMMANDS: Record<TuiAgent, string> = {
   'claude-agent-teams': 'orca claude-teams',
   openclaude: 'openclaude',
   codex: 'codex',
+  codebuddy: 'codebuddy',
   grok: 'grok',
   copilot: 'copilot',
   opencode: 'opencode',

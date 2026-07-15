@@ -69,7 +69,7 @@ if (envFile) {
         worktreeName: process.env.ORCA_DEV_WORKTREE_NAME ?? null,
         repoRoot: process.env.ORCA_DEV_REPO_ROOT ?? null,
         badgeLabel: process.env.ORCA_DEV_DOCK_BADGE_LABEL ?? null,
-        dockTitle: process.env.ORCA_DEV_DOCK_TITLE ?? null,
+        dockTitle: process.env.SBBGT_DEV_DOCK_TITLE ?? null,
         stableName: process.env.ORCA_DEV_STABLE_NAME ?? null,
         electronExecPath: process.env.ELECTRON_EXEC_PATH ?? null
       },

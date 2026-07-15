@@ -1835,7 +1835,7 @@ describe('createUISlice hydratePersistedUI', () => {
 })
 
 describe('createUISlice settings navigation', () => {
-  it('prefetches the restored default task source when provider settings drifted', () => {
+  it('does not prefetch a non-GitLab source when provider settings drifted', () => {
     const store = createUIStore()
     const prefetchWorkItems = vi.fn()
     const prefetchLinearIssues = vi.fn()
@@ -1864,17 +1864,11 @@ describe('createUISlice settings navigation', () => {
 
     store.getState().openTaskPage()
 
-    expect(prefetchWorkItems).toHaveBeenCalledWith(
-      'repo-1',
-      '/repo',
-      expect.any(Number),
-      'is:issue is:open',
-      { sourceContext: null }
-    )
+    expect(prefetchWorkItems).not.toHaveBeenCalled()
     expect(prefetchLinearIssues).not.toHaveBeenCalled()
   })
 
-  it('prefetches direct GitHub task opens with their source context', () => {
+  it('does not prefetch direct GitHub task opens under the GitLab-only policy', () => {
     const store = createUIStore()
     const prefetchWorkItems = vi.fn()
     const workItem = makeGitHubWorkItem()
@@ -1914,16 +1908,10 @@ describe('createUISlice settings navigation', () => {
       openGitHubSourceContext: sourceContext
     })
 
-    expect(prefetchWorkItems).toHaveBeenCalledWith(
-      'repo-1',
-      '/repo',
-      expect.any(Number),
-      'is:issue is:open',
-      { sourceContext }
-    )
+    expect(prefetchWorkItems).not.toHaveBeenCalled()
   })
 
-  it('prefetches direct Linear task opens with their source context', () => {
+  it('does not prefetch direct Linear task opens under the GitLab-only policy', () => {
     const store = createUIStore()
     const prefetchLinearIssues = vi.fn()
     const linearIssue = makeLinearIssue()
@@ -1950,10 +1938,7 @@ describe('createUISlice settings navigation', () => {
       openLinearSourceContext: sourceContext
     })
 
-    expect(prefetchLinearIssues).toHaveBeenCalledWith(
-      { kind: 'list', filter: 'all', limit: expect.any(Number) },
-      { sourceContext }
-    )
+    expect(prefetchLinearIssues).not.toHaveBeenCalled()
   })
 
   it('returns to the tasks page after visiting settings from an in-progress draft', () => {

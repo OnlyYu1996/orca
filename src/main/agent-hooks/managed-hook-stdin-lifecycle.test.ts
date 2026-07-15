@@ -28,6 +28,7 @@ vi.mock('os', async (importOriginal) => {
 
 import { AntigravityHookService } from '../antigravity/hook-service'
 import { ClaudeHookService } from '../claude/hook-service'
+import { codeBuddyHookService } from '../codebuddy/hook-service'
 import { CodexHookService } from '../codex/hook-service'
 import { CommandCodeHookService } from '../command-code/hook-service'
 import { CopilotHookService } from '../copilot/hook-service'
@@ -59,6 +60,10 @@ const REMOTE_INSTALLERS = [
   {
     agent: 'openclaude',
     install: (sftp: SFTPWrapper) => openClaudeHookService.installRemote(sftp, REMOTE_HOME)
+  },
+  {
+    agent: 'codebuddy',
+    install: (sftp: SFTPWrapper) => codeBuddyHookService.installRemote(sftp, REMOTE_HOME)
   },
   {
     agent: 'codex',
@@ -102,6 +107,7 @@ const LOCAL_INSTALLERS = [
   { agent: 'antigravity', install: () => new AntigravityHookService().install() },
   { agent: 'claude', install: () => new ClaudeHookService().install() },
   { agent: 'openclaude', install: () => openClaudeHookService.install() },
+  { agent: 'codebuddy', install: () => codeBuddyHookService.install() },
   { agent: 'codex', install: () => new CodexHookService().install() },
   { agent: 'command-code', install: () => new CommandCodeHookService().install() },
   { agent: 'copilot', install: () => new CopilotHookService().install() },
@@ -206,7 +212,7 @@ describe('Windows managed hook stdin structure', () => {
         (name) => name.endsWith('-hook.cmd') && !name.startsWith('antigravity-')
       )
       mainBatchScripts.push('antigravity-hook.cmd')
-      expect(mainBatchScripts).toHaveLength(10)
+      expect(mainBatchScripts).toHaveLength(11)
       for (const fileName of mainBatchScripts) {
         const script = readFileSync(join(hooksDir, fileName), 'utf8')
         expect(script, `${fileName} port guard`).toContain(

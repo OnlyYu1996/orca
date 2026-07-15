@@ -142,8 +142,8 @@ beforeEach(() => {
 describe('createSettingsSlice runtime switching', () => {
   it('repairs drifted task provider settings before sending updates', async () => {
     settingsSet.mockResolvedValueOnce({
-      visibleTaskProviders: ['github', 'linear'],
-      defaultTaskSource: 'github'
+      visibleTaskProviders: ['gitlab'],
+      defaultTaskSource: 'gitlab'
     })
     const store = createTestStore()
     store.setState({
@@ -158,8 +158,8 @@ describe('createSettingsSlice runtime switching', () => {
     })
 
     expect(settingsSet).toHaveBeenCalledWith({
-      visibleTaskProviders: ['github', 'linear'],
-      defaultTaskSource: 'github'
+      visibleTaskProviders: ['gitlab'],
+      defaultTaskSource: 'gitlab'
     })
   })
 

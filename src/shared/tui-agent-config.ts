@@ -115,6 +115,13 @@ export const TUI_AGENT_CONFIG: Record<TuiAgent, TuiAgentConfig> = {
     preflightTrust: 'codex',
     draftPasteReadySignal: 'codex-composer-prompt'
   },
+  codebuddy: {
+    detectCmd: 'codebuddy',
+    launchCmd: 'codebuddy',
+    expectedProcess: 'codebuddy',
+    // CodeBuddy 的位置参数会提交首轮提示并保持交互 REPL，符合工作区启动语义。
+    promptInjectionMode: 'argv'
+  },
   autohand: {
     detectCmd: 'autohand',
     launchCmd: 'autohand',

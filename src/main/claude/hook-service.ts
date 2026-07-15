@@ -1,5 +1,6 @@
 import type { SFTPWrapper } from 'ssh2'
 import type { AgentHookInstallState, AgentHookInstallStatus } from '../../shared/agent-hook-types'
+import type { AgentHookSource } from '../../shared/agent-hook-relay'
 import {
   buildWindowsAgentHookCurlPostCommand,
   readHooksJson,
@@ -36,15 +37,18 @@ type ClaudeHookServiceOptions = {
   agent: AgentHookInstallStatus['agent']
   displayName: string
   settings: ClaudeCompatibleHookSettings
+  hookSource: Extract<AgentHookSource, 'claude' | 'codebuddy'>
 }
 
 const DEFAULT_CLAUDE_HOOK_SERVICE_OPTIONS: ClaudeHookServiceOptions = {
   agent: 'claude',
   displayName: 'Claude',
-  settings: CLAUDE_HOOK_SETTINGS
+  settings: CLAUDE_HOOK_SETTINGS,
+  hookSource: 'claude'
 }
 
 function getManagedScript(
+  hookSource: Extract<AgentHookSource, 'claude' | 'codebuddy'>,
   target: 'local' | 'posix' = 'local',
   options: { skipWhenDevinImportsClaude?: boolean } = {}
 ): string {
@@ -72,7 +76,7 @@ function getManagedScript(
       // spaces); a PowerShell post on top of that meant two interpreter
       // startups per hook. The post runs inside the .cmd (cmd.exe context), so
       // curl works the same here as for the POSIX/Codex hooks.
-      buildWindowsAgentHookCurlPostCommand('claude'),
+      buildWindowsAgentHookCurlPostCommand(hookSource),
       'exit /b 0',
       ...buildWindowsHookStdinDrainEpilogue(),
       ''
@@ -118,7 +122,7 @@ function getManagedScript(
     // Why: pipe payload to curl's stdin (`payload@-`) instead of an inline
     // `payload=$VALUE` arg, so tens-of-KB tool output stays off the curl
     // command line (EDR command-line false positives). Wire body is identical.
-    'printf \'%s\' "$payload" | curl -sS -X POST "http://127.0.0.1:${ORCA_AGENT_HOOK_PORT}/hook/claude" \\',
+    `printf '%s' "$payload" | curl -sS -X POST "http://127.0.0.1:\${ORCA_AGENT_HOOK_PORT}/hook/${hookSource}" \\`,
     '  --connect-timeout 0.5 --max-time 1.5 \\',
     '  -H "Content-Type: application/x-www-form-urlencoded" \\',
     '  -H "X-Orca-Agent-Hook-Token: ${ORCA_AGENT_HOOK_TOKEN}" \\',
@@ -213,7 +217,9 @@ export class ClaudeHookService {
     )
     writeManagedScript(
       scriptPath,
-      getManagedScript('local', { skipWhenDevinImportsClaude: this.options.agent === 'claude' })
+      getManagedScript(this.options.hookSource, 'local', {
+        skipWhenDevinImportsClaude: this.options.agent === 'claude'
+      })
     )
     writeHooksJson(configPath, nextConfig)
     return this.getStatus()
@@ -265,7 +271,9 @@ export class ClaudeHookService {
       await writeManagedScriptRemote(
         sftp,
         remoteScriptPath,
-        getManagedScript('posix', { skipWhenDevinImportsClaude: this.options.agent === 'claude' })
+        getManagedScript(this.options.hookSource, 'posix', {
+          skipWhenDevinImportsClaude: this.options.agent === 'claude'
+        })
       )
       await writeHooksJsonRemote(sftp, remoteConfigPath, nextConfig)
 

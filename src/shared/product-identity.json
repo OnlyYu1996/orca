@@ -3,7 +3,7 @@
   "englishName": "Cyber Foreman",
   "machineName": "sbbgt",
   "desktopAppId": "com.onlyyu.sbbgt",
-  "desktopDevAppId": "com.onlyyu.sbbgt.dev",
+  "desktopDevAppId": "com.onlyyu.sbbgt.development",
   "mobileAppId": "com.onlyyu.sbbgt.mobile",
   "cliCommand": "sbbgt",
   "devCliCommand": "sbbgt-dev",

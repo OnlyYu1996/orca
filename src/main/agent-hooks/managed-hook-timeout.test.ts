@@ -35,6 +35,7 @@ import { CommandCodeHookService } from '../command-code/hook-service'
 import { GeminiHookService } from '../gemini/hook-service'
 import { AntigravityHookService } from '../antigravity/hook-service'
 import { ClaudeHookService } from '../claude/hook-service'
+import { codeBuddyHookService } from '../codebuddy/hook-service'
 import { GrokHookService } from '../grok/hook-service'
 import { CopilotHookService } from '../copilot/hook-service'
 import { DevinHookService } from '../devin/hook-service'
@@ -60,6 +61,12 @@ const JSON_INSTALLERS = [
     timeout: MANAGED_HOOK_TIMEOUT_SECONDS,
     configPath: `${REMOTE_HOME}/.openclaude/settings.json`,
     install: (sftp: SFTPWrapper) => openClaudeHookService.installRemote(sftp, REMOTE_HOME)
+  },
+  {
+    agent: 'codebuddy',
+    timeout: MANAGED_HOOK_TIMEOUT_SECONDS,
+    configPath: `${REMOTE_HOME}/.codebuddy/settings.json`,
+    install: (sftp: SFTPWrapper) => codeBuddyHookService.installRemote(sftp, REMOTE_HOME)
   },
   {
     agent: 'codex',

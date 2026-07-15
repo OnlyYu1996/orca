@@ -2361,6 +2361,7 @@ export type TuiAgent =
   | 'claude-agent-teams' // Claude Code Agent Teams via Orca native panes
   | 'openclaude' // OpenClaude
   | 'codex' // OpenAI Codex
+  | 'codebuddy' // Tencent CodeBuddy Code
   | 'autohand' // Autohand Code CLI
   | 'opencode' // OpenCode
   | 'mimo-code'
@@ -2808,12 +2809,9 @@ export type GlobalSettings = {
   skipCodexRateLimitResetConfirm: boolean
   /** Default preset in the new-workspace GitHub task view. */
   defaultTaskViewPreset: TaskViewPresetId
-  /** Why: persists the user's last-used task source so the Tasks page
-   *  reopens to the same provider instead of always defaulting to GitHub. */
+  /** 当前产品固定使用 GitLab；保留字段以兼容上游配置结构。 */
   defaultTaskSource: TaskProvider
-  /** Why: users may only work from one hosted task system. Persisting this
-   *  list hides unused providers from Tasks chrome and sidebar shortcuts while
-   *  leaving the chosen default source stable when it is still visible. */
+  /** 当前产品固定为 GitLab-only；保留列表结构以降低后续上游同步成本。 */
   visibleTaskProviders: TaskProvider[]
   /** Why: one-shot migration guard so Jira becomes visible for existing
    *  profiles once, without re-adding it after a later deliberate opt-out. */

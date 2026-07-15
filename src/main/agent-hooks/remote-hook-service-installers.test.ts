@@ -15,6 +15,7 @@ import { GeminiHookService } from '../gemini/hook-service'
 import { AntigravityHookService } from '../antigravity/hook-service'
 import { AmpHookService } from '../amp/hook-service'
 import { ClaudeHookService } from '../claude/hook-service'
+import { codeBuddyHookService } from '../codebuddy/hook-service'
 import { GrokHookService } from '../grok/hook-service'
 import { CopilotHookService } from '../copilot/hook-service'
 import { HermesHookService } from '../hermes/hook-service'
@@ -147,6 +148,10 @@ describe('remote hook service installers', () => {
         {
           path: '/home/dev/.orca/agent-hooks/openclaude-hook.sh',
           install: (sftp: SFTPWrapper) => openClaudeHookService.installRemote(sftp, '/home/dev')
+        },
+        {
+          path: '/home/dev/.orca/agent-hooks/codebuddy-hook.sh',
+          install: (sftp: SFTPWrapper) => codeBuddyHookService.installRemote(sftp, '/home/dev')
         },
         {
           path: '/home/dev/.orca/agent-hooks/codex-hook.sh',
@@ -689,6 +694,7 @@ describe('remote hook service installers', () => {
     const servicesByAgent = new Map<string, { installRemote?: unknown }>([
       ['claude', claudeHookService],
       ['openclaude', openClaudeHookService],
+      ['codebuddy', codeBuddyHookService],
       ['codex', codexHookService],
       ['gemini', geminiHookService],
       ['antigravity', antigravityHookService],

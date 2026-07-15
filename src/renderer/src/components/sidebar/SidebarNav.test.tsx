@@ -322,8 +322,9 @@ describe('SidebarNav', () => {
     const container = await renderSidebarNav()
 
     const tasksButton = getButtonByText(container, 'Tasks')
-    const shortcuts = tasksButton.querySelector('[aria-label="Open GitHub tasks"]')?.parentElement
+    const shortcuts = tasksButton.querySelector('[aria-label="Open GitLab tasks"]')?.parentElement
 
+    expect(tasksButton.querySelector('[aria-label="Open GitHub tasks"]')).toBeNull()
     expect(shortcuts?.className).toContain('hidden')
     expect(shortcuts?.className).toContain('group-hover:flex')
     expect(shortcuts?.className).toContain('group-focus-within:flex')

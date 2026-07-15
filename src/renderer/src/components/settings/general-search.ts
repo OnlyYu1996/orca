@@ -5,6 +5,7 @@ import { searchKeywords, translateSearchKeyword } from './settings-search-keywor
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { getGeneralProjectRuntimeSearchEntries } from './general-project-runtime-search'
 import { getGeneralSupportSearchEntries } from './general-support-search'
+import { SHOW_SUPPORT_SETTINGS, SHOW_UPDATE_SETTINGS } from './settings-surface-visibility'
 
 export { getGeneralEditorSearchEntries } from './general-editor-search'
 export { getGeneralSupportSearchEntries } from './general-support-search'
@@ -235,7 +236,7 @@ export function getGeneralPaneSearchEntries(
     ...(options.includeProjectRuntime === false ? [] : getGeneralProjectRuntimeSearchEntries()),
     ...getGeneralEditorSearchEntries(),
     ...getGeneralCliSearchEntries(),
-    ...getGeneralUpdateSearchEntries(),
-    ...getGeneralSupportSearchEntries()
+    ...(SHOW_UPDATE_SETTINGS ? getGeneralUpdateSearchEntries() : []),
+    ...(SHOW_SUPPORT_SETTINGS ? getGeneralSupportSearchEntries() : [])
   ]
 }

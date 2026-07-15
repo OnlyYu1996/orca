@@ -26,6 +26,10 @@ delete process.env.ELECTRON_RUN_AS_NODE
 
 const require = createRequire(import.meta.url)
 const repoRoot = path.resolve(import.meta.dirname, '../..')
+const productIdentity = require('../../src/shared/product-identity.json')
+const PRODUCT_DISPLAY_NAME = productIdentity.displayName
+const MACOS_LSREGISTER_PATH =
+  '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister'
 const STABLE_NAME_FLAG = '--stable-name'
 const rawForwardedArgs = process.argv.slice(2)
 // Why: keep an escape hatch for tools that key off Electron's stock app name.
@@ -63,10 +67,6 @@ function formatDevInstanceLabel(branch, worktreeName) {
   return branch || worktreeName || null
 }
 
-function createDockTitle(branch, label) {
-  return `Orca: ${branch || label || 'dev'}`
-}
-
 function seedDevInstanceIdentityEnv() {
   const branch =
     process.env.ORCA_DEV_BRANCH ||
@@ -75,7 +75,8 @@ function seedDevInstanceIdentityEnv() {
   const worktreeName = process.env.ORCA_DEV_WORKTREE_NAME || path.basename(repoRoot)
   const label = process.env.ORCA_DEV_INSTANCE_LABEL || formatDevInstanceLabel(branch, worktreeName)
   const identitySeed = process.env.ORCA_DEV_INSTANCE_KEY || repoRoot
-  const dockTitle = process.env.ORCA_DEV_DOCK_TITLE || createDockTitle(branch, label)
+  const dockTitle =
+    process.env.SBBGT_DEV_DOCK_TITLE ?? process.env.ORCA_DEV_DOCK_TITLE ?? PRODUCT_DISPLAY_NAME
 
   process.env.ORCA_DEV_REPO_ROOT ||= repoRoot
   process.env.ORCA_DEV_INSTANCE_KEY ||= identitySeed
@@ -86,11 +87,10 @@ function seedDevInstanceIdentityEnv() {
     process.env.ORCA_DEV_WORKTREE_NAME ||= worktreeName
   }
   if (label) {
-    // Why: parallel `pn dev` runs need a stable origin label for window titles,
-    // Dock names, and automation sessions without re-running git in Electron.
+    // 并行开发仍需要稳定的内部标签用于自动化会话，但标签不再进入应用显示名。
     process.env.ORCA_DEV_INSTANCE_LABEL ||= label
   }
-  process.env.ORCA_DEV_DOCK_TITLE ||= dockTitle
+  process.env.SBBGT_DEV_DOCK_TITLE ||= dockTitle
 }
 
 function setPlistValue(plistPath, key, value) {
@@ -106,8 +106,24 @@ function sanitizeMacAppBundleName(value) {
       .join('')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 120) || 'Orca'
+      .slice(0, 120) || PRODUCT_DISPLAY_NAME
   )
+}
+
+function refreshMacDevAppRegistration(appPath) {
+  if (
+    process.env.SBBGT_SKIP_DEV_LAUNCH_SERVICES_REGISTER === '1' ||
+    !existsSync(MACOS_LSREGISTER_PATH)
+  ) {
+    return
+  }
+
+  // 强制注册固定名称的开发 App，确保通知中心读取当前产品身份。
+  try {
+    execFileSync(MACOS_LSREGISTER_PATH, ['-f', appPath], { stdio: 'ignore' })
+  } catch (error) {
+    console.warn(`[sbbgt-dev] 无法刷新 macOS 应用注册：${error?.message ?? error}`)
+  }
 }
 
 function prepareMacDevElectronApp() {
@@ -117,6 +133,7 @@ function prepareMacDevElectronApp() {
 
   const sourceAppPath = path.join(repoRoot, 'node_modules', 'electron', 'dist', 'Electron.app')
   const electronPackagePath = path.join(repoRoot, 'node_modules', 'electron', 'package.json')
+  const appIconSourcePath = path.join(repoRoot, 'resources', 'build', 'icon.icns')
   if (!existsSync(sourceAppPath)) {
     return
   }
@@ -126,39 +143,38 @@ function prepareMacDevElectronApp() {
     electronVersion = JSON.parse(readFileSync(electronPackagePath, 'utf8')).version ?? null
   } catch {}
 
-  const title = process.env.ORCA_DEV_DOCK_TITLE || 'Orca: dev'
+  const title = process.env.SBBGT_DEV_DOCK_TITLE ?? PRODUCT_DISPLAY_NAME
   const identityKey =
     process.env.SBBGT_DEV_INSTANCE_KEY ?? process.env.ORCA_DEV_INSTANCE_KEY ?? repoRoot
-  // v6: bundle the notification-status helper (real permission readout) and
-  // ad-hoc re-sign after plist edits so Notification Center accepts the
-  // bundle; bumping forces stale cached copies to be recreated.
-  const bundleLayoutVersion = 'dock-title-app-preserve-framework-symlinks-v6'
+  const appIconHash = createHash('sha256').update(readFileSync(appIconSourcePath)).digest('hex')
+  // Bundle 布局版本参与缓存键；图标、通知辅助程序或签名布局变化时必须递增。
+  const bundleLayoutVersion = 'branded-dev-app-preserve-framework-symlinks-v7'
   const hash = createHash('sha1')
     .update(
-      `${sourceAppPath}\0${electronVersion ?? ''}\0${title}\0${identityKey}\0${bundleLayoutVersion}`
+      `${sourceAppPath}\0${electronVersion ?? ''}\0${title}\0${identityKey}\0${appIconHash}\0${bundleLayoutVersion}`
     )
     .digest('hex')
     .slice(0, 12)
-  const distDir = path.join(repoRoot, 'out', 'electron-dev', hash)
+  const devAppRoot = path.join(repoRoot, 'out', 'electron-dev')
+  const distDir = path.join(devAppRoot, hash)
   // Why: macOS Dock hover uses the bundle's filesystem display name for
   // electron-vite's direct binary launch path, even when Info.plist is patched.
   const appBundleName = `${sanitizeMacAppBundleName(title)}.app`
   const appPath = path.join(distDir, appBundleName)
   const markerPath = path.join(distDir, 'orca-dev-electron-app.json')
-  // Why: one stable id for every dev instance. Per-instance ids registered a
-  // new macOS Notification Settings entry for each branch × Electron version,
-  // piling up "Orca: <branch>" rows forever and breaking the notification
-  // settings deep-link (System Settings can't resolve an id it has no entry
-  // for and falls back to the root list). macOS keys notification permission
-  // by bundle id, so a single id also means granting notifications to one dev
-  // instance covers all of them. Trade-off: when two dev instances run at
-  // once, macOS may route a notification click to the other instance —
-  // Electron drops clicks for notification ids it didn't create, so the
-  // click is lost, not misdirected.
-  const bundleId = 'com.onlyyu.sbbgt.dev'
+  // 所有开发实例共用稳定 Bundle ID，避免分支污染通知设置；误路由的通知点击会被 Electron 丢弃。
+  const bundleId = productIdentity.desktopDevAppId
   process.env.SBBGT_DEV_MACOS_BUNDLE_ID = bundleId
   const expectedMarker = JSON.stringify(
-    { title, appBundleName, bundleId, sourceAppPath, electronVersion, bundleLayoutVersion },
+    {
+      title,
+      appBundleName,
+      bundleId,
+      sourceAppPath,
+      electronVersion,
+      appIconHash,
+      bundleLayoutVersion
+    },
     null,
     2
   )
@@ -171,7 +187,8 @@ function prepareMacDevElectronApp() {
       'Electron Framework.framework',
       'Resources',
       'icudtl.dat'
-    )
+    ),
+    path.join(appPath, 'Contents', 'Resources', 'sbbgt.icns')
   ]
 
   function copiedAppIsUsable() {
@@ -194,6 +211,7 @@ function prepareMacDevElectronApp() {
   }
 
   if (copiedAppIsUsable()) {
+    refreshMacDevAppRegistration(appPath)
     process.env.ELECTRON_EXEC_PATH = executablePath
     return
   }
@@ -206,9 +224,11 @@ function prepareMacDevElectronApp() {
   restoreElectronFrameworkSymlinks(appPath)
 
   const plistPath = path.join(appPath, 'Contents', 'Info.plist')
+  cpSync(appIconSourcePath, path.join(appPath, 'Contents', 'Resources', 'sbbgt.icns'))
   setPlistValue(plistPath, 'CFBundleName', title)
   setPlistValue(plistPath, 'CFBundleDisplayName', title)
   setPlistValue(plistPath, 'CFBundleIdentifier', bundleId)
+  setPlistValue(plistPath, 'CFBundleIconFile', 'sbbgt.icns')
 
   // Why: the notification-status helper reads the app's real macOS
   // notification authorization (UNUserNotificationCenter has no Electron
@@ -250,6 +270,7 @@ function prepareMacDevElectronApp() {
     )
   }
   writeFileSync(markerPath, expectedMarker, 'utf8')
+  refreshMacDevAppRegistration(appPath)
   process.env.ELECTRON_EXEC_PATH = executablePath
 }
 

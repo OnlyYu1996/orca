@@ -72,6 +72,13 @@ export const getAgentCatalog = createLocalizedCatalog((): AgentCatalogEntry[] =>
     homepageUrl: 'https://github.com/openai/codex'
   },
   {
+    id: 'codebuddy',
+    label: translate('auto.lib.agent.catalog.codebuddy_label', 'CodeBuddy'),
+    cmd: 'codebuddy',
+    faviconDomain: 'codebuddy.ai',
+    homepageUrl: 'https://www.codebuddy.ai/docs/cli/installation'
+  },
+  {
     id: 'grok',
     label: translate('auto.lib.agent.catalog.0baad2d5d2', 'Grok'),
     cmd: 'grok',
