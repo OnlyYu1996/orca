@@ -180,3 +180,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 与 Mobile TypeScript 类型检查通过；Root 高风险重叠专项 `2,100 passed`；Mobile 冲突专项 `62 passed`；Mobile 全量 Vitest `1,768 passed / 2 skipped`；Root 全量 Vitest `30,577 passed / 46 skipped / 1 failed`，唯一失败为同步状态测试硬编码第一次同步 SHA，修正为提交图与状态结构校验后专项复跑 `7 passed`；Root 普通 OXLint 通过，type-aware switch-exhaustiveness 在默认并发下两次触发 `typescript-go` Go Runtime 段错误，限制 `GOMAXPROCS=1` 后通过；Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界均通过，品牌边界覆盖 5,125 个产品文本文件；Mobile Lint、Format Check 通过；`git diff --check` 通过。
 - 未覆盖风险：修正同步状态测试后未再次执行耗时约 18 分钟的 Root 单 Worker 全量，仅复跑该专项；未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新和真实自建 Relay 后端联调。默认并发 type-aware Lint 的 `typescript-go` 崩溃仍属于工具链稳定性风险。
 - Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `a4678dbd937a91de2ec10ed36515e18253552892`。
+
+### 2026-07-16：同步到 cf02cc46b1434a0b84597a268bd232c9898e61f6
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`54e31458b2f3567029ce4190f41192c03bbf63f4`
+- 上游目标 SHA：`cf02cc46b1434a0b84597a268bd232c9898e61f6`
+- Merge Base：`1ba71d2cee59d12687a32e1d595247b0c2677a85`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`021a09ee4bf3076a716785402cb8a12d55e4e217`
+- 同步后 Fetch 节点及待同步提交数：`377082e142b4120208df75ee008761687a1789c4`，`1`；新增提交为 `fix(ai-vault): discover Antigravity CLI sessions (#8971)`，留待下一轮同步。
+- 备份引用：`refs/backup/upstream-sync/2026-07-16-54e31458b2f3`
+- 冲突文件：共 3 个：`README.md`、`src/cli/help.ts`、`src/cli/specs/core.ts`。
+- 关键取舍：接入上游 13 个提交，保留 Terminal/PTY 视口所有权、整标签页持久关闭、Browser 链接路由、Pi 子智能体通知抑制、Droid Windows Shift+Enter、Linear 分支名、AI Vault 视图持久化、自托管 Jira 和打包排除项；README 继续使用“赛博包工头”与当前 Fork 链路，不引入上游 Discord、X 或微信入口；CLI 在现有模块化中文帮助中接入 `sbbgt terminal close --tab`，不恢复上游 `orca` 命令文案；新增 Jira 中文目录已人工翻译；Pi 所有权标记只写 `SBBGT_PI_STATUS_OWNED`，并以窄 Allowlist 兼容读取旧 `ORCA_PI_STATUS_OWNED`。
+- 验证：Root 三套 TypeScript 类型检查通过；完整 Lint 通过（含 type-aware switch-exhaustiveness、Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,141 个产品文本文件；受影响域专项 `2,149 passed`；Root Vitest 单 Worker 全量 `30,745 passed / 46 skipped`；`setup-agent-sequencing` 在清理一次错误并发运行遗留的本机 pyenv rehash 锁后隔离复跑 `14 passed`，并包含在最终全量通过结果中；`git diff --check` 通过。
+- 未覆盖风险：未执行 Desktop Playwright E2E、真实 Jira Server/Data Center 与 Linear 联调、AI Vault/Jira 视觉验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收；未执行各平台安装包构建、签名、自动更新、Mobile 全量及真实设备验收。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `54e31458b2f3567029ce4190f41192c03bbf63f4`。
