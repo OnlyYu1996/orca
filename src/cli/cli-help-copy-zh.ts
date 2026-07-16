@@ -29,7 +29,7 @@ const COMMAND_SUMMARY_ZH: Readonly<Record<string, string>> = {
   'terminal stop': '停止工作树中的终端',
   'terminal create': '在当前工作树中创建终端会话',
   'terminal switch': '在界面中切换到指定终端标签页',
-  'terminal close': '关闭终端标签页并在运行时终止 PTY',
+  'terminal close': '关闭终端窗格或会话；传入 --tab 可关闭整个标签页',
   'terminal rename': '设置或清除终端标签页标题',
   'terminal split': '拆分现有终端窗格',
   'project list': '列出赛博包工头已知的持久项目',
@@ -254,7 +254,9 @@ const NOTE_COPY_ZH: Readonly<Record<string, string>> = {
   'Creates a visible terminal tab without switching focus when possible; falls back to a background handle if the UI cannot adopt it. Pass --focus to switch to it.':
     '尽可能创建可见终端标签页但不切换焦点；界面无法接管时回退为后台句柄。传入 --focus 可切换到该终端。',
   'Use this, not worktree create, for a fresh agent in the current checkout.':
-    '要在当前检出中启动新智能体，请使用此命令，而不是 worktree create。'
+    '要在当前检出中启动新智能体，请使用此命令，而不是 worktree create。',
+  'Without --tab, preserves the existing pane/session close behavior. With --tab, waits until the whole tab is durably removed.':
+    '不传 --tab 时保留原有的窗格或会话关闭行为；传入 --tab 时，会等待整个标签页完成持久化移除。'
 }
 
 export function getCliCommandSummaryZh(commandPath: readonly string[], fallback: string): string {

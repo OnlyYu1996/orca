@@ -376,6 +376,12 @@
     },
     {
       "category": "legacy-addition:environment-variable",
+      "path": "src/main/pi/agent-status-handler-source.ts",
+      "contains": "process.env.ORCA_PI_STATUS_OWNED",
+      "reason": "Pi 状态所有权标记只写 SBBGT_*，并兼容读取旧进程继承的 ORCA_* 标记。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
       "path": "src/main/orca-profiles/profile-cloud-auth-config.ts",
       "contains": "ORCA_CLOUD_",
       "reason": "Cloud 自部署配置使用新变量优先并兼容旧变量；无配置时关闭。"

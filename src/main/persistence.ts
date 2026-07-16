@@ -3852,7 +3852,7 @@ export class Store {
     }
   }
 
-  private flushOrThrow(): void {
+  flushOrThrow(): void {
     if (this.writeTimer) {
       clearTimeout(this.writeTimer)
       this.writeTimer = null

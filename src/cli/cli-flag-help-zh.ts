@@ -1,5 +1,8 @@
 export function formatCommandFlagHelp(flag: string, commandPath: string[]): string {
   const command = commandPath.join(' ')
+  if (command === 'terminal close' && flag === 'tab') {
+    return '--tab                  关闭整个标签页并等待持久化完成'
+  }
   if (command === 'linear issue' && flag === 'id') {
     return '--id <id>             Linear Issue 标识、ID 或 URL'
   }

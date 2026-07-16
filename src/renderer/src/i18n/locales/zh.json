@@ -8698,7 +8698,9 @@
                 "fe9231215b": "在显示设置操作前正在检查 Linear 访问权限。",
                 "e1f5e6424c": "{{value0}} 个工作区{{value1}} 已连接",
                 "disconnect_all": "断开连接",
-                "account_scope_prefix": "账户范围"
+                "account_scope_prefix": "账户范围",
+                "2d60ec7921": "使用 API 令牌连接 Jira Cloud 站点，或使用个人访问令牌、用户名和密码连接自托管 Jira。凭据会发送到所选远程运行时，并使用该运行时支持的加密方式存储。",
+                "977e360b71": "使用 API 令牌连接 Jira Cloud 站点，或使用个人访问令牌、用户名和密码连接自托管 Jira。凭据存储在本地，并在本地运行时存储支持时加密。"
               }
             }
           }
@@ -12751,7 +12753,24 @@
             "70fcd360c4": "https://example.atlassian.net",
             "e176f9d0c5": "Jira Cloud 站点 URL",
             "d785c42b8b": "使用 Jira Cloud 站点 URL、Atlassian 邮箱和 API token 来浏览议题。",
-            "8388bdea2b": "连接 Jira 站点"
+            "8388bdea2b": "连接 Jira 站点",
+            "2e2b69e48e": "使用自托管 Jira 基础 URL 和个人访问令牌浏览 Issue。",
+            "b67e919bd5": "Jira 实例类型",
+            "17787d6e4b": "Atlassian Cloud",
+            "bc7a831773": "自托管",
+            "3489e186d6": "Jira 站点 URL",
+            "cbc27fa599": "https://jira.example.com",
+            "730d973bae": "个人访问令牌",
+            "8b9c7b9e7b": "Jira 个人访问令牌",
+            "ccfb086d3e": "在 Jira 个人资料的“个人访问令牌”中创建令牌。",
+            "1d947a07ab": "使用自托管 Jira 基础 URL、用户名和密码浏览 Issue。",
+            "f49708c369": "Jira 身份验证方式",
+            "84a810dd0e": "用户名和密码",
+            "8d1223fa5c": "用户名",
+            "be9eba0a1b": "用户名",
+            "70035652d7": "密码",
+            "c50abbf340": "Jira 账户密码",
+            "d8737db691": "使用 Jira Server 或 Data Center 账户的用户名和密码。"
           }
         }
       },
