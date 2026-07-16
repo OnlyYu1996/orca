@@ -44,10 +44,16 @@ describe('上游集成状态', () => {
   it('接受仓库中已记录的最后成功同步状态', () => {
     const state = parseUpstreamIntegrationState(readFileSync(statePath, 'utf8'))
 
-    expect(state.lastSuccessfulIntegration.upstreamTargetSha).toBe(
-      '6ee2af357b82c8717ad633f1251b6b310486dd7d'
-    )
+    expect(state.upstream).toEqual({
+      remote: 'upstream',
+      url: 'https://github.com/stablyai/orca.git',
+      branch: 'main'
+    })
     expect(validateUpstreamIntegrationState(state)).toEqual([])
+    expect(auditRepository({}, projectDir).integrationState).toMatchObject({
+      valid: true,
+      errors: []
+    })
   })
 
   it('拒绝缩写 SHA 和未通过验证的同步记录', () => {

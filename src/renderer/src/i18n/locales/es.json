@@ -13207,7 +13207,8 @@
         "cancel": "Cancelar",
         "send": "Enviar respuesta",
         "next": "Siguiente",
-        "skip": "Omitir"
+        "skip": "Omitir",
+        "sending": "Enviando…"
       },
       "approval": {
         "title": "¿Permitir {{value0}}?",

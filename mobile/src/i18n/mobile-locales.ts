@@ -1,5 +1,6 @@
 import { enTroubleshootMessages, zhCNTroubleshootMessages } from './troubleshoot-locales'
 import { enSettingsMessages, zhCNSettingsMessages } from './settings-locales'
+import { enHostEditMessages, zhCNHostEditMessages } from './host-edit-locales'
 
 export const zhCNMessages = {
   'common.back': '返回',
@@ -132,15 +133,12 @@ export const zhCNMessages = {
   'home.reconnect': '重新连接',
   'home.connect': '连接',
   'home.disconnect': '断开连接',
-  'home.rename': '重命名',
   'home.remove': '移除',
   'home.removeFailedTitle': '无法移除主机',
   'home.tryAgain': '请重试。',
-  'home.renameHostTitle': '重命名主机',
-  'home.renameHostMessage': '输入该主机的新名称。',
-  'home.hostName': '主机名称',
   'home.removeHostTitle': '移除主机',
   'home.removeHostMessage': '移除“{{name}}”？稍后仍可重新配对。',
+  ...zhCNHostEditMessages,
   ...zhCNSettingsMessages
 } as const
 
@@ -286,14 +284,11 @@ export const enMessages: Record<MobileMessageKey, string> = {
   'home.reconnect': 'Reconnect',
   'home.connect': 'Connect',
   'home.disconnect': 'Disconnect',
-  'home.rename': 'Rename',
   'home.remove': 'Remove',
   'home.removeFailedTitle': 'Could not remove host',
   'home.tryAgain': 'Please try again.',
-  'home.renameHostTitle': 'Rename Host',
-  'home.renameHostMessage': 'Enter a new name for this host.',
-  'home.hostName': 'Host name',
   'home.removeHostTitle': 'Remove Host',
   'home.removeHostMessage': 'Remove "{{name}}"? You can re-pair later.',
+  ...enHostEditMessages,
   ...enSettingsMessages
 }

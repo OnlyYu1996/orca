@@ -1004,6 +1004,10 @@ export type PreloadApi = {
     // other hosts (local or a re-added SSH target) intact.
     removeForHost: (args: { repoId: string; hostId: string }) => Promise<void>
     reorder: (args: { orderedIds: string[] }) => Promise<{ status: 'applied' | 'rejected' }>
+    reorderForHost: (args: {
+      orderedIds: string[]
+      hostId: string
+    }) => Promise<{ status: 'applied' | 'rejected' }>
     update: (args: {
       repoId: string
       updates: Partial<
@@ -1447,11 +1451,18 @@ export type PreloadApi = {
     onClearBufferRequest: (callback: (data: { ptyId: string }) => void) => () => void
     sendSerializedBuffer: (
       requestId: string,
-      snapshot: { data: string; cols: number; rows: number; lastTitle?: string } | null
+      snapshot: {
+        data: string
+        cols: number
+        rows: number
+        seq?: number
+        lastTitle?: string
+      } | null
     ) => void
     declarePendingPaneSerializer: (paneKey: string) => Promise<number>
     settlePaneSerializer: (paneKey: string, gen: number) => Promise<void>
     clearPendingPaneSerializer: (paneKey: string, gen: number) => Promise<void>
+    reportRendererSerializerReady?: (ptyId: string) => Promise<void>
     management: PtyManagementApi
   }
   feedback: {
@@ -1570,7 +1581,7 @@ export type PreloadApi = {
       repoId?: string
       limit?: number
       query?: string
-      before?: string
+      page?: number
       noCache?: boolean
     }) => Promise<ListWorkItemsResult<Omit<GitHubWorkItem, 'repoId'>>>
     prChecks: (
@@ -2577,7 +2588,10 @@ export type PreloadApi = {
       connectionId?: string
       includeIgnored?: boolean
       bypassEffectiveUpstreamNegativeCache?: boolean
+      reuseLineStats?: boolean
+      requestToken?: string
     }) => Promise<GitStatusResult>
+    cancelStatus: (args: { requestToken: string }) => Promise<void>
     submoduleStatus: (args: {
       worktreePath: string
       submodulePath: string
@@ -2879,6 +2893,9 @@ export type PreloadApi = {
     ) => () => void
     onRequestTerminalCreate: (
       callback: (data: RuntimeTerminalCreateRequestPayload) => void
+    ) => () => void
+    onRequestTerminalTabMount: (
+      callback: (data: { worktreeId: string; tabId?: string; ptyId?: string }) => void
     ) => () => void
     replyTerminalCreate: (reply: {
       requestId: string

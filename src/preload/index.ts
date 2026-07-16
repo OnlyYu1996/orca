@@ -569,6 +569,8 @@ const api = {
 
     reorder: (args) => ipcRenderer.invoke('repos:reorder', args),
 
+    reorderForHost: (args) => ipcRenderer.invoke('repos:reorderForHost', args),
+
     update: (args) => ipcRenderer.invoke('repos:update', args),
 
     pickFolder: () => ipcRenderer.invoke('repos:pickFolder'),
@@ -1141,7 +1143,13 @@ const api = {
 
     sendSerializedBuffer: (
       requestId: string,
-      snapshot: { data: string; cols: number; rows: number; lastTitle?: string } | null
+      snapshot: {
+        data: string
+        cols: number
+        rows: number
+        seq?: number
+        lastTitle?: string
+      } | null
     ): void => {
       ipcRenderer.send('pty:serializeBuffer:response', { requestId, snapshot })
     },
@@ -1159,6 +1167,9 @@ const api = {
 
     clearPendingPaneSerializer: (paneKey: string, gen: number): Promise<void> =>
       ipcRenderer.invoke('pty:clearPendingPaneSerializer', { paneKey, gen }),
+
+    reportRendererSerializerReady: (ptyId: string): Promise<void> =>
+      ipcRenderer.invoke('pty:reportRendererSerializerReady', { ptyId }),
 
     management: {
       listSessions: () => ipcRenderer.invoke('pty:management:listSessions'),
@@ -1319,7 +1330,7 @@ const api = {
       repoId?: string
       limit?: number
       query?: string
-      before?: string
+      page?: number
       noCache?: boolean
     }): Promise<ListWorkItemsResult<Omit<GitHubWorkItem, 'repoId'>>> =>
       ipcRenderer.invoke('gh:listWorkItems', args),
@@ -2964,7 +2975,11 @@ const api = {
       connectionId?: string
       includeIgnored?: boolean
       bypassEffectiveUpstreamNegativeCache?: boolean
+      reuseLineStats?: boolean
+      requestToken?: string
     }): Promise<unknown> => ipcRenderer.invoke('git:status', args),
+    cancelStatus: (args: { requestToken: string }): Promise<void> =>
+      ipcRenderer.invoke('git:cancelStatus', args),
     submoduleStatus: (args: {
       worktreePath: string
       submodulePath: string
@@ -3513,6 +3528,16 @@ const api = {
       ) => callback(data)
       ipcRenderer.on('terminal:requestTabCreate', listener)
       return () => ipcRenderer.removeListener('terminal:requestTabCreate', listener)
+    },
+    onRequestTerminalTabMount: (
+      callback: (data: { worktreeId: string; tabId?: string; ptyId?: string }) => void
+    ): (() => void) => {
+      const listener = (
+        _event: Electron.IpcRendererEvent,
+        data: { worktreeId: string; tabId?: string; ptyId?: string }
+      ) => callback(data)
+      ipcRenderer.on('terminal:requestTabMount', listener)
+      return () => ipcRenderer.removeListener('terminal:requestTabMount', listener)
     },
     replyTerminalCreate: (reply: {
       requestId: string
