@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const allowlistPath = resolve(repoRoot, 'config/brand-boundary-allowlist.json')
 const allowlist = JSON.parse(readFileSync(allowlistPath, 'utf8'))
+const productIdentity = JSON.parse(
+  readFileSync(resolve(repoRoot, 'src/shared/product-identity.json'), 'utf8')
+)
 
 const textExtensions = new Set([
   '.cjs',
@@ -72,6 +75,10 @@ const desktopBrandSurfaceFiles = new Set([
   'src/main/updater.ts',
   'src/main/window/createMainWindow.ts',
   'src/shared/app-icon.ts'
+])
+const htmlTitleExpectations = new Map([
+  ['src/renderer/index.html', productIdentity.displayName],
+  ['src/renderer/web-index.html', `${productIdentity.displayName} Web`]
 ])
 
 const fullTreePatterns = [
@@ -202,6 +209,27 @@ function scanLocalizationJsonValues(files) {
           line: value
         })
       }
+    }
+  }
+  return violations
+}
+
+function scanHtmlTitles(files) {
+  const violations = []
+  for (const [path, expectedTitle] of htmlTitleExpectations) {
+    if (!files.includes(path)) {
+      continue
+    }
+    const source = readFileSync(resolve(repoRoot, path), 'utf8')
+    const titleMatch = source.match(/<title>([^<]*)<\/title>/i)
+    const actualTitle = titleMatch?.[1]?.trim() ?? ''
+    if (actualTitle !== expectedTitle) {
+      violations.push({
+        category: 'user-visible-product-name',
+        path,
+        lineNumber: sourceLineNumber(source, titleMatch?.[0] ?? '<title>'),
+        line: titleMatch?.[0] ?? '<title> 缺失'
+      })
     }
   }
   return violations
@@ -349,6 +377,7 @@ function main() {
   const candidates = [
     ...scanFullTree(files),
     ...scanLocalizationJsonValues(files),
+    ...scanHtmlTitles(files),
     ...scanUserVisibleStringLiterals(files),
     ...scanLegacyAdditions(untrackedFiles)
   ]
