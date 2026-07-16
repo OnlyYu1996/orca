@@ -6397,6 +6397,7 @@ function SourceControlInner(): React.JSX.Element {
             <BaseRefPicker
               repoId={activeRepo.id}
               currentBaseRef={pickerBaseRef}
+              autoFocus
               onSelect={(ref) => {
                 if (baseRefOwnedByWorktree && activeWorktreeId) {
                   void updateWorktreeMeta(activeWorktreeId, { baseRef: ref })

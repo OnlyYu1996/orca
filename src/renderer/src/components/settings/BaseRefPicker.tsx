@@ -16,6 +16,7 @@ type BaseRefPickerProps = {
   repoId: string
   hostId?: ExecutionHostId
   currentBaseRef?: string
+  autoFocus?: boolean
   onSelect: (ref: string) => void
   onUsePrimary?: () => void
 }
@@ -24,6 +25,7 @@ export function BaseRefPicker({
   repoId,
   hostId,
   currentBaseRef,
+  autoFocus,
   onSelect,
   onUsePrimary
 }: BaseRefPickerProps): React.JSX.Element {
@@ -221,6 +223,7 @@ export function BaseRefPicker({
       </div>
 
       <Input
+        autoFocus={autoFocus}
         value={baseRefQuery}
         onChange={(e) => setBaseRefQuery(e.target.value)}
         placeholder={translate(
