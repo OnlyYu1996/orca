@@ -163,3 +163,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：根 TypeScript 类型检查通过；完整 Lint 通过（含 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,059 个产品文本文件；根 Vitest 并发全量 `30,042 passed / 45 skipped / 16 failed`，失败均在高负载下表现为固定时限或进程资源竞争；失败文件单 Worker 复跑 `87 passed / 1 skipped`，随后根 Vitest 单 Worker 全量 `30,058 passed / 45 skipped`；Mobile 类型检查和 Lint 通过，Mobile Vitest 全量 `1,720 passed / 2 skipped`；冲突专项 Root `19 passed`、Mobile `36 passed`；SSH 系统传输已包含在单 Worker复跑和全量验证中；`git diff --check` 通过。
 - 未覆盖风险：未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调。
 - Push 状态及目标：远端 `origin/main` 已核验为 `8e52c6c21d6e37cf8e1c06a05b2ed44de3861136`；本地 reflog 记录 `2026-07-15T18:28:15+08:00 update by push`。同步流程未显式调用 `git push`，该推送由提交钩子或外部流程完成。机器状态与本记录尚未形成独立元数据提交。
+
+### 2026-07-16：同步到 1ba71d2cee59d12687a32e1d595247b0c2677a85
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`a4678dbd937a91de2ec10ed36515e18253552892`
+- 上游目标 SHA：`1ba71d2cee59d12687a32e1d595247b0c2677a85`
+- Merge Base：`190ed7d4ed0e43f1e2e543435d4ee09ab40fb7ca`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`b1908c9e306750c943052a681f5b7b647694a26d`
+- 同步后 Fetch 节点及待同步提交数：`1ba71d2cee59d12687a32e1d595247b0c2677a85`，`0`
+- 备份引用：`refs/backup/upstream-sync/2026-07-16-a4678dbd937a`
+- 冲突文件：共 3 个：`mobile/app/index.tsx`、`package.json`、`src/renderer/src/i18n/locales/zh.json`。
+- 关键取舍：接入上游 32 个提交，保留文件监听容量与取消恢复、Terminal/PTY 进程组清理、Runtime/Relay 资源回收、Git 状态轮询、关闭标签页恢复、Markdown 编辑和 Mobile 主机端点编辑等语义；`package.json` 升级到 `1.4.143-rc.0` 并接入 `@sanity/diff-match-patch`，同时保留 `sbbgt` 包名、赛博包工头描述、当前 Fork 链接和品牌门禁；Mobile 首页采用上游独立编辑路由并完整接入中英文目录；Renderer 中文目录吸收上游翻译修正但不恢复 Orca 用户可见品牌。普通带标签 Fetch 因本地与上游 `v1.4.142` 同名标签对象不同而被拒绝，未覆盖本地标签；随后使用限定 `upstream/main` 且 `--no-tags` 的 Fetch 成功冻结和复核目标。
+- 验证：Root 与 Mobile TypeScript 类型检查通过；Root 高风险重叠专项 `2,100 passed`；Mobile 冲突专项 `62 passed`；Mobile 全量 Vitest `1,768 passed / 2 skipped`；Root 全量 Vitest `30,577 passed / 46 skipped / 1 failed`，唯一失败为同步状态测试硬编码第一次同步 SHA，修正为提交图与状态结构校验后专项复跑 `7 passed`；Root 普通 OXLint 通过，type-aware switch-exhaustiveness 在默认并发下两次触发 `typescript-go` Go Runtime 段错误，限制 `GOMAXPROCS=1` 后通过；Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界均通过，品牌边界覆盖 5,125 个产品文本文件；Mobile Lint、Format Check 通过；`git diff --check` 通过。
+- 未覆盖风险：修正同步状态测试后未再次执行耗时约 18 分钟的 Root 单 Worker 全量，仅复跑该专项；未执行 Windows、Linux、WSL 和真实 SSH 主机实体环境验收；未执行 Desktop E2E 全量、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新和真实自建 Relay 后端联调。默认并发 type-aware Lint 的 `typescript-go` 崩溃仍属于工具链稳定性风险。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `a4678dbd937a91de2ec10ed36515e18253552892`。
