@@ -1609,12 +1609,12 @@
         "cba2a2b7fb": "Linear 项目缺少工作区上下文。",
         "f4374519ae": "您的首选议题源（upstream）已不再为 {{value0}} 配置。将使用 origin。",
         "e9139db03f": "无法隐藏 {{value0}}。",
-        "b73717af92": "下一步",
-        "0c8df28045": "下一页",
+        "b73717af92": "下一页",
+        "0c8df28045": "前往下一页",
         "ae859c816b": "第{{value0}}页",
         "cd171f3391": "...",
         "297a805b64": "上一页",
-        "6cd6b3ae6a": "上一页",
+        "6cd6b3ae6a": "前往上一页",
         "e65757a338": "分页",
         "37d60046e3": "打开 GitHub 合并框",
         "1a9ea003dc": "无法禁用自动合并",
@@ -10060,8 +10060,8 @@
             "8b8ee9d22f": "无法确定哪个主机拥有此文件。请检查工作区连接后重试。",
             "af1270b90d": "永久删除 {{count}} 项？",
             "dd029aa5cd": "这会永久删除远程主机上所选的各项及任何目录内容。此操作无法撤销。",
-            "77fdc36183": "Delete {{count}} items?",
-            "fca915a67a": "Remote items are permanently deleted and cannot be undone. Local items move to the {{value0}}."
+            "77fdc36183": "删除 {{count}} 个项目？",
+            "fca915a67a": "远程项目将永久删除且无法撤销。本地项目将移至 {{value0}}。"
           },
           "useFileExplorerHandlers": {
             "32cd9fd991": "无法打开符号链接目标"
