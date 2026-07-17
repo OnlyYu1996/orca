@@ -197,3 +197,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 三套 TypeScript 类型检查通过；完整 Lint 通过（含 type-aware switch-exhaustiveness、Reliability Gates、max-lines Ratchet、Bundled Skill Guides、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,141 个产品文本文件；受影响域专项 `2,149 passed`；Root Vitest 单 Worker 全量 `30,745 passed / 46 skipped`；`setup-agent-sequencing` 在清理一次错误并发运行遗留的本机 pyenv rehash 锁后隔离复跑 `14 passed`，并包含在最终全量通过结果中；`git diff --check` 通过。
 - 未覆盖风险：未执行 Desktop Playwright E2E、真实 Jira Server/Data Center 与 Linear 联调、AI Vault/Jira 视觉验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收；未执行各平台安装包构建、签名、自动更新、Mobile 全量及真实设备验收。
 - Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `54e31458b2f3567029ce4190f41192c03bbf63f4`。
+
+### 2026-07-17：同步到 cc1ad064d74e21a6a14713e31004e6ff0e53a982
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`58add664dcd9ef8a1b697287256e789b16658694`
+- 上游目标 SHA：`cc1ad064d74e21a6a14713e31004e6ff0e53a982`
+- Merge Base：`cf02cc46b1434a0b84597a268bd232c9898e61f6`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`a6319a68affc84d1bfb2c4f53bf243e2a13f8d35`
+- 同步后 Fetch 节点及待同步提交数：`8ec050a875f9a482dfebc576d8c3c76c06ab059c`，`4`；待同步提交为 Markdown 评审快捷键、Native Chat 启动选项修正、SSH Relay 原生依赖修复和中文目录修复。
+- 备份引用：`refs/backup/upstream-sync/2026-07-17-58add664dcd9`
+- 冲突文件：共 9 个：`package.json`、`src/main/tray/system-tray.test.ts`、`src/main/tray/system-tray.ts`、`src/renderer/src/i18n/locales/en.json`、`src/renderer/src/i18n/locales/es.json`、`src/renderer/src/i18n/locales/ja.json`、`src/renderer/src/i18n/locales/ko.json`、`src/renderer/src/i18n/locales/zh.json`、`src/renderer/src/lib/agent-status.ts`。
+- 关键取舍：接入上游 45 个提交，包括 Mobile 与桌面 Native Chat、终端订阅和重连、整标签页 PTY 回收、Skills 新鲜度与安全更新、浏览器本地 HTTPS 证书处理、macOS 菜单栏状态项、AI Vault Antigravity 会话、Git Worktree 子模块清理和跨平台终端修复；版本升级到 `1.4.144-rc.4`，同时保留 `sbbgt` 包名、赛博包工头产品身份、`OnlyYu1996/orca` 链路和品牌门禁；托盘吸收上游 macOS 菜单与关注态图标能力，但工具提示和菜单回退文案使用赛博包工头；Agent 标签迁移到上游共享源并补回 CodeBuddy；使用结构化目录脚本清理上游新增旧品牌，并补齐 Grok/Kimi、技能更新和证书错误页中文文案；重新生成二开技能包清单；远程主机、更新、支持和任务来源设置入口继续隐藏，任务来源继续强制 GitLab，CodeBuddy Hook 与 Token 统计链路保持启用。
+- 验证：Root 三套 TypeScript 类型检查通过；完整 Lint 通过（含 type-aware switch-exhaustiveness、41 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,275 个产品文本文件；冲突与二开保护面专项 `204 passed / 1 skipped`，新增穷尽分支专项 `6 passed`；Root Vitest 首轮单 Worker 全量发现 5 个旧品牌或 Locale 顺序相关测试断言，修正测试品牌期望并显式隔离 Locale 后，失败专项 `22 passed`，最终 Root Vitest 单 Worker 全量 `31,204 passed / 47 skipped`（2,951 个测试文件通过、6 个跳过）；Mobile TypeScript、Lint 和 884 文件 Format Check 通过，Mobile Vitest 全量 `2,008 passed / 2 skipped`；`git diff --check` 通过。
+- 未覆盖风险：未执行 Desktop Playwright E2E、浏览器证书和 macOS 菜单栏视觉验收、真实 Mobile 设备验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；同步后上游新增 4 个提交留待下一轮，其中中文目录修复可能与本轮人工中文化产生内容重叠。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `58add664dcd9ef8a1b697287256e789b16658694`，本地 `main` 领先 46 个提交。
