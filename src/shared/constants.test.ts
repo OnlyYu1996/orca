@@ -55,6 +55,10 @@ describe('getDefaultSettings', () => {
     expect(settings.visibleTaskProviders).toEqual(['gitlab'])
   })
 
+  it('defaults the menu bar icon on so the value round-trips across platforms', () => {
+    expect(getDefaultSettings('/tmp').showMenuBarIcon).toBe(true)
+  })
+
   it('confirms before closing pinned tabs by default', () => {
     expect(getDefaultSettings('/tmp').confirmClosePinnedTab).toBe(true)
   })

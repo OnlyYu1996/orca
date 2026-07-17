@@ -1,12 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { i18n } from '@/i18n/i18n'
 import {
   formatByteCount,
   formatDownloadFinishedNotice,
   formatLoadFailureDescription,
   formatLoadFailureRecoveryHint,
   formatPermissionNotice,
-  formatPopupNotice
+  formatPopupNotice,
+  isCertificateLoadError
 } from './browser-notices'
+
+let previousLanguage: string
+
+beforeAll(async () => {
+  previousLanguage = i18n.language
+  await i18n.changeLanguage('zh')
+})
+
+afterAll(async () => {
+  await i18n.changeLanguage(previousLanguage)
+})
 
 describe('browser notice formatting', () => {
   it('formats denied permissions with safe copy', () => {
@@ -16,7 +29,7 @@ describe('browser notice formatting', () => {
         permission: 'media',
         origin: 'https://example.com'
       })
-    ).toBe('https://example.com asked for camera or microphone access, and Orca denied it.')
+    ).toBe('https://example.com 请求摄像头或麦克风访问权限，赛博包工头已拒绝。')
   })
 
   it('formats popup outcomes', () => {
@@ -26,7 +39,7 @@ describe('browser notice formatting', () => {
         origin: 'https://example.com',
         action: 'opened-in-orca'
       })
-    ).toBe('https://example.com opened a new page in Orca.')
+    ).toBe('https://example.com 已在赛博包工头中打开新页面。')
 
     expect(
       formatPopupNotice({
@@ -34,7 +47,7 @@ describe('browser notice formatting', () => {
         origin: 'https://example.com',
         action: 'opened-external'
       })
-    ).toBe('https://example.com opened a new window in your default browser.')
+    ).toBe('https://example.com 已在默认浏览器中打开新窗口。')
 
     expect(
       formatPopupNotice({
@@ -42,7 +55,7 @@ describe('browser notice formatting', () => {
         origin: 'unknown',
         action: 'blocked'
       })
-    ).toBe('A site tried to open a popup Orca does not support here.')
+    ).toBe('某个网站 尝试打开赛博包工头暂不支持的弹窗。')
   })
 
   it('formats download completion and byte counts', () => {
@@ -53,7 +66,7 @@ describe('browser notice formatting', () => {
         savePath: '/tmp/report.csv',
         error: null
       })
-    ).toBe('Downloaded to /tmp/report.csv.')
+    ).toBe('已下载到 /tmp/report.csv。')
 
     expect(
       formatDownloadFinishedNotice({
@@ -82,16 +95,14 @@ describe('browser notice formatting', () => {
           isLocalhostLike: true
         }
       )
-    ).toBe("We couldn't connect to your local server.")
+    ).toBe('无法连接到本地服务器。')
 
     expect(
       formatLoadFailureRecoveryHint({
         host: 'localhost:3000',
         isLocalhostLike: true
       })
-    ).toBe(
-      'If this should be a local app, make sure the server is running and listening on the expected port.'
-    )
+    ).toBe('如果这是本地应用，请确认服务器正在运行并监听预期端口。')
 
     expect(
       formatLoadFailureDescription(
@@ -105,7 +116,7 @@ describe('browser notice formatting', () => {
           isLocalhostLike: false
         }
       )
-    ).toBe("We couldn't connect to this page.")
+    ).toBe('无法连接到此页面。')
 
     expect(
       formatLoadFailureRecoveryHint({
@@ -113,5 +124,30 @@ describe('browser notice formatting', () => {
         isLocalhostLike: false
       })
     ).toBeNull()
+  })
+
+  it('formats certificate failures without local-server recovery advice', () => {
+    const meta = { host: 'localhost:3443', isLocalhostLike: true }
+    const loadError = (code: number) => ({
+      code,
+      description: 'certificate error',
+      validatedUrl: 'https://localhost:3443/'
+    })
+
+    expect(formatLoadFailureDescription(loadError(-200), meta)).toBe(
+      '证书与 localhost:3443 不匹配。'
+    )
+    expect(formatLoadFailureDescription(loadError(-201), meta)).toBe(
+      'localhost:3443 的证书在当前日期和时间无效。'
+    )
+    expect(formatLoadFailureDescription(loadError(-202), meta)).toBe(
+      '赛博包工头不信任为 localhost:3443 颁发证书的机构。'
+    )
+    expect(formatLoadFailureDescription(loadError(-208), meta)).toBe(
+      '赛博包工头无法验证 localhost:3443 的证书。'
+    )
+    expect(isCertificateLoadError(loadError(-219))).toBe(true)
+    expect(isCertificateLoadError(loadError(-215))).toBe(false)
+    expect(formatLoadFailureRecoveryHint(meta, loadError(-202))).toBeNull()
   })
 })
