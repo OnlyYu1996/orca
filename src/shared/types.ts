@@ -3600,6 +3600,8 @@ export type CustomPet = {
 export type SpriteAnimation = {
   row: number
   frames: number
+  /** Per-frame holds in ms (length === frames). Absent means uniform sheet fps. */
+  frameDurationsMs?: number[]
 }
 
 export type PersistedTrustedOrcaHookEntry = {
