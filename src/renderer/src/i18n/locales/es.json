@@ -5108,7 +5108,11 @@
           "windowSidebarSummary": "Barra lateral, barra de estado y explorador de archivos",
           "statusBarCount": "{{value0}} indicadores visibles.",
           "gitIgnoredGlossary": "Archivos que coinciden con .gitignore.",
-          "statusBarDescription": "Elige qué indicadores aparecen en la barra de estado."
+          "statusBarDescription": "Elige qué indicadores aparecen en la barra de estado.",
+          "showPinnedWorktreesInGroups": {
+            "title": "Mostrar también los worktrees fijados en sus listas originales",
+            "description": "Los worktrees fijados permanecen en Fijados y también aparecen en Todos, Proyecto, Estado y PR."
+          }
         },
         "AutoRenameBranchFromWorkSetting": {
           "1626524572": "Nautilus",
