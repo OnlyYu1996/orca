@@ -214,3 +214,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 三套 TypeScript 类型检查通过；完整 Lint 通过（含 type-aware switch-exhaustiveness、41 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,275 个产品文本文件；冲突与二开保护面专项 `204 passed / 1 skipped`，新增穷尽分支专项 `6 passed`；Root Vitest 首轮单 Worker 全量发现 5 个旧品牌或 Locale 顺序相关测试断言，修正测试品牌期望并显式隔离 Locale 后，失败专项 `22 passed`，最终 Root Vitest 单 Worker 全量 `31,204 passed / 47 skipped`（2,951 个测试文件通过、6 个跳过）；Mobile TypeScript、Lint 和 884 文件 Format Check 通过，Mobile Vitest 全量 `2,008 passed / 2 skipped`；`git diff --check` 通过。
 - 未覆盖风险：未执行 Desktop Playwright E2E、浏览器证书和 macOS 菜单栏视觉验收、真实 Mobile 设备验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；同步后上游新增 4 个提交留待下一轮，其中中文目录修复可能与本轮人工中文化产生内容重叠。
 - Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `58add664dcd9ef8a1b697287256e789b16658694`，本地 `main` 领先 46 个提交。
+
+### 2026-07-17：同步到 44686f324ce6ced7e976555031471940b24de9d6
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`8dfe0561968733436f1010983525ac68f7bbe356`
+- 上游目标 SHA：`44686f324ce6ced7e976555031471940b24de9d6`
+- Merge Base：`cc1ad064d74e21a6a14713e31004e6ff0e53a982`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`8089a4b742e60683da1b6a9a62c09b7e7910f0f6`
+- 同步后 Fetch 节点及待同步提交数：`44686f324ce6ced7e976555031471940b24de9d6`，`0`
+- 备份引用：`refs/backup/upstream-sync/2026-07-17-8dfe05619687`
+- 冲突文件：共 4 个：`mobile/app/_layout.tsx`、`src/renderer/src/i18n/locales/es.json`、`src/renderer/src/i18n/locales/ja.json`、`src/renderer/src/i18n/locales/zh.json`。
+- 关键取舍：接入上游 10 个提交，包括 SSH Relay 原生依赖部署、安装/修复/GC 锁、文件传输取消、Mobile 默认会话视图、Native Chat 默认模型与推理强度、Markdown 评审备注快捷键、macOS 输入法快捷键保护、置顶工作树分组显示、Pet 帧时长与交互，以及全局 Fetch 响应体主动取消；Relay 同时保留 `TERM_PROGRAM=sbbgt`、`SBBGT_APP_VERSION` 优先和旧 `ORCA_APP_VERSION` 兼容读取；Shared 保留默认简体中文、GitLab-only、CodeBuddy 与 `sbbgt` 默认路径；Mobile 导航同时保留 `MobileLocaleProvider`、语言设置页和上游 Native Chat 设置页，并将新增入口、说明、开关状态及无障碍标签接入中英双语目录；Renderer Locale 吸收上游新增设置和中文修复，不恢复用户可见 `Orca`；全局 Fetch 审计移除仅使用 Electron `net.fetch` 的反馈模块失效登记；重新生成二开技能包清单。
+- 验证：Root 与 Mobile TypeScript 类型检查通过；完整 Root Lint 通过（含 type-aware switch-exhaustiveness、41 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,298 个产品文本文件；受影响 Root 专项 `1,020 passed / 5 skipped`，Mobile 专项 `49 passed`；Mobile Lint 和 890 文件 Format Check 通过，Mobile Vitest 全量 `2,037 passed / 2 skipped`；Root Vitest 单 Worker 全量 `31,370 passed / 52 skipped / 1 timeout`，唯一超时为未受本轮修改的真实 Git 子模块状态用例，该精确用例隔离复跑 `1 passed / 95 skipped`（2.84 秒），整文件隔离复跑 `96 passed`；`git diff --check` 通过，验证进程均已退出。
+- 未覆盖风险：未执行 Desktop Playwright E2E、真实 Mobile 设备验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；Root 全量中的子模块状态用例仍存在高负载下触发固定 30 秒时限的波动风险。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `8dfe0561968733436f1010983525ac68f7bbe356`。
