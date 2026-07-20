@@ -257,3 +257,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 三套 TypeScript 类型检查、Root/Mobile Lint、Mobile Format Check、生成物、Locale、Skill Bundle 与品牌门禁均通过，品牌门禁审计 5,401 个产品文本文件；高风险与冲突专项 14 个测试文件共 `464 passed`；Root Vitest 单 Worker 全量 `32,340 passed / 54 skipped / 1 timeout`，唯一超时为 SSH 系统传输集成测试，该文件隔离复跑 `3 passed`；Mobile 品牌断言修正后专项 `26 passed`，Mobile Vitest 全量 `2,053 passed / 2 skipped`；`git diff --check` 通过。
 - 未覆盖风险：未执行 Desktop Playwright E2E 全量、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；SSH 系统传输用例在 Root 全量负载下仍存在固定 60 秒时限波动。
 - Push 状态及目标：Merge Commit `7aa2c7d8dd1105aab0fb8fcb9a4f3de39864a26a` 的 Reflog 显示在创建后由仓库外部流程更新到 `origin/main`；本同步流程未执行 `git push`。后续 Mobile 测试修正与本条元数据记录均未 Push。
+
+### 2026-07-20：同步到 b3b5031883c616502a82b1b50572e76da40e859a
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`d9d6a0dbe8a2599027be129bc10353c3583c5005`
+- 上游目标 SHA：`b3b5031883c616502a82b1b50572e76da40e859a`
+- Merge Base：`d628c9300eae658497435bcbeabebad7566883cb`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`fce60e5991266bd9e779b972f5d7c444b601f94b`
+- 同步后 Fetch 节点及待同步提交数：`ddb5b930e12f006a2c905d91cf109994e053aa89`，`5`；新增 Worktree 关闭超时、README Badge、WSL 环境变量、中文翻译和 Fable 限流提交留待下一轮。
+- 备份引用：`refs/backup/upstream-sync/2026-07-20-d9d6a0dbe8a2`
+- 冲突文件：共 1 个：`src/main/startup/dev-instance-identity.test.ts`。`git show --remerge-diff` 还记录了 `AGENTS.md`、Skill Manifest、Daemon Server 和开发实例身份实现等 7 个人工整合面。
+- 关键取舍：接入上游 12 个提交，包括 Windows ConPTY 启动查询权威、Daemon/PTY/SSH Relay 数据投递、Agent 状态连接所有权、共享 Spinner 时钟、macOS 窗口与 safeStorage 稳定性、Mobile Quick Commands、搜索结果身份绑定和 Terminal E2E；开发实例继续展示“赛博包工头”，跨分支 safeStorage `appName` 固定为“赛博包工头 Dev”，`SBBGT_*` 优先、旧 `ORCA_*` 只作回退；保留项目完整注释规范、GitLab-only、CodeBuddy、隐藏设置入口和自有发布边界。补齐上游遗漏的 `closeStartupQueryAuthority` Daemon RPC 分派及返回序号契约测试。普通带标签 Fetch 新增的两个上游发布标签会与 Fork 的 Skill revision 身份冲突，已将标签对象保存在 `refs/backup/upstream-tags/` 后移出产品 tag 命名空间，后续继续限定 `upstream/main --no-tags`；同步 Skill Manifest 已重新生成。
+- 验证：Root 与 Mobile TypeScript 类型检查通过；完整 Root Lint 通过（含 type-aware switch-exhaustiveness、44 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、Locale 与品牌门禁），五种 Renderer Locale 均为 10,984 个键，品牌门禁审计 5,422 个产品文本文件；受影响 Root 38 个文件 `2,649 passed`，Daemon Server 补充专项 `34 passed`，Mobile Quick Commands 专项 `24 passed`；Mobile Lint 和 904 文件 Format Check 通过，Mobile Vitest 全量 `2,077 passed / 2 skipped`；Root Vitest 单 Worker 全量 `32,423 passed / 54 skipped / 1 timeout`，唯一超时仍为 SSH 系统传输临时 Relay 安装，该文件隔离复跑 `3 passed`（15.7 秒）；`git diff --check` 通过。
+- 未覆盖风险：未执行本轮变更涉及的 Desktop Playwright Terminal E2E、Windows ConPTY 实机、Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；SSH 系统传输测试在 Root 全量负载下仍存在固定 60 秒时限波动。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为同步前节点 `d9d6a0dbe8a2599027be129bc10353c3583c5005`。
