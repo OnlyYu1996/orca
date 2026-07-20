@@ -13,6 +13,8 @@ const MAX_LABEL_LENGTH = 80
 
 export type DevInstanceIdentity = AppIdentity & {
   appUserModelId: string
+  // 原因：macOS safeStorage 的钥匙串名称来自 app.setName；开发分支必须共享稳定名称，避免重复授权。
+  appName: string
 }
 
 function cleanEnvValue(value: string | undefined): string | null {
@@ -55,6 +57,7 @@ export function getDevInstanceIdentity(
   if (!isDev) {
     return {
       name: BASE_APP_NAME,
+      appName: BASE_APP_NAME,
       isDev: false,
       devLabel: null,
       devBranch: null,
@@ -78,6 +81,8 @@ export function getDevInstanceIdentity(
 
   return {
     name: dockTitle,
+    // 原因：所有开发分支共享同一 safeStorage 钥匙串键，避免每个分支重复触发授权。
+    appName: `${BASE_APP_NAME} Dev`,
     isDev: true,
     devLabel,
     devBranch: branch,

@@ -5,11 +5,23 @@ describe('dev-instance-identity', () => {
   it('keeps packaged identity stable', () => {
     expect(getDevInstanceIdentity(false, {})).toMatchObject({
       name: '赛博包工头',
+      appName: '赛博包工头',
       isDev: false,
       devLabel: null,
       dockBadgeLabel: null,
       appUserModelId: 'com.onlyyu.sbbgt'
     })
+  })
+
+  it('keeps the safeStorage app name stable across development branches', () => {
+    const a = getDevInstanceIdentity(true, { SBBGT_DEV_BRANCH: 'feature/a' })
+    const b = getDevInstanceIdentity(true, { SBBGT_DEV_BRANCH: 'feature/b' })
+
+    expect(a.name).toBe('赛博包工头')
+    expect(b.name).toBe('赛博包工头')
+    expect(a.appName).toBe('赛博包工头 Dev')
+    expect(b.appName).toBe('赛博包工头 Dev')
+    expect(a.appName).not.toBe('赛博包工头')
   })
 
   it('derives a readable dev label from worktree and branch env', () => {

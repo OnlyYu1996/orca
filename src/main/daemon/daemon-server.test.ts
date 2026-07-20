@@ -51,6 +51,7 @@ type DaemonServerPrivate = {
   server: Server | null
   host: {
     kill: (sessionId: string, opts?: { immediate?: boolean }) => void | Promise<void>
+    closeStartupQueryAuthority: (sessionId: string) => number
   }
   clients: Map<
     string,
@@ -452,6 +453,23 @@ describe('DaemonServer', () => {
       finishKill()
       await expect(routed).resolves.toEqual({})
       expect(acknowledged).toBe(true)
+    })
+
+    it('routes startup query authority closure and returns the applied sequence', async () => {
+      await startServer()
+      const daemon = server as unknown as DaemonServerPrivate
+      const closeStartupQueryAuthority = vi
+        .spyOn(daemon.host, 'closeStartupQueryAuthority')
+        .mockReturnValue(42)
+
+      await expect(
+        daemon.routeRequest('client-1', {
+          id: 'close-startup-query-authority-1',
+          type: 'closeStartupQueryAuthority',
+          payload: { sessionId: 'agent-session' }
+        })
+      ).resolves.toEqual({ appliedSeq: 42 })
+      expect(closeStartupQueryAuthority).toHaveBeenCalledWith('agent-session')
     })
 
     it('handles getCwd', async () => {

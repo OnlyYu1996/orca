@@ -1479,6 +1479,7 @@ export type PreloadApi = {
         data: string
         seq?: number
         rawLength?: number
+        transformed?: boolean
         background?: boolean
         droppedOutput?: boolean
       }) => void

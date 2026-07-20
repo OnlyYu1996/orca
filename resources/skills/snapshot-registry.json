@@ -1366,8 +1366,8 @@
     "sync-orca-upstream": [
       {
         "releaseRevision": 1,
-        "packageDigest": "43ea38deb606d424f43acd3b9eb1d189e756a3ef828394ef29c2ec26d4adfbe8",
-        "gitTreeSha": "29f7c7b7cee0377ae9273b2dd8ef51a29f442832",
+        "packageDigest": "55c63b973f0aa6aca460a676bcf474e30ecb65a6c28fa29e0753e83f5aea33a1",
+        "gitTreeSha": "d7b6861cf73e0ee42a133ee7adf601b9ae7b939c",
         "files": [
           {
             "path": "SKILL.md",
@@ -1389,21 +1389,21 @@
           },
           {
             "path": "references/repository-baseline.md",
-            "size": 25593,
+            "size": 28455,
             "executable": false,
             "classification": "text",
-            "exactSha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1",
-            "textNormalizedSha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1",
-            "identitySha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1"
+            "exactSha256": "6035c8ae8c153e982b735abfa809a1717fc557087a6784b6f2647214f27a7aa0",
+            "textNormalizedSha256": "6035c8ae8c153e982b735abfa809a1717fc557087a6784b6f2647214f27a7aa0",
+            "identitySha256": "6035c8ae8c153e982b735abfa809a1717fc557087a6784b6f2647214f27a7aa0"
           },
           {
             "path": "references/upstream-integration-state.json",
             "size": 690,
             "executable": false,
             "classification": "text",
-            "exactSha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad",
-            "textNormalizedSha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad",
-            "identitySha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad"
+            "exactSha256": "a1c2d451801b6112c2901d23cf59c0af95e0f206fd6d094eb74b09c186158e41",
+            "textNormalizedSha256": "a1c2d451801b6112c2901d23cf59c0af95e0f206fd6d094eb74b09c186158e41",
+            "identitySha256": "a1c2d451801b6112c2901d23cf59c0af95e0f206fd6d094eb74b09c186158e41"
           },
           {
             "path": "scripts/audit-upstream.mjs",
