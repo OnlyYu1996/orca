@@ -7,14 +7,14 @@
   },
   "lastSuccessfulIntegration": {
     "branch": "main",
-    "preSyncHead": "58add664dcd9ef8a1b697287256e789b16658694",
-    "upstreamTargetSha": "cc1ad064d74e21a6a14713e31004e6ff0e53a982",
-    "mergeBase": "cf02cc46b1434a0b84597a268bd232c9898e61f6",
+    "preSyncHead": "d164d47b53bb1a605058463aebee0cb97ed9e112",
+    "upstreamTargetSha": "d628c9300eae658497435bcbeabebad7566883cb",
+    "mergeBase": "cc1ad064d74e21a6a14713e31004e6ff0e53a982",
     "strategy": "merge",
-    "integrationCommit": "a6319a68affc84d1bfb2c4f53bf243e2a13f8d35",
-    "integratedAt": "2026-07-17T12:53:35+08:00",
+    "integrationCommit": "7aa2c7d8dd1105aab0fb8fcb9a4f3de39864a26a",
+    "integratedAt": "2026-07-20T13:50:56+08:00",
     "verificationStatus": "passed",
-    "postSyncFetchedSha": "8ec050a875f9a482dfebc576d8c3c76c06ab059c",
-    "pendingUpstreamCommitCountAtRecord": 4
+    "postSyncFetchedSha": "49149a05d45b963d730ba1f76a1832a7fd5b1f4c",
+    "pendingUpstreamCommitCountAtRecord": 9
   }
 }

@@ -240,3 +240,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 防护引用：`refs/backup/upstream-sync/2026-07-20-4c8d2c66ec2b` 指向修复前产品节点 `4c8d2c66ec2b9bc417fceb2cc2f12517cd57910e`。
 - 后续同步：已成功 Fetch 并冻结 `upstream/main` 为 `e3721e8cf2d296b301fa81f9119a7d633cfd035d`；本条只修复机器索引，不宣称完成该目标的集成。
 - Push 状态：本次修复未 Push；执行前 `origin/main` 已为 `4c8d2c66ec2b9bc417fceb2cc2f12517cd57910e`。
+
+### 2026-07-20：同步到 d628c9300eae658497435bcbeabebad7566883cb
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`d164d47b53bb1a605058463aebee0cb97ed9e112`
+- 上游目标 SHA：`d628c9300eae658497435bcbeabebad7566883cb`
+- Merge Base：`cc1ad064d74e21a6a14713e31004e6ff0e53a982`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`7aa2c7d8dd1105aab0fb8fcb9a4f3de39864a26a`
+- 同步后 Fetch 节点及待同步提交数：`49149a05d45b963d730ba1f76a1832a7fd5b1f4c`，`9`；新增提交留待下一轮同步，本轮冻结目标未改变。
+- 备份引用：`refs/backup/upstream-sync/2026-07-20-d164d47b53bb`
+- 冲突与人工整合面：`git show --remerge-diff` 识别 113 个需要保留显式解决结果的文件，覆盖 Windows Crash Survival E2E、Electron 43 与原生依赖、CLI/WSL 安装、Daemon/PTY、SSH、Git Provider、Runtime RPC、Preload、Persistence、Tray、Updater、Mobile、Renderer Source Control/Settings、五种 Locale、编排 Skill 及被上游删除的 `docs/reference` 架构知识库；完整文件集合可由同步后节点的 remerge diff 重建。
+- 关键取舍：接入上游 Windows E2E、CLI、Tray、Mobile、UpdateCard、Terminal/Daemon/Runtime/Persistence/Relay 等新增与修复；继续使用“赛博包工头”、`sbbgt`、`OnlyYu1996/orca`、GitLab-only、CodeBuddy Token 统计、隐藏远程主机/更新/支持/任务来源设置入口和 Fork Releases 边界；五种 Renderer Locale 结构化三方合并后均为 10,984 个键；`SBBGT_DISABLE_MACOS_LOGIN_SHELL` 优先，旧 `ORCA_*` 只作兼容读取；保留并重新生成二开编排 Skill Bundle 与 Manifest；保留被上游删除的二开架构文档。
+- 验证：Root 三套 TypeScript 类型检查、Root/Mobile Lint、Mobile Format Check、生成物、Locale、Skill Bundle 与品牌门禁均通过，品牌门禁审计 5,401 个产品文本文件；高风险与冲突专项 14 个测试文件共 `464 passed`；Root Vitest 单 Worker 全量 `32,340 passed / 54 skipped / 1 timeout`，唯一超时为 SSH 系统传输集成测试，该文件隔离复跑 `3 passed`；Mobile 品牌断言修正后专项 `26 passed`，Mobile Vitest 全量 `2,053 passed / 2 skipped`；`git diff --check` 通过。
+- 未覆盖风险：未执行 Desktop Playwright E2E 全量、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；SSH 系统传输用例在 Root 全量负载下仍存在固定 60 秒时限波动。
+- Push 状态及目标：Merge Commit `7aa2c7d8dd1105aab0fb8fcb9a4f3de39864a26a` 的 Reflog 显示在创建后由仓库外部流程更新到 `origin/main`；本同步流程未执行 `git push`。后续 Mobile 测试修正与本条元数据记录均未 Push。
