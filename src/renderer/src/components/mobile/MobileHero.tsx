@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Copy, RefreshCw } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CircleAlert, Copy, RefreshCw } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import type { MobileNetworkInterface } from '../settings/mobile-network-interface-selection'
 import { AndroidLogo, IosBrandIcon } from './MobileBrandIcons'
 import { NetworkInterfacePicker } from './NetworkInterfacePicker'
 import { MobilePairingConnectionOptions } from '../settings/MobilePairingConnectionOptions'
+import { MobileRelayBetaNotice } from '../settings/MobileRelayBetaNotice'
 import { getChannelTagline, type InstallCopy, type IosChannel } from './mobile-platform-copy'
 import { WindowsFirewallNotice } from './WindowsFirewallNotice'
 import type { MobilePairingConnectionMode } from '../../../../shared/mobile-pairing-connection-mode'
@@ -39,10 +40,13 @@ type HeroFlowProps = {
   onCopyInstallUrl: () => void
   pairQrDataUrl: string | null
   pairingUrl: string | null
+  /** True when the shown QR degraded to local-only under an Anywhere selection. */
+  relayDegraded: boolean
   pairLoading: boolean
   connectionMode: MobilePairingConnectionMode
   onConnectionModeChange: (mode: MobilePairingConnectionMode) => void
   onRegeneratePairing: () => void
+  canGeneratePairing: boolean
   onCopyPairingCode: () => void
   networkInterfaces: readonly MobileNetworkInterface[]
   selectedAddress: string | undefined
@@ -66,10 +70,12 @@ export function HeroFlow({
   onCopyInstallUrl,
   pairQrDataUrl,
   pairingUrl,
+  relayDegraded,
   pairLoading,
   connectionMode,
   onConnectionModeChange,
   onRegeneratePairing,
+  canGeneratePairing,
   onCopyPairingCode,
   networkInterfaces,
   selectedAddress,
@@ -129,7 +135,7 @@ export function HeroFlow({
               <p className="mp-lead-sm">
                 {translate(
                   'auto.components.mobile.MobileHero.e75647ace0',
-                  'Scan the QR with your phone or open the install link to grab Orca Mobile.'
+                  'Scan the QR with your phone or open the install link to grab 赛博包工头 Mobile.'
                 )}
               </p>
               <div className="mp-tab-toggle">
@@ -230,7 +236,10 @@ export function HeroFlow({
                 {getDeviceLabel()}.
               </h2>
               <p className="mp-lead-sm">
-                {translate('auto.components.mobile.MobileHero.d1495e5e64', 'Open Orca Mobile, tap')}{' '}
+                {translate(
+                  'auto.components.mobile.MobileHero.d1495e5e64',
+                  'Open 赛博包工头 Mobile, tap'
+                )}{' '}
                 <strong>
                   {translate('auto.components.mobile.MobileHero.3aa7bb2d8b', 'Pair Desktop')}
                 </strong>
@@ -243,6 +252,7 @@ export function HeroFlow({
                 onChange={onConnectionModeChange}
                 compact
               />
+              <MobileRelayBetaNotice className="mt-1.5" />
             </div>
             <div className="mp-qr-stack mp-pairing-qr">
               <div
@@ -270,7 +280,10 @@ export function HeroFlow({
                 type="button"
                 className="mp-link-under"
                 onClick={onRegeneratePairing}
-                disabled={pairLoading}
+                // Why: signed-out Anywhere can't serve Relay; disabling avoids
+                // minting a local-only QR under the Relay label. Sign in or pick
+                // Local network (shown in the path options above) to enable it.
+                disabled={pairLoading || !canGeneratePairing}
               >
                 {pairLoading
                   ? translate('auto.components.mobile.MobileHero.65b3f2e8bc', 'Generating…')
@@ -278,6 +291,18 @@ export function HeroFlow({
                     ? translate('auto.components.mobile.MobileHero.e59a252eca', 'Regenerate code')
                     : translate('auto.components.mobile.MobileHero.a6cffbbb0b', 'Generate code')}
               </button>
+              {relayDegraded ? (
+                <p
+                  className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                  data-testid="relay-degraded-notice"
+                >
+                  <CircleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  {translate(
+                    'auto.components.mobile.MobileHero.relayDegradedNotice',
+                    'Relay couldn’t be reached — this code only works on your local network.'
+                  )}
+                </p>
+              ) : null}
             </div>
             <div className="mp-pairing-controls">
               <div className="mp-network-row">

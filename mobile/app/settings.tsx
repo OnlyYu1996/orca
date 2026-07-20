@@ -129,6 +129,15 @@ export default function SettingsScreen() {
           <View style={styles.separator} />
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            onPress={() => router.push('/native-chat-settings')}
+          >
+            <MessageSquare size={16} color={colors.textSecondary} />
+            <Text style={styles.rowLabel}>Native chat</Text>
+            <ChevronRight size={16} color={colors.textMuted} />
+          </Pressable>
+          <View style={styles.separator} />
+          <Pressable
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             onPress={() => router.push('/browser-settings')}
           >
             <Globe size={16} color={colors.textSecondary} />

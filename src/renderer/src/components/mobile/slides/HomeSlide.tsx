@@ -9,7 +9,7 @@ export function HomeSlide({ tapping }: { tapping: boolean }): React.JSX.Element 
         <div className="mp-app-brand">
           <OrcaLogo />
           <span className="mp-app-brand-name">
-            {translate('auto.components.mobile.slides.HomeSlide.5d94e8ddcc', 'Orca')}
+            {translate('auto.components.mobile.slides.HomeSlide.5d94e8ddcc', '赛博包工头')}
           </span>
         </div>
         <button
@@ -107,7 +107,8 @@ export function HomeSlide({ tapping }: { tapping: boolean }): React.JSX.Element 
               <span>
                 {translate(
                   'auto.components.mobile.slides.HomeSlide.d33d7a9c29',
-                  'orca&nbsp;&nbsp;·&nbsp;&nbsp;feat/mobile-page'
+                  // Why: plain spaces (not &nbsp;) — React text nodes render HTML entities literally.
+                  'sbbgt  ·  feat/mobile-page'
                 )}
               </span>
             </div>

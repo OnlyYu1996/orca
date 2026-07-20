@@ -95,7 +95,8 @@
     "minimizeNotice": {
       "body": "赛博包工头 is still running in the system tray"
     },
-    "activityWaiting": "赛博包工头 - activity waiting"
+    "activityWaiting": "赛博包工头 - activity waiting",
+    "activityWaitingSuffix": "activity waiting"
   },
   "worktreeJumpPalette": {
     "matchLabel": {
@@ -364,7 +365,8 @@
               "2db0bd7515": "赛博包工头 CLI registration is unavailable",
               "8d6eedf97e": "Failed to register the 赛博包工头 CLI in PATH.",
               "0f116999f1": "Restart your shell or add the 赛博包工头 CLI directory to PATH before setup.",
-              "15cbedc3e3": "Install the 赛博包工头 CLI before running agent skill setup."
+              "15cbedc3e3": "Install the 赛博包工头 CLI before running agent skill setup.",
+              "windowsPathUnknown": "赛博包工头 could not check your Windows user PATH"
             }
           }
         }
@@ -614,6 +616,27 @@
             "de50bef680": "macOS is blocking 赛博包工头 notifications"
           }
         }
+      },
+      "linear": {
+        "usage": {
+          "examples": {
+            "readTicket": "Read the linked ticket",
+            "postUpdate": "Post a progress update",
+            "moveState": "Move the ticket forward",
+            "attachPr": "Attach the PR link",
+            "triageFollowups": "Triage and create follow-ups",
+            "readTicketSummary": "Pull the linked Linear issue's full context before starting work.",
+            "readTicketPrompt": "Use {{value0}} to read the linked Linear issue for this worktree, then summarize the goal and acceptance criteria before you start.",
+            "postUpdateSummary": "Comment progress or a completion summary back to the Linear issue.",
+            "postUpdatePrompt": "Use {{value0}} to post a completion update on the linked Linear issue with what changed and how it was verified.",
+            "moveStateSummary": "Advance the Linear workflow state as the work progresses.",
+            "moveStatePrompt": "Use {{value0}} to move the linked Linear issue to In Review now that the change is ready.",
+            "attachPrSummary": "Link the pull request to the Linear issue when you open it.",
+            "attachPrPrompt": "Use {{value0}} to attach this PR to the linked Linear issue with a PR link.",
+            "triageFollowupsSummary": "Set assignee, priority, or estimate, and file parented follow-up tickets.",
+            "triageFollowupsPrompt": "Use {{value0}} to triage the linked Linear issue — set priority and estimate — and create a parented follow-up ticket for the deferred cleanup."
+          }
+        }
       }
     },
     "hooks": {
@@ -731,7 +754,9 @@
         "devSearchKeywordSonner": "sonner",
         "devSearchKeywordError": "error",
         "devSearchKeywordNotification": "notification",
-        "projectHostsSummary": "{{value0}} hosts"
+        "projectHostsSummary": "{{value0}} hosts",
+        "linearTitle": "Linear",
+        "linearDescription": "Give agents the skill to read and update your linked Linear tickets."
       },
       "useAppMenuPaste": {
         "pasteTooLarge": "Paste is too large."
@@ -742,13 +767,13 @@
     },
     "components": {
       "CodexRestartChip": {
-        "9132779820": "Dismiss",
         "a4c8e1b2f7": "Codex is still signed in as {{value0}}",
         "c72a5fb234": "Restart",
         "9263e75f49": "Codex is using the previous account",
         "d3e8a1f4b2": "Account switched",
-        "e9b2c7d1a5": "Restart this session to use {{value0}}. Collapse to keep working with the current account.",
-        "f1a6c8e3b4": "Collapse"
+        "9375620cc3": "Restart this session to use {{value0}}. It stays on the previous account until you do.",
+        "6133594b12": "Keep old account",
+        "b9000fe511": "Not now"
       },
       "FirstLaunchBanner": {
         "b9e1b966c7": "Dismiss notice",
@@ -1784,7 +1809,8 @@
         "jiraSortAscending": "ascending",
         "jiraSortDescending": "descending",
         "jiraSortBy": "Sort by",
-        "jiraToggleSortDirection": "Sort {{value0}}"
+        "jiraToggleSortDirection": "Sort {{value0}}",
+        "75a38d7df8": "GitHub data is temporarily unavailable. Its API may be down, rate-limited, or unreachable. Please try again shortly."
       },
       "Terminal": {
         "73768427cf": "Close",
@@ -1846,7 +1872,14 @@
         "a726967bd3": "Dismiss",
         "d5253b54af": "error",
         "7ffc08506e": "check",
-        "522df222b9": "spinner"
+        "522df222b9": "spinner",
+        "e944c2de43": "Update Verification Blocked",
+        "5b309b19f3": "Update Wasn't Installed",
+        "092f09fc14": "The installer's publisher doesn't match 赛博包工头, so we stopped the update. Don't install this download; check the 赛博包工头 releases for a corrected version.",
+        "c9ff9b9ec2": "Check 赛博包工头 releases",
+        "a05992a26b": "The signature check couldn't run — usually because antivirus software blocked it. Retry the download, or get the installer from the 赛博包工头 releases.",
+        "5194358929": "Hide details",
+        "8bc9e17d8f": "Show details"
       },
       "WorktreeJumpPalette": {
         "ac037cfac2": "Move",
@@ -3984,10 +4017,9 @@
         "RemoveFolderDialog": {
           "4dc5b5065b": "Remove",
           "d36883e046": "Cancel",
-          "8c097ef04e": "from 赛博包工头. It is still on your disk.",
-          "e62415c3d0": "This only removes",
           "b79b39d865": "Remove Project",
-          "fromOrcaSsh": "from 赛博包工头. Its files stay on {{value0}} — re-add that SSH host to recover it."
+          "removeDescriptionSsh": "This only removes {{name}} from 赛博包工头. Its files stay on {{host}} — re-add that SSH host to recover it.",
+          "removeDescriptionLocal": "This only removes {{name}} from 赛博包工头. It is still on your disk."
         },
         "ScrollToCurrentWorkspaceToolbarButton": {
           "23989bb663": "Reveal active workspace"
@@ -5340,7 +5372,8 @@
           "0c9f3cf9da": "Choose where 赛博包工头 checks and installs global agent skills.",
           "f00d6aa9b5": "WSL is not available on this machine.",
           "7c776ff9d8": "wsl",
-          "fc0fcf72fd": "Register the WSL shell command before skill setup."
+          "fc0fcf72fd": "Register the WSL shell command before skill setup.",
+          "windowsPathUnknown": "WSL shell command PATH could not be checked"
         },
         "CommitMessageAiPane": {
           "841ed9884a": "Used by repositories that have not customized Source Control AI.",
@@ -5952,7 +5985,8 @@
           "aa1263e881": "Keep at phone size (default)",
           "6436e56546": "QR Code for mobile pairing",
           "1b1b70279a": "No devices paired yet.",
-          "1592afcc7a": "No devices paired yet. Scan the QR code with the 赛博包工头 mobile app."
+          "1592afcc7a": "No devices paired yet. Scan the QR code with the 赛博包工头 mobile app.",
+          "relayDegradedNotice": "Relay couldn’t be reached — this code only works on your local network. Regenerate to try again."
         },
         "MobileSettingsPane": {
           "9a3c280e49": "GitHub Releases",
@@ -5963,7 +5997,10 @@
           "174f4a3c6d": "Control terminals and agents from your phone.",
           "1de96ec8a6": "Show 赛博包工头 Mobile Button",
           "682293cadf": "Show the 赛博包工头 Mobile button at the top of the left sidebar.",
-          "d4f2b65f30": "Show the 赛博包工头 Mobile shortcut in the sidebar."
+          "d4f2b65f30": "Show the 赛博包工头 Mobile shortcut in the sidebar.",
+          "installIntro": "Install 赛博包工头 Mobile from the",
+          "installOutro": ", then pair below.",
+          "androidApkLabel": "Android APK"
         },
         "NotificationsPane": {
           "906b4afebf": "Send Test Notification",
@@ -6031,13 +6068,6 @@
           "3ebe650f74": "App name",
           "3743ed080c": "Set command",
           "f79084947b": "New app"
-        },
-        "OrchestrationExamplesDialog": {
-          "3d1aa105e3": "Copy prompt",
-          "9b4c004998": "Done",
-          "969cec9739": "Copy {{value0}} example prompt",
-          "4e46da1889": "Failed to copy prompt.",
-          "80c6f2feb8": "Copied example prompt."
         },
         "OrchestrationPane": {
           "52e0634e2c": "Ask a coordinator agent to use orchestration for handoffs, worktree handovers, and sequential or parallel child agents.",
@@ -6550,7 +6580,9 @@
           "2309068a6f": "destructive",
           "65358016ea": "Discard",
           "dev": "Dev Tools",
-          "devDescription": "Dev-only tools for exercising UI states."
+          "devDescription": "Dev-only tools for exercising UI states.",
+          "linearTitle": "Linear",
+          "linearDescription": "Give agents the skill to read and update your linked Linear tickets."
         },
         "SettingsFormControls": {
           "42a4d15a30": "No matching fonts.",
@@ -7385,10 +7417,6 @@
               "workspaceOptions": "workspace options",
               "detailed": "detailed"
             },
-            "showPinnedWorktreesInGroups": {
-              "title": "Also show pinned worktrees in their original lists",
-              "description": "Pinned worktrees stay in Pinned and also appear in All, Project, Status, and PR."
-            },
             "antigravityUsageTitle": "Antigravity Usage",
             "antigravityUsageDescription": "Show Antigravity subscription usage in the status bar.",
             "antigravityKeyword": "antigravity",
@@ -7397,7 +7425,11 @@
             "d6c0a9e2f4": "grok",
             "c5b9f8d1e3": "xai",
             "usagePercentageDisplayTitle": "Usage percentages",
-            "usagePercentageDisplayDescription": "Choose whether provider limits show the percentage used or remaining."
+            "usagePercentageDisplayDescription": "Choose whether provider limits show the percentage used or remaining.",
+            "showPinnedWorktreesInGroups": {
+              "title": "Also show pinned worktrees in their original lists",
+              "description": "Pinned worktrees stay in Pinned and also appear in All, Project, Status, and PR."
+            }
           }
         },
         "auto": {
@@ -8102,7 +8134,9 @@
               "671eb4173c": "Control terminals and agents from your phone.",
               "ffd52a96e4": "Mobile",
               "1de96ec8a6": "Show 赛博包工头 Mobile Button",
-              "682293cadf": "Show the 赛博包工头 Mobile button at the top of the left sidebar."
+              "682293cadf": "Show the 赛博包工头 Mobile button at the top of the left sidebar.",
+              "e4f4daea0e": "relay",
+              "5d5af8e041": "iphone"
             }
           }
         },
@@ -9139,6 +9173,10 @@
                   "description": "Let your agents read and edit Linear tasks.",
                   "copyCommand": "Copy command"
                 }
+              },
+              "search": {
+                "title": "Linear",
+                "description": "Give agents the skill to read and update your linked Linear tickets."
               }
             }
           }
@@ -9190,28 +9228,26 @@
           "available": "Available",
           "reconnecting": "Reconnecting",
           "unavailable": "Unavailable",
-          "title": "How should the new phone connect?",
-          "anywhere": "Connect with 赛博包工头 Relay",
-          "recommended": "Recommended",
-          "automaticDescription": "赛博包工头 uses a direct connection when available and Relay otherwise.",
-          "signInDescription": "Sign in on this desktop to use 赛博包工头 Relay.",
           "signIn": "Sign in",
-          "localOnly": "Local network only",
-          "localShort": "LAN or Tailscale",
-          "localDescription": "Uses LAN or Tailscale without connecting this phone through 赛博包工头 Relay."
+          "localDescription": "Phone must be on this Wi‑Fi or your Tailscale. No sign-in.",
+          "pathGroup": "How the phone reaches this computer",
+          "anywhereTitle": "赛博包工头 Relay",
+          "anywhereDescription": "Phone can be on cellular or any Wi‑Fi. Sign-in required.",
+          "signInRequired": "Sign in to use 赛博包工头 Mobile Relay.",
+          "relayUnavailable": "赛博包工头 Relay isn’t available in this build. Use Local network.",
+          "signInAgain": "Sign in again",
+          "localTitle": "Local network"
         },
         "MobilePairingSetupSection": {
           "title": "Pair a phone",
-          "automaticDescription": "The pairing code includes direct access and encrypted 赛博包工头 Relay fallback.",
-          "localDescription": "The pairing code connects only through the local network address below.",
-          "regenerate": "Regenerate",
-          "generate": "Generate QR Code",
-          "localSettings": "Local connection settings",
-          "localAddressDescription": "Choose the LAN or private-network address that 赛博包工头 Mobile can use to reach this computer directly.",
+          "regenerate": "Regenerate QR code",
+          "generate": "Generate QR code",
           "refresh": "Refresh network interfaces",
-          "tailnet": "Connect with your own tailnet",
-          "tailnetDescription": "Install Tailscale on this computer and your phone, sign in to the same tailnet, then select its 100.x.y.z address above.",
-          "getTailscale": "Get Tailscale"
+          "overview": "Generate a QR code, then scan it in 赛博包工头 Mobile under Pair Desktop.",
+          "step1Title": "Connection",
+          "step2Title": "This computer’s address",
+          "step2RelayDescription": "Used for a faster direct path when nearby. Relay covers remote access.",
+          "step2LocalDescription": "The phone must be able to reach this address on Wi‑Fi or Tailscale."
         },
         "MobileRelayBetaAvailability": {
           "about": "About the 赛博包工头 Relay beta",
@@ -9219,6 +9255,26 @@
           "availability": "Available on",
           "testFlight": "TestFlight",
           "androidApk": "Android APK"
+        },
+        "SkillUsageExampleDialog": {
+          "copiedPrompt": "Copied example prompt.",
+          "copyFailed": "Failed to copy prompt.",
+          "copyExampleAria": "Copy {{value0}} example prompt",
+          "done": "Done",
+          "copyPrompt": "Copy prompt"
+        },
+        "LinearAgentSkillPane": {
+          "title": "Linear",
+          "description": "Give agents the skill to read and update your linked Linear tickets.",
+          "skillTitle": "Linear skill",
+          "skillDescription": "Enables agents to read linked tickets and post updates to Linear through 赛博包工头.",
+          "howToUse": "How to use it",
+          "howToUseDescription": "Ask an agent working a Linear-linked worktree to read context, post updates, move the ticket, or attach the PR.",
+          "terminalTitle": "Linear skill setup",
+          "terminalAriaLabel": "Linear skill install terminal"
+        },
+        "MobileRelayBetaNotice": {
+          "notice": "赛博包工头 Relay is in beta."
         }
       },
       "right": {
@@ -9266,7 +9322,16 @@
             "f273f2271c": "Started the agent. Marked {{value0}} resolved, skipped {{value1}}, failed {{value2}}.",
             "aa95b81a3a": "Started the agent. Marked {{value0}} resolved, skipped {{value1}}, failed {{value2}}.",
             "495b2f8c4b": "Started the agent, but could not mark the selected comments resolved.",
-            "3c3ad3a1d2": "Started the agent. No selected comments can be marked resolved on the host."
+            "3c3ad3a1d2": "Started the agent. No selected comments can be marked resolved on the host.",
+            "review": {
+              "auto_retry": "赛博包工头 will retry at {{time}}.",
+              "open_review": "Open Review",
+              "retry": "Retry"
+            },
+            "sync": {
+              "pending": "Syncing…",
+              "branch": "Sync Branch"
+            }
           },
           "CreatePullRequestDialog": {
             "2bc1b4345e": "Cancel",
@@ -9339,7 +9404,10 @@
             "f9d7ca753d": "Copy Paths",
             "3161c4e425": "folder",
             "e887fa4b2e": "Open in Terminal",
-            "1d8e182c32": "View File"
+            "1d8e182c32": "View File",
+            "7ac885bd2f": "Download Folder",
+            "f729bcd97d": "Failed to download folder '{{value0}}'.",
+            "a4029c996b": "Downloaded folder '{{value0}}'"
           },
           "FileExplorerToolbar": {
             "d238264654": "Show Git Ignored Files",
@@ -9703,7 +9771,8 @@
               "a9bf7c171a": "Push Failed",
               "834cb3f23d": "Fix with AI",
               "783a808870": "Close"
-            }
+            },
+            "createPrIntentFastForwarding": "Updating branch…"
           },
           "SourceControlAgentActionDialog": {
             "8e856842d1": "Could not start the selected agent.",
@@ -9876,6 +9945,136 @@
                   "05e4aec17b": "{{value0}} checks will be available after the operation completes",
                   "d77c513c1e": "{{value0}} in progress",
                   "b597440265": "Refresh GitHub status for this branch to load checks and review."
+                }
+              },
+              "review": {
+                "detail": {
+                  "positive": "赛博包工头 also has saved {{reviewLabel}} information that it could not verify.",
+                  "rate_limited": "赛博包工头 also could not check {{reviewLabel}} status because {{provider}} is temporarily limiting requests.",
+                  "network": "赛博包工头 also could not check {{reviewLabel}} status because this environment could not reach {{provider}}.",
+                  "untyped": "赛博包工头 also could not confirm whether this branch already has a {{reviewLabel}}."
+                },
+                "positive": {
+                  "title": "{{reviewLabelCap}} details unavailable",
+                  "body": "赛博包工头 has saved {{reviewLabel}} information for this branch but could not confirm its current status."
+                },
+                "no_review": {
+                  "title": "No {{reviewLabel}} found",
+                  "body": "Create a {{reviewLabel}} to start checks and review."
+                },
+                "active": {
+                  "title": "Checking {{reviewLabel}} status",
+                  "body": "赛博包工头 is checking {{provider}} for a {{reviewLabel}} on this branch."
+                },
+                "git_loading": {
+                  "title": "Checking branch status",
+                  "body": "赛博包工头 is checking this branch before showing create or publish actions."
+                },
+                "git_error": {
+                  "title": "Could not check branch status",
+                  "body": "赛博包工头 could not confirm this branch's upstream from this environment. Retry before publishing or creating a {{reviewLabel}}."
+                },
+                "unknown": {
+                  "title": "{{reviewLabelCap}} status unavailable",
+                  "body": "赛博包工头 has not confirmed the {{reviewLabel}} status for this branch. Retry to check again."
+                },
+                "paused": {
+                  "title": "{{provider}} refresh paused",
+                  "body": "{{provider}} is temporarily limiting requests. This can happen even when the displayed API quota is not exhausted."
+                },
+                "network": {
+                  "title": "Could not reach {{provider}}",
+                  "body": "This environment could not reach {{provider}}. Check its connection, then retry."
+                },
+                "unknown_error": {
+                  "title": "Could not check {{reviewLabel}} status",
+                  "body": "The lookup failed, so 赛博包工头 could not confirm whether this branch already has a {{reviewLabel}}."
+                },
+                "untyped": {
+                  "title": "{{reviewLabelCap}} status unavailable",
+                  "body": "赛博包工头 could not confirm whether this branch already has a {{reviewLabel}}. Retry to check again."
+                },
+                "auth": {
+                  "title": "{{provider}} authentication failed",
+                  "body": "{{provider}} could not authenticate the credentials available in this environment. Check the {{provider}} login or environment token, then retry."
+                },
+                "permission": {
+                  "title": "{{provider}} access denied",
+                  "body": "The current {{provider}} credentials cannot read this repository's {{reviewLabel}}s. Check the account, token scopes, and repository access, then retry."
+                },
+                "repo": {
+                  "title": "{{provider}} repository unavailable",
+                  "body": "{{provider}} could not resolve or access the repository for the current remote and account. Check the remote and repository access, then retry."
+                },
+                "cli": {
+                  "title": "{{provider}} CLI unavailable",
+                  "body": "赛博包工头 could not run {{provider}} CLI in this environment. Set it up here, then retry."
+                },
+                "skipped": {
+                  "disconnected": {
+                    "title": "Host disconnected",
+                    "body": "This repository's execution host is disconnected, so 赛博包工头 cannot refresh {{reviewLabel}} status."
+                  },
+                  "bare": {
+                    "title": "Bare repository",
+                    "body": "This repository is bare, so {{reviewLabel}} status is not available here."
+                  },
+                  "archived": {
+                    "title": "Repository archived",
+                    "body": "This repository is archived, so 赛博包工头 is not refreshing {{reviewLabel}} status."
+                  },
+                  "not_git": {
+                    "title": "Not a Git repository",
+                    "body": "赛博包工头 could not treat this folder as a Git repository for {{reviewLabel}} status."
+                  },
+                  "remote": {
+                    "title": "Remote-only context",
+                    "body": "赛博包工头 could not refresh {{reviewLabel}} status for this remote context. Retry after the host is available."
+                  }
+                },
+                "no_upstream": {
+                  "title": "No upstream configured",
+                  "body": "Publish this branch to set its upstream before creating a {{reviewLabel}}."
+                },
+                "needs_sync": {
+                  "title": "Branch needs to sync",
+                  "body": "Sync this branch with its upstream before creating a {{reviewLabel}}."
+                },
+                "auth_required": {
+                  "title": "Connect {{provider}}",
+                  "body": "{{provider}} must be connected in this environment before 赛博包工头 can create a {{reviewLabel}}."
+                },
+                "needs_push": {
+                  "title": "Branch has unpushed commits",
+                  "body": "Push the latest commits before creating a {{reviewLabel}}."
+                },
+                "existing": {
+                  "title": "{{reviewLabelCap}} already exists",
+                  "body": "赛博包工头 found an existing {{reviewLabel}} for this branch."
+                },
+                "detached": {
+                  "title": "No current branch",
+                  "body": "Check out a branch before creating a {{reviewLabel}}."
+                },
+                "dirty": {
+                  "title": "Commit changes first",
+                  "body": "Commit or stash your changes before creating a {{reviewLabel}}."
+                },
+                "default_branch": {
+                  "title": "On the default branch",
+                  "body": "Switch to a feature branch before creating a {{reviewLabel}}."
+                },
+                "fork": {
+                  "title": "Fork head unsupported",
+                  "body": "赛博包工头 cannot create a {{reviewLabel}} from this fork head here."
+                },
+                "base_missing": {
+                  "title": "Base branch not on remote",
+                  "body": "This branch's base is not on the remote yet, so a {{reviewLabel}} cannot target it."
+                },
+                "unsupported": {
+                  "title": "{{reviewLabelCap}} not supported here",
+                  "body": "This repository provider does not support creating a {{reviewLabel}} from 赛博包工头."
                 }
               }
             }
@@ -10072,6 +10271,13 @@
               "control": {
                 "ai": {
                   "cfafa92509": "No unresolved conflicts to send."
+                }
+              }
+            },
+            "hosted": {
+              "review": {
+                "actions": {
+                  "e475c29b17": "This will merge the {{value0}}."
                 }
               }
             }
@@ -10326,6 +10532,24 @@
             "workspaceGone": "Couldn't open log — workspace is no longer available.",
             "notAuthorized": "Couldn't open log — path not authorized.",
             "alreadyEditable": "Log is already open for editing."
+          },
+          "github": {
+            "refresh": {
+              "error": {
+                "copy": {
+                  "580025e7b7": "GitHub is unavailable",
+                  "01c85b5770": "GitHub's API is temporarily unavailable. This panel reloads automatically once it recovers.",
+                  "d1a9f2b165": "Can't reach GitHub",
+                  "7d01d42a3a": "GitHub is unreachable right now. Check your connection, then try again shortly.",
+                  "e9d681894a": "GitHub rate limit reached",
+                  "8c77434d6f": "GitHub is rate-limiting requests. This panel refreshes once the limit resets.",
+                  "79aa06bb2c": "Couldn't refresh. GitHub's API is temporarily unavailable. Showing the last known status.",
+                  "6ec12cee0c": "Couldn't refresh. GitHub is unreachable right now. Showing the last known status.",
+                  "de088015e8": "Couldn't refresh. GitHub is rate-limiting requests. Showing the last known status.",
+                  "d9dd7c6687": "Couldn't refresh from GitHub. Showing the last known status."
+                }
+              }
+            }
           }
         }
       },
@@ -10652,7 +10876,8 @@
           },
           "ProjectCombobox": {
             "search": "Search projects...",
-            "empty": "No projects match your search."
+            "empty": "No projects match your search.",
+            "addProject": "Add a new project"
           }
         }
       },
@@ -10702,7 +10927,8 @@
             "group": "Release channel",
             "preview": "Preview",
             "stable": "Stable"
-          }
+          },
+          "relayDegradedNotice": "Relay couldn’t be reached — this code only works on your local network."
         },
         "MobilePage": {
           "e17393c6a3": "Phone preview",
@@ -10757,7 +10983,7 @@
             "0bad5b07c8": "GitHub and Linear",
             "d047197480": "GitHub · Linear",
             "a4c3f7b7aa": "Tasks",
-            "d33d7a9c29": "orca&nbsp;&nbsp;·&nbsp;&nbsp;feat/mobile-page",
+            "d33d7a9c29": "sbbgt  ·  feat/mobile-page",
             "25d6e8a491": "feat/mobile-page",
             "c791677f2f": "Resume",
             "cf3f98fa3f": "Disconnected",
@@ -11987,7 +12213,9 @@
                 "2f9d6b4e10": "Toggle H3",
                 "8c1a3e7d52": "Create a collapsible section with a small heading summary.",
                 "5e0b9c2a71": "Toggle H4",
-                "d4f16a8b39": "Create a collapsible section with a nested heading summary."
+                "d4f16a8b39": "Create a collapsible section with a nested heading summary.",
+                "21d8c463e5": "Toggle H5",
+                "dc239b41ad": "Create a collapsible section with a deep heading summary."
               }
             }
           }
@@ -13209,11 +13437,6 @@
         "searchAssignee": "Filter assignee…",
         "back": "Back"
       },
-      "tab-bar": {
-        "TerminalTabLeadingIcon": {
-          "unreadAgentCompletion": "Unread agent completion"
-        }
-      },
       "browser-pane": {
         "markup": {
           "cancel": "Cancel",
@@ -13243,6 +13466,11 @@
           },
           "undo": "Undo",
           "widthOption": "{{value0}} px"
+        }
+      },
+      "tab-bar": {
+        "TerminalTabLeadingIcon": {
+          "unreadAgentCompletion": "Unread agent completion"
         }
       }
     },
@@ -13274,6 +13502,21 @@
         "startDictation": "Start dictation",
         "stopDictation": "Stop dictation",
         "noSkills": "No matching skills",
+        "noCommandsOrSkills": "No matching commands or skills",
+        "noCommands": "No matching commands",
+        "commands": "Commands",
+        "skills": "Skills",
+        "loadingSkills": "Loading skills...",
+        "skillsLoaded": "Skills loaded",
+        "skillsUnavailableHost": "Skills are unavailable for this host",
+        "skillsLoadFailed": "Could not load skills from this host",
+        "retrySkills": "Retry",
+        "skillCommandCollision": "Also a skill name - agent decides",
+        "skillMultipleSources": "{{sourceCount}} sources - agent resolves",
+        "skillScopeProject": "Project",
+        "skillScopePersonal": "Personal",
+        "skillScopeBuiltIn": "Built-in",
+        "skillScopePlugin": "Plugin",
         "localAttachmentUnsupported": "Local attachments are not available for remote sessions.",
         "removeAttachment": "Remove attachment",
         "pastedImageLabel": "Pasted image",
@@ -13281,15 +13524,15 @@
         "worktreeNotReady": "Worktree not ready — try again in a moment.",
         "uploadingAttachments": "Uploading {{value0}} file(s) to remote…",
         "model": "Model",
-        "modelWithValue": "Model: {{value0}}",
         "effort": "Effort",
-        "effortWithValue": "Effort: {{value0}}",
         "fastMode": "Fast mode",
         "thinking": "Thinking",
         "options": "Options",
         "sessionOptions": "Session options",
         "chooseInAgentPicker": "Choose in agent picker…",
         "toggleOption": "Toggle {{value0}}",
+        "pillAccessibleName": "{{value0}} {{value1}}",
+        "valueUnknown": "Current value unknown — pick On or Off",
         "sentNotConfirmed": "Sent to the agent — not confirmed",
         "setWhenSessionStarts": "Set when the session starts.",
         "availableAfterSessionStarts": "Available after the session starts.",
@@ -13301,7 +13544,9 @@
           "medium": "Medium",
           "high": "High",
           "xhigh": "Extra high",
-          "max": "Max"
+          "max": "Max",
+          "on": "On",
+          "off": "Off"
         }
       },
       "tool": {

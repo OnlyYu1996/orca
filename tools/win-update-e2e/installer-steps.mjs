@@ -1,11 +1,7 @@
 // Silent NSIS install / update / uninstall and installed-app discovery.
 //
-// Orca ships a per-user oneClick NSIS installer (electron-builder defaults:
-// oneClick=true, perMachine=false) named orca-windows-setup.exe. One-click
-// silent mode is `<setup.exe> /S`; the app installs under
-// %LOCALAPPDATA%\Programs\<dir> and the exe is Orca.exe. The install dir casing
-// is not guaranteed (observed lowercase "orca" on a dev box), so the exe is
-// located by search, never by a hard-coded path.
+// 赛博包工头使用按用户安装的 oneClick NSIS 包；安装目录可能因环境而变化，
+// 因此按 sbbgt.exe 搜索，不依赖本地化后的目录名。
 
 import { existsSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -14,7 +10,7 @@ import { spawnSync } from 'node:child_process'
 import { assertWin32 } from './platform-guard.mjs'
 import { runCommandSync } from './powershell-runner.mjs'
 
-const PRODUCT_NAME = 'Orca'
+const PRODUCT_NAME = '赛博包工头'
 const EXE_NAME = 'sbbgt.exe'
 
 /** Programs root that per-user oneClick NSIS installs into. */
@@ -92,7 +88,7 @@ export function silentInstall(setupExe, { timeoutMs = 180_000, installDir = null
     throw new Error(`Failed to launch installer ${setupExe}: ${proc.error.message}`)
   }
 
-  // On update runs the old Orca.exe already exists, so wait for the exe whose
+  // 更新时旧的 sbbgt.exe 已存在，因此等待版本与安装包匹配的可执行文件，
   // version matches this installer — not just any exe the installer hasn't yet
   // overwritten — to avoid reading the pre-update binary mid-copy.
   const targetVersion = getExeVersion(setupExe)
@@ -142,9 +138,8 @@ function waitForInstalledExe(timeoutMs, installDir = null, expectedVersion = nul
 }
 
 /**
- * Locate the installed Orca.exe. In isolated mode (`installDir` set), the exe is
- * at a known fixed path (<installDir>\Orca.exe). Otherwise it is discovered
- * under %LOCALAPPDATA%\Programs (case-tolerant — casing is not guaranteed).
+ * 定位已安装的 sbbgt.exe。隔离安装使用固定目录，常规安装则在
+ * %LOCALAPPDATA%\Programs 下搜索，避免依赖产品目录名。
  */
 export function locateInstalledExe(installDir = null) {
   if (installDir) {

@@ -131,17 +131,17 @@
       "name": "orchestration",
       "sourcePath": "skills/orchestration",
       "releaseRevision": 25,
-      "packageDigest": "17872b956c7a0dea568531126b28488749810b38585459a73f866ac3b281a076",
-      "gitTreeSha": "0faad61d7b056e61266c513ccf8aa5c79a69ab5d",
+      "packageDigest": "a5b9a3b87f56534e6f2aecc4030bba8d3cdfa1686f33f319b4c8e8a18e0d9750",
+      "gitTreeSha": "8969145b349ba2c11e979b54489893fc6b998ae5",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 23172,
+          "size": 22964,
           "executable": false,
           "classification": "text",
-          "exactSha256": "0fcaa80c74a0d7bca3cf5adf685fa8b20270ae4cbcb435adcefd2742e392d734",
-          "textNormalizedSha256": "0fcaa80c74a0d7bca3cf5adf685fa8b20270ae4cbcb435adcefd2742e392d734",
-          "identitySha256": "0fcaa80c74a0d7bca3cf5adf685fa8b20270ae4cbcb435adcefd2742e392d734"
+          "exactSha256": "1befdf6aee918098e65c85fed8d500ca80223bf418cdaf39d97062e917e16b04",
+          "textNormalizedSha256": "1befdf6aee918098e65c85fed8d500ca80223bf418cdaf39d97062e917e16b04",
+          "identitySha256": "1befdf6aee918098e65c85fed8d500ca80223bf418cdaf39d97062e917e16b04"
         }
       ]
     },
@@ -149,8 +149,8 @@
       "name": "sync-orca-upstream",
       "sourcePath": "skills/sync-orca-upstream",
       "releaseRevision": 1,
-      "packageDigest": "46737f0ddef5c49172362c874d78dda290d7278c5ed9b001420782c905055778",
-      "gitTreeSha": "72169122f16449bd527339834aa76dbb84c73076",
+      "packageDigest": "43ea38deb606d424f43acd3b9eb1d189e756a3ef828394ef29c2ec26d4adfbe8",
+      "gitTreeSha": "29f7c7b7cee0377ae9273b2dd8ef51a29f442832",
       "files": [
         {
           "path": "SKILL.md",
@@ -172,21 +172,21 @@
         },
         {
           "path": "references/repository-baseline.md",
-          "size": 17891,
+          "size": 25593,
           "executable": false,
           "classification": "text",
-          "exactSha256": "5cf15b1649a345696b4f08c0323c2e7ec0f0deaa3f7ad6c80870dd16d17e6a72",
-          "textNormalizedSha256": "5cf15b1649a345696b4f08c0323c2e7ec0f0deaa3f7ad6c80870dd16d17e6a72",
-          "identitySha256": "5cf15b1649a345696b4f08c0323c2e7ec0f0deaa3f7ad6c80870dd16d17e6a72"
+          "exactSha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1",
+          "textNormalizedSha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1",
+          "identitySha256": "618898ab9d74798fc4954a61a396e70b0cd79ef27a8313e818ddaa3b28b667a1"
         },
         {
           "path": "references/upstream-integration-state.json",
           "size": 690,
           "executable": false,
           "classification": "text",
-          "exactSha256": "a3e1042870ad083f88b5b759ba01b3ec68d1beb40a6d454358ae246a1f485200",
-          "textNormalizedSha256": "a3e1042870ad083f88b5b759ba01b3ec68d1beb40a6d454358ae246a1f485200",
-          "identitySha256": "a3e1042870ad083f88b5b759ba01b3ec68d1beb40a6d454358ae246a1f485200"
+          "exactSha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad",
+          "textNormalizedSha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad",
+          "identitySha256": "096ee3b8722959935c42861f90bbb2b4301a479c9ec5dd7f100359f99233f5ad"
         },
         {
           "path": "scripts/audit-upstream.mjs",

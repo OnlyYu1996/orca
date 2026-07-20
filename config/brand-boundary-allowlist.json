@@ -34,6 +34,12 @@
     },
     {
       "category": "upstream-repository",
+      "path": "tools/win-crash-survival-e2e/README.md",
+      "contains": "https://github.com/stablyai/orca/issues/7742",
+      "reason": "Windows 崩溃存活验证保留对应的上游 Issue 作为不可变回归证据。"
+    },
+    {
+      "category": "upstream-repository",
       "path": "src/shared/tui-agent-config.ts",
       "contains": "https://github.com/stablyai/orca/pull/926",
       "reason": "注释保留行为来源的上游 PR 证据。"
@@ -163,6 +169,12 @@
       "path": "src/main/startup/single-instance-lock.ts",
       "contains": "ORCA_BYPASS_SINGLE_INSTANCE_LOCK",
       "reason": "单实例诊断开关兼容旧自动化。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/providers/macos-tcc-login-shell.ts",
+      "contains": "ORCA_DISABLE_MACOS_LOGIN_SHELL",
+      "reason": "macOS Shell 预检开关优先读取 SBBGT_*，旧变量仅作为自动化兼容回退。"
     },
     {
       "category": "legacy-addition:environment-variable",

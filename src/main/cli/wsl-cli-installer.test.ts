@@ -203,6 +203,27 @@ describe('WslCliInstaller', () => {
     expect(installCommand).not.toContain('[ ! -L "$legacy_command_path" ]')
   })
 
+  it('continues checking WSL when the host launcher exists but host PATH is unknown', async () => {
+    const wsl = createWslRunner()
+    const hostStatus = {
+      ...makeHostStatus(),
+      pathConfigured: null,
+      detail: '赛博包工头 could not read the Windows user PATH registry value.'
+    } satisfies CliInstallStatus
+    const installer = new WslCliInstaller({
+      platform: 'win32',
+      distro: 'Ubuntu',
+      hostInstaller: { getStatus: async () => hostStatus },
+      wslRunner: wsl.runner
+    })
+
+    await expect(installer.getStatus()).resolves.toMatchObject({
+      supported: true,
+      state: 'not_installed',
+      commandPath: '/home/alice/.local/bin/sbbgt'
+    })
+  })
+
   it('derives the shared WSL bridge path for current and legacy command names', () => {
     expect(_internals.getBridgePathFromCommandPath('/home/alice/.local/bin/sbbgt')).toBe(
       '/home/alice/.local/share/sbbgt/sbbgt-wsl-bridge.ps1'
