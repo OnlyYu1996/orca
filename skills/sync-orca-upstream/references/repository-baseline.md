@@ -231,3 +231,12 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 与 Mobile TypeScript 类型检查通过；完整 Root Lint 通过（含 type-aware switch-exhaustiveness、41 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、本地化目录与覆盖率、品牌边界），品牌边界覆盖 5,298 个产品文本文件；受影响 Root 专项 `1,020 passed / 5 skipped`，Mobile 专项 `49 passed`；Mobile Lint 和 890 文件 Format Check 通过，Mobile Vitest 全量 `2,037 passed / 2 skipped`；Root Vitest 单 Worker 全量 `31,370 passed / 52 skipped / 1 timeout`，唯一超时为未受本轮修改的真实 Git 子模块状态用例，该精确用例隔离复跑 `1 passed / 95 skipped`（2.84 秒），整文件隔离复跑 `96 passed`；`git diff --check` 通过，验证进程均已退出。
 - 未覆盖风险：未执行 Desktop Playwright E2E、真实 Mobile 设备验收、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；Root 全量中的子模块状态用例仍存在高负载下触发固定 30 秒时限的波动风险。
 - Push 状态及目标：未 Push；记录时 `origin/main` 仍为 `8dfe0561968733436f1010983525ac68f7bbe356`。
+
+### 2026-07-20：修复 Rebase 后的机器同步状态
+
+- 触发原因：本地 Reflog 显示 `2026-07-20 09:16:01 +08:00` 执行了 `pull --rebase origin main`，上一轮 Merge 节点 `8089a4b742e60683da1b6a9a62c09b7e7910f0f6` 及其元数据提交被重写；当前 `main` 与 `origin/main` 均为重写后的 `4c8d2c66ec2b9bc417fceb2cc2f12517cd57910e`。
+- 提交图证据：`8089a4b742e60683da1b6a9a62c09b7e7910f0f6` 已不是当前产品 HEAD 的祖先；更早的 Merge 节点 `a6319a68affc84d1bfb2c4f53bf243e2a13f8d35` 及其上游目标 `cc1ad064d74e21a6a14713e31004e6ff0e53a982` 仍保持有效祖先关系。
+- 修复方式：机器状态精确回退为提交 `8dfe0561968733436f1010983525ac68f7bbe356` 中最后一份仍符合当前提交图的已验证状态；不把 Rebase 生成的补丁等价提交伪装成官方上游祖先。
+- 防护引用：`refs/backup/upstream-sync/2026-07-20-4c8d2c66ec2b` 指向修复前产品节点 `4c8d2c66ec2b9bc417fceb2cc2f12517cd57910e`。
+- 后续同步：已成功 Fetch 并冻结 `upstream/main` 为 `e3721e8cf2d296b301fa81f9119a7d633cfd035d`；本条只修复机器索引，不宣称完成该目标的集成。
+- Push 状态：本次修复未 Push；执行前 `origin/main` 已为 `4c8d2c66ec2b9bc417fceb2cc2f12517cd57910e`。
