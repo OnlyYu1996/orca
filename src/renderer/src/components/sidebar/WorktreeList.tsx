@@ -119,6 +119,7 @@ import { useWorkspaceStatusDocumentDrop } from './use-workspace-status-drop'
 import {
   computeClearFilterActions,
   computeVisibleWorktreeIds,
+  releaseVisibleWorktreeOrder,
   setVisibleWorktreeIds,
   sidebarHasActiveFilters
 } from './visible-worktrees'
@@ -5952,8 +5953,8 @@ const WorktreeList = React.memo(function WorktreeList({
   // Why layout effect: the Cmd/Ctrl+1–9 handler can fire right after commit; publishing after paint would leave the shortcut cache stale.
   useLayoutEffect(() => {
     setVisibleWorktreeIds(renderedWorktreeIds)
-    // Why: unmounting the list clears the rendered-order cache so shortcuts fall back to the live store snapshot.
-    return () => setVisibleWorktreeIds([])
+    // 原因：侧栏隐藏后仍需保留最后渲染顺序，实时回退只负责剔除失效项。
+    return releaseVisibleWorktreeOrder
   }, [renderedWorktreeIds])
 
   const handleCreateForRepo = useCallback(

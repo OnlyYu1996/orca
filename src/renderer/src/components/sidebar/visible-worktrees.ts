@@ -11,6 +11,7 @@ import {
   type ExecutionHostId,
   type ExecutionHostScope
 } from '../../../../shared/execution-host'
+import { folderWorkspaceKey } from '../../../../shared/workspace-scope'
 import {
   getCyclicProjectedWorktreeLineageIds,
   getLineageRenderInfo
@@ -258,7 +259,8 @@ function addVisibleLineageAncestors(
  * position. By caching the IDs that WorktreeList actually rendered, the
  * shortcut numbering always matches the sidebar card order.
  */
-let _cachedVisibleIds: string[] = []
+let _cachedVisibleIds: string[] | null = null
+let _isRenderedOrderActive = false
 
 /**
  * Called by WorktreeList after computing visible worktrees so the Cmd+1–9
@@ -266,6 +268,29 @@ let _cachedVisibleIds: string[] = []
  */
 export function setVisibleWorktreeIds(ids: string[]): void {
   _cachedVisibleIds = ids
+  _isRenderedOrderActive = true
+}
+
+export function releaseVisibleWorktreeOrder(): void {
+  _isRenderedOrderActive = false
+}
+
+export function pruneVisibleWorktreeOrder(
+  renderedIds: readonly string[],
+  currentVisibleIds: readonly string[],
+  retainedIds: ReadonlySet<string> = new Set()
+): string[] {
+  const eligibleIds = new Set([...currentVisibleIds, ...retainedIds])
+  const prunedIds: string[] = []
+  const seenIds = new Set<string>()
+
+  for (const id of renderedIds) {
+    if (eligibleIds.has(id) && !seenIds.has(id)) {
+      prunedIds.push(id)
+      seenIds.add(id)
+    }
+  }
+  return prunedIds
 }
 
 /**
@@ -273,14 +298,15 @@ export function setVisibleWorktreeIds(ids: string[]): void {
  * state. Called by the App-level Cmd+1–9 handler (not a React hook — reads
  * store snapshot at call time).
  *
- * If WorktreeList has rendered at least once, returns the cached IDs so the
- * shortcut numbering matches the sidebar. Falls back to a live recomputation
- * only before WorktreeList's first render (e.g. app startup).
+ * WorktreeList 渲染后保留其顺序，并用实时可见集合剔除失效项；
+ * 首次渲染前直接使用实时计算结果。
  */
 export function getVisibleWorktreeIds(): string[] {
-  // Prefer the cached IDs that mirror the rendered sidebar order.
-  if (_cachedVisibleIds.length > 0) {
-    return _cachedVisibleIds
+  if (_isRenderedOrderActive) {
+    return _cachedVisibleIds ?? []
+  }
+  if (_cachedVisibleIds?.length === 0) {
+    return []
   }
 
   // Fallback: live recomputation for the window before WorktreeList renders.
@@ -312,7 +338,7 @@ export function getVisibleWorktreeIds(): string[] {
     sortedIds = sorted.map((w) => w.id)
   }
 
-  return computeVisibleWorktreeIds(state.worktreesByRepo, sortedIds, {
+  const currentVisibleIds = computeVisibleWorktreeIds(state.worktreesByRepo, sortedIds, {
     filterRepoIds: state.filterRepoIds,
     showSleepingWorkspaces: state.showSleepingWorkspaces,
     tabsByWorktree: state.tabsByWorktree,
@@ -331,4 +357,15 @@ export function getVisibleWorktreeIds(): string[] {
     defaultHostId: getSettingsFocusedExecutionHostId(state.settings),
     worktreeLineageById: state.worktreeLineageById
   })
+
+  if (_cachedVisibleIds === null) {
+    return currentVisibleIds
+  }
+
+  // 文件夹工作区不在 worktreesByRepo 中，不能因实时回退列表缺席而丢失其渲染位置。
+  const retainedFolderWorkspaceIds = new Set(
+    state.folderWorkspaces.map((workspace) => folderWorkspaceKey(workspace.id))
+  )
+  // 侧栏隐藏时没有新的渲染位置可依据，只收缩既有顺序，避免折叠项被重新追加。
+  return pruneVisibleWorktreeOrder(_cachedVisibleIds, currentVisibleIds, retainedFolderWorkspaceIds)
 }
