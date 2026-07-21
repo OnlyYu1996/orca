@@ -286,6 +286,9 @@ type FileExplorerRowProps = {
   onStartNew: (type: 'file' | 'folder', dir: string, depth: number) => void
   onStartRename: (node: TreeNode) => void
   onDuplicate: (node: TreeNode) => void
+  canAddToGitignore?: boolean
+  isAddingToGitignore?: boolean
+  onAddToGitignore?: () => void | Promise<void>
   onAddFolderAsProject: () => void
   canAddAsProject: boolean
   onOpenInTerminal: () => void
@@ -457,6 +460,9 @@ export function FileExplorerRow({
   onStartNew,
   onStartRename,
   onDuplicate,
+  canAddToGitignore = false,
+  isAddingToGitignore = false,
+  onAddToGitignore,
   onAddFolderAsProject,
   canAddAsProject,
   onOpenInTerminal,
@@ -724,6 +730,15 @@ export function FileExplorerRow({
           <ContextMenuItem onSelect={() => onDuplicate(node)}>
             <Files />
             {translate('auto.components.right.sidebar.FileExplorerRow.0fec99bfd7', 'Duplicate')}
+          </ContextMenuItem>
+        )}
+        {canAddToGitignore && onAddToGitignore && (
+          <ContextMenuItem disabled={isAddingToGitignore} onSelect={() => void onAddToGitignore()}>
+            <CircleSlash />
+            {translate(
+              'auto.components.right.sidebar.FileExplorerRow.6ccddc27bd',
+              'Add to .gitignore'
+            )}
           </ContextMenuItem>
         )}
         {canAddAsProject && (

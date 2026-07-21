@@ -55,6 +55,8 @@ import { CLOSE_ALL_CONTEXT_MENUS_EVENT } from '@/components/tab-bar/SortableTab'
 import type { RightSidebarExplorerView } from '../../../../shared/types'
 import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
 import { createNewTerminalTab } from '@/components/terminal/terminal-tab-create'
+import { getRepoOwnerRoutedSettings } from '@/lib/repo-runtime-owner'
+import { useFileExplorerGitignore } from './useFileExplorerGitignore'
 
 function FileExplorerFiles(): React.JSX.Element {
   const explorerView = useAppStore((s) => s.rightSidebarExplorerView)
@@ -80,6 +82,7 @@ function FileExplorerFiles(): React.JSX.Element {
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const activeWorktree = useActiveWorktree()
   const activeRepo = useRepoById(activeWorktree?.repoId ?? null)
+  const settings = useAppStore((s) => s.settings)
   const supportsFolderDownload = useAppStore((s) => {
     const connectionId = activeRepo?.connectionId
     return connectionId
@@ -130,6 +133,22 @@ function FileExplorerFiles(): React.JSX.Element {
   })
   const repoName = activeRepo?.displayName ?? (worktreePath ? basename(worktreePath) : '')
   const activeRepoSupportsGit = activeRepo ? isGitRepoKind(activeRepo) : false
+  const activeRepoSettings = useMemo(
+    () => getRepoOwnerRoutedSettings(settings, activeRepo),
+    [activeRepo, settings]
+  )
+  const gitignoreContext = useMemo(
+    () =>
+      activeWorktreeId && worktreePath
+        ? {
+            settings: activeRepoSettings,
+            worktreeId: activeWorktreeId,
+            worktreePath,
+            connectionId: activeRepo?.connectionId ?? undefined
+          }
+        : null,
+    [activeRepo?.connectionId, activeRepoSettings, activeWorktreeId, worktreePath]
+  )
 
   const expanded = useMemo(
     () =>
@@ -262,6 +281,14 @@ function FileExplorerFiles(): React.JSX.Element {
     preserveSelectionForContextMenu,
     copyPathsForNode
   } = useFileExplorerSelection(rowProjection, isMac)
+  const { isAddingToGitignore, addToGitignore } = useFileExplorerGitignore({
+    enabled: activeRepoSupportsGit,
+    context: gitignoreContext,
+    pushTarget: activeWorktree?.pushTarget,
+    selectedPaths,
+    rowProjection,
+    refreshTree
+  })
 
   const entries = useMemo(
     () => (activeWorktreeId ? (gitStatusByWorktree[activeWorktreeId] ?? []) : []),
@@ -761,6 +788,9 @@ function FileExplorerFiles(): React.JSX.Element {
                 onStartNew={startNew}
                 onStartRename={startRename}
                 onDuplicate={handleDuplicate}
+                canAddToGitignore={activeRepoSupportsGit}
+                isAddingToGitignore={isAddingToGitignore}
+                onAddToGitignore={addToGitignore}
                 onAddFolderAsProject={handleAddFolderAsProject}
                 canAddFolderAsProject={(node) => canShowAddAsProjectAction(node, activeRepo)}
                 onOpenInTerminal={handleOpenInTerminal}
