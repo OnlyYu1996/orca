@@ -274,3 +274,20 @@ Markdown 历史保留冲突取舍、验证证据和未覆盖风险。
 - 验证：Root 与 Mobile TypeScript 类型检查通过；完整 Root Lint 通过（含 type-aware switch-exhaustiveness、44 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、Locale 与品牌门禁），五种 Renderer Locale 均为 10,984 个键，品牌门禁审计 5,422 个产品文本文件；受影响 Root 38 个文件 `2,649 passed`，Daemon Server 补充专项 `34 passed`，Mobile Quick Commands 专项 `24 passed`；Mobile Lint 和 904 文件 Format Check 通过，Mobile Vitest 全量 `2,077 passed / 2 skipped`；Root Vitest 单 Worker 全量 `32,423 passed / 54 skipped / 1 timeout`，唯一超时仍为 SSH 系统传输临时 Relay 安装，该文件隔离复跑 `3 passed`（15.7 秒）；`git diff --check` 通过。
 - 未覆盖风险：未执行本轮变更涉及的 Desktop Playwright Terminal E2E、Windows ConPTY 实机、Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调；SSH 系统传输测试在 Root 全量负载下仍存在固定 60 秒时限波动。
 - Push 状态及目标：未 Push；记录时 `origin/main` 仍为同步前节点 `d9d6a0dbe8a2599027be129bc10353c3583c5005`。
+
+### 2026-07-22：同步到 300ee19950dadb2c1da9f76d7623559068b268af
+
+- 执行者：Codex（本地）
+- 二开分支：`main`
+- 同步前 HEAD：`ce93719dd4356647ebbf9a0d084d0a8eecd5d0c2`
+- 上游目标 SHA：`300ee19950dadb2c1da9f76d7623559068b268af`
+- Merge Base：`b3b5031883c616502a82b1b50572e76da40e859a`
+- 策略：Merge（`--no-ff`）
+- 同步后节点：`4eb990ffc6632158f0dfb34e4a4792b2b8be99b6`
+- 同步后 Fetch 节点及待同步提交数：`300ee19950dadb2c1da9f76d7623559068b268af`，`0`
+- 备份引用：`refs/backup/upstream-sync/2026-07-22-ce93719dd435`
+- 冲突与人工整合面：接入上游 132 个提交并解决 46 个 Git 冲突；`git show --remerge-diff 4eb990ffc6632158f0dfb34e4a4792b2b8be99b6` 记录了品牌与发布链、CLI/Skills、Linear、Codex Home、Agent Hooks、Daemon/PTY、SSH/WSL、Runtime、Persistence、Updater、Mobile、Dashboard Popout、五种 Renderer Locale 和测试基线等人工整合面。
+- 关键取舍：接入上游 Mobile Onboarding、远程工作区睡眠收敛、远程 Agent Session Host Authority、远程 Runtime 终端恢复、Serve 更新交接、Dashboard Popout、Codex 子智能体、Agent Session Continuation、Linear `save-issue`/`list-issues`/关系/活动历史及 Skill 动态指南；版本升级到 `1.4.150-rc.0`。继续使用“赛博包工头”、`sbbgt`、`OnlyYu1996/orca`、默认简体中文、GitLab-only、CodeBuddy Hook 与 Token 统计、隐藏远程主机/更新/支持/任务来源设置入口和自有发布链；`SBBGT_*` 与 `sbbgt-*` 作为新写入主标识，旧 `ORCA_*`、`orca-*`、`.orca` 和旧 Scheme 仅保留兼容读取、迁移、内部稳定协议或测试证据；CLI 与 Linear 示例统一为 `sbbgt`，Bundled CLI Skill 入口统一为 `sbbgt skills get orca-cli`。
+- 验证：Root 与 Mobile TypeScript 类型检查通过；Root/Mobile Lint 和 Format Check 通过，Root Lint 包含 46 个 Reliability Gates、max-lines Ratchet、Bundled Skill Guides、Skill Bundle Manifest、五种 Locale 与品牌门禁，五种 Renderer Locale 均为 11,079 个键，品牌门禁审计 5,649 个产品文本文件；合并失败热点专项最终 `286 passed / 2 skipped`；Mobile Vitest 全量 `2,228 passed / 2 skipped`；Root Vitest 单 Worker 全量 `34,182 passed / 58 skipped / 2 failed`，两项分别为 SSH 原生依赖首次安装固定 60 秒时限和提交前必然读取旧 `HEAD` 的 Skill Git Tree SHA；SSH 文件在临时 120 秒诊断时限下隔离运行 `3 passed`，诊断改动随后恢复；Merge Commit 创建后 Skill Git Tree 专项 `11 passed / 1 skipped`；`git diff --check` 和机器同步状态校验通过。
+- 未覆盖风险：SSH 系统传输原生依赖安装在本机临时目录中存在 60 秒固定时限波动，虽已在延长诊断时限下功能通过；未执行 Desktop Playwright E2E、Windows/Linux/WSL 和真实 SSH 主机实体环境验收、Git 2.25 真实二进制矩阵、真实 Mobile 设备验收、各平台安装包构建、签名、自动更新及真实自建 Relay 后端联调。
+- Push 状态及目标：未 Push；记录时 `origin/main` 仍为同步前节点 `ce93719dd4356647ebbf9a0d084d0a8eecd5d0c2`。
