@@ -112,7 +112,7 @@ export class WindowsUserPathRegistryReader {
       if (!key || typeof key !== 'object') {
         return {
           state: 'unknown',
-        detail: '赛博包工头 could not read the Windows user PATH registry key.'
+          detail: '赛博包工头 could not read the Windows user PATH registry key.'
         }
       }
 

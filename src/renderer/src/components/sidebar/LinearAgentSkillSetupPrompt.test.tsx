@@ -3,9 +3,9 @@
 import { act, type ComponentProps, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import type { CliInstallStatus } from '../../../../shared/cli-install-types'
-import type { ProjectExecutionRuntimeResolution } from '../../../../shared/project-execution-runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LINEAR_AGENT_SKILL_NAMES } from '@/lib/agent-feature-install-commands'
+import { projectHostRuntime, projectWslRuntime } from './linear-agent-skill-setup-test-runtimes'
 import {
   LinearAgentSkillSetupPrompt,
   _linearAgentSkillSetupPromptInternalsForTests
@@ -13,29 +13,6 @@ import {
 
 const HOST_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.host'
 const FEDORA_DISMISS_STORAGE_KEY = 'orca.linearTicketsSkill.setupDismissed.wsl.Fedora'
-
-const projectHostRuntime: ProjectExecutionRuntimeResolution = {
-  status: 'resolved',
-  runtime: {
-    kind: 'windows-host',
-    hostPlatform: 'win32',
-    projectId: 'repo-1',
-    reason: 'project-override',
-    cacheKey: 'repo-1:windows-host'
-  }
-}
-
-const projectWslRuntime: ProjectExecutionRuntimeResolution = {
-  status: 'resolved',
-  runtime: {
-    kind: 'wsl',
-    hostPlatform: 'wsl',
-    projectId: 'repo-1',
-    distro: 'Ubuntu',
-    reason: 'project-override',
-    cacheKey: 'repo-1:wsl:Ubuntu'
-  }
-}
 
 const mocks = vi.hoisted(() => ({
   skillState: {
@@ -452,7 +429,7 @@ describe('LinearAgentSkillSetupPrompt', () => {
     )
   })
 
-  it('auto-opens as a modal-only prompt and treats Not now as a casual close', async () => {
+  it('auto-opens as a modal-only prompt and treats the × close as a casual snooze', async () => {
     await renderPrompt({ linked: true, remote: false, surface: 'modal' })
 
     expect(container?.textContent).not.toContain('Set up Linear agent skill')
@@ -463,17 +440,21 @@ describe('LinearAgentSkillSetupPrompt', () => {
       '赛博包工头 CLI and Linear agent skill are missing.'
     )
     expect(document.body.textContent).toContain('Mock install')
+    // Why: the permanent opt-out is an EyeOff icon (no visible text); the casual
+    // dismiss is the dialog ×. Neither "Not now" nor any dismiss label shows as text.
+    expect(document.body.textContent).not.toContain('Not now')
     expect(mocks.panelProps.at(-1)).toEqual(
       expect.objectContaining({
         preInstallNotice: 'CLI registration notice'
       })
     )
 
-    const notNowButton = Array.from(document.body.querySelectorAll('button')).find(
-      (button) => button.textContent === 'Not now'
+    // Why: the × must snooze for the session, not persist a permanent dismissal.
+    const closeButton = Array.from(document.body.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Close'
     )
     await act(async () => {
-      notNowButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      closeButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
 
     expect(window.localStorage.getItem(HOST_DISMISS_STORAGE_KEY)).toBeNull()
@@ -913,8 +894,9 @@ describe('LinearAgentSkillSetupPrompt', () => {
   it('permanently dismisses the modal-only prompt when requested', async () => {
     await renderPrompt({ linked: true, remote: false, surface: 'modal' })
 
-    const dismissButton = Array.from(document.body.querySelectorAll('button')).find(
-      (button) => button.textContent === "Don't show again"
+    // Why: permanent dismiss is now an EyeOff icon button (aria-label, no text).
+    const dismissButton = document.body.querySelector<HTMLButtonElement>(
+      'button[aria-label="Don\'t show again"]'
     )
     await act(async () => {
       dismissButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }))

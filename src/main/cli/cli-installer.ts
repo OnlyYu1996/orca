@@ -108,13 +108,7 @@ export class CliInstaller {
       process.env.SBBGT_CLI_INSTALL_PATH ??
       process.env.ORCA_CLI_INSTALL_PATH ??
       null
-    // Why: resolved once at construction — existsSync must not run on every
-    // getStatus() call (hot path). /usr/local/bin is absent by default on Apple
-    // Silicon Macs (Homebrew moved to /opt/homebrew); fall back to ~/.local/bin
-    // which is user-writable, requires no elevated permissions, and is the
-    // XDG-standard user bin dir already on PATH via shell init on arm64.
-    // defaultMacCommandPath is a test seam: it feeds into the existence check
-    // so tests can simulate arm64 without relying on the real /usr/local/bin.
+    // Why: getStatus 是热路径，且 Apple Silicon 默认可能没有 /usr/local/bin，因此构造时一次性选定可写路径。
     const candidateMacPath = options.defaultMacCommandPath ?? DEFAULT_MAC_COMMAND_PATH
     this.macCommandPath = existsSync(dirname(candidateMacPath))
       ? candidateMacPath
@@ -205,20 +199,15 @@ export class CliInstaller {
       await this.installAppImageWrapper(status.commandPath, status.launcherPath)
       await this.removeLegacyLinuxCommandIfManaged(status.launcherPath)
     } else if (this.isWindowsPackagedBundledCommand(status.commandPath, status.launcherPath)) {
-      // Windows 包已内置 resources/bin/sbbgt.exe；注册流程只管理用户 PATH，不能重写该启动器。
+      // Why: Windows 包已内置 resources/bin/sbbgt.exe，注册流程只能管理用户 PATH。
     } else {
-      // Why: mkdir stays here for the Windows wrapper path — the target dir is
-      // user-writable (%LOCALAPPDATA%) so EACCES cannot occur. The symlink path
-      // handles its own mkdir inside installSymlink so EACCES triggers the
-      // privileged-runner instead of propagating as an unhandled rejection.
+      // Why: the Windows wrapper dir is user-writable (%LOCALAPPDATA%), so mkdir here can't hit EACCES.
       await mkdir(dirname(status.commandPath), { recursive: true })
       await this.installWindowsWrapper(status.commandPath, status.launcherPath)
     }
 
     if (this.platform === 'win32') {
-      // Why: Windows shells discover commands via the user PATH, not by walking
-      // arbitrary app install directories. The CLI installer therefore owns the
-      // user-scoped PATH entry instead of assuming the desktop installer did it.
+      // Why: Windows shells find commands via user PATH, so the installer owns that entry, not the desktop installer.
       await this.ensureWindowsPathEntry(dirname(status.commandPath))
     }
 
@@ -321,12 +310,10 @@ export class CliInstaller {
       const status = await this.inspectSymlink(commandPath, launcherPath)
       if (status.state !== 'not_installed') {
         if (reachedDefaultCommandPath && !isDefaultCommandPath && status.state === 'conflict') {
-          // Why: a non-Orca command after an empty/default install slot can be
-          // shadowed safely by installing there; no user file needs replacing.
+          // Why: a non-Orca command after an empty default slot can be shadowed by installing there; no user file replaced.
           continue
         }
-        // Why: PATH lookup is first-match-wins; use the executable command the
-        // shell will actually run, while preserving conflicts that shadow Orca.
+        // Why: PATH lookup is first-match-wins; return the command the shell will actually run, preserving shadowing conflicts.
         return commandPath
       }
     }
@@ -347,8 +334,7 @@ export class CliInstaller {
     }
 
     if (!this.isPackaged) {
-      // Why: default dev registration is a separate command, while tests and
-      // diagnostics can still exercise production paths via commandPathOverride.
+      // Why: dev uses a separate command; tests/diagnostics still reach production paths via commandPathOverride.
       if (this.platform === 'darwin') {
         return `/usr/local/bin/${DEV_COMMAND_NAME}`
       }
@@ -371,16 +357,13 @@ export class CliInstaller {
     }
 
     if (this.platform === 'linux') {
-      // Why: Linux does not have a single privileged global shell-command flow
-      // equivalent to macOS's /usr/local/bin integration. ~/.local/bin is the
-      // least surprising user-scoped location that many distros already expose.
-      // 原因：sbbgt 不占用发行版的 /usr/bin/orca，可在所有平台保持同一个主命令。
+      // Why: Linux 没有统一特权注册流程，~/.local/bin 是常见的用户级可写位置。
+      // Why: sbbgt 不占用发行版的 /usr/bin/orca，因此各平台可使用同一主命令。
       return join(this.homePath, '.local', 'bin', LINUX_COMMAND_NAME)
     }
 
     if (this.platform === 'win32') {
-      // Why: NSIS /D installs can live outside LOCALAPPDATA. The packaged
-      // resources directory is the authoritative native launcher location.
+      // Why: NSIS /D installs can live outside LOCALAPPDATA, so use the packaged resources dir as authoritative.
       return getBundledLauncherPath(this.platform, this.resourcesPath)
     }
 
@@ -418,10 +401,7 @@ export class CliInstaller {
       if (status.state === 'stale') {
         await unlink(status.commandPath as string)
       }
-      // Why: mkdir is placed here (not in install()) so that an EACCES/EPERM
-      // failure — e.g. /usr/local/bin absent on Intel Mac — falls into the
-      // privileged-runner catch below instead of surfacing as an unhandled
-      // rejection that leaves Settings silently showing "not installed".
+      // Why: mkdir stays here (not install()) so an EACCES falls into the privileged-runner catch below.
       await mkdir(dirname(status.commandPath as string), { recursive: true })
       await symlink(status.launcherPath as string, status.commandPath as string)
     } catch (error) {
@@ -429,10 +409,7 @@ export class CliInstaller {
         throw error
       }
 
-      // Why: macOS shell-command registration should behave like VS Code and
-      // place a stable symlink in /usr/local/bin instead of rewriting shell rc
-      // files. Fallback to an elevated shell command keeps the public command
-      // stable even when the app lacks direct write access to that directory.
+      // Why: fall back to an elevated shell to place the /usr/local/bin symlink (VS Code-style) when direct write is denied.
       await this.privilegedRunner(
         `mkdir -p ${quoteShell(dirname(status.commandPath as string))} && ` +
           `ln -sfn ${quoteShell(status.launcherPath as string)} ${quoteShell(status.commandPath as string)}`
@@ -471,8 +448,7 @@ export class CliInstaller {
         return
       }
 
-      // Why: after the Linux command rename, the old Orca-owned `orca` symlink
-      // would keep shadowing GNOME Orca even though the new command is installed.
+      // Why: 旧兼容命令的符号链接会继续遮蔽 GNOME 屏幕阅读器，升级时必须清理。
       await unlink(legacyCommandPath)
     } catch (error) {
       if (isMissingError(error)) {
@@ -498,8 +474,7 @@ export class CliInstaller {
       return true
     }
 
-    // Why: AppImage upgrades can leave a legacy symlink into a now-gone FUSE
-    // mount; the stable AppImage path is not a sibling of that old target.
+    // Why: AppImage upgrades can strand a legacy symlink into a now-gone FUSE mount that isn't a sibling of the stable path.
     return /(?:^|[/\\])resources[/\\]bin[/\\]orca$/.test(resolvedTarget)
   }
 
@@ -508,8 +483,7 @@ export class CliInstaller {
   }
 
   private async installAppImageWrapper(commandPath: string, appImagePath: string): Promise<void> {
-    // Why: unlike macOS symlink install, AppImage uses the user-writable Linux
-    // command dir and must create it before writing the wrapper file.
+    // Why: the AppImage command dir is user-writable, so create it before writing the wrapper.
     await mkdir(dirname(commandPath), { recursive: true })
     await writeFile(commandPath, buildAppImageCliWrapper(appImagePath), {
       encoding: 'utf8',
@@ -650,8 +624,7 @@ export class CliInstaller {
     }
 
     if (this.platform === 'darwin') {
-      // Why: prior packaged installs can leave a symlink to an older Orca.app
-      // resources launcher, but arbitrary user-owned symlinks must not be replaced.
+      // Why: reclaim symlinks to an older Orca.app launcher, but never replace arbitrary user-owned symlinks.
       return /(?:^|[/\\])[^/\\]+\.app[/\\]Contents[/\\]Resources[/\\]bin[/\\][^/\\]+$/.test(
         resolvedTarget
       )
@@ -676,8 +649,7 @@ export class CliInstaller {
     const siblingDevUserDataPath = `${packagedUserDataPath}-dev`
     const siblingDevLauncherDir = resolve(siblingDevUserDataPath, ...DEV_LAUNCHER_DIR)
 
-    // Why: development builds generate launchers under the sibling `*-dev`
-    // profile; packaged Orca must be able to reclaim that public command.
+    // Why: dev builds generate launchers under the sibling `*-dev` profile; packaged Orca must reclaim that command.
     return (
       basename(siblingDevUserDataPath) === `${basename(packagedUserDataPath)}-dev` &&
       isPathInsideOrEqual(siblingDevLauncherDir, resolvedTarget)
@@ -907,13 +879,11 @@ export class CliInstaller {
     if (result.state === 'success') {
       return { value: result.value, expandable: result.expandable }
     }
-    // Why: PATH updates are read-modify-write; continuing after an unknown read
-    // could replace the user's existing PATH with an incomplete value.
+    // Why: PATH is read-modify-write; continuing after a failed read could clobber the user's PATH with a partial value.
     throw new Error(`${result.detail} No PATH changes were made.`)
   }
 
-  // Why: raw PowerShell errors reach the UI, so translate denied PATH writes
-  // while preserving the original diagnostic as the error cause.
+  // Why: raw PowerShell errors reach the UI, so translate denied PATH writes (keeping the original as cause).
   private async writeWindowsUserPathEntry(
     value: string,
     pathDirectory: string,
@@ -960,10 +930,7 @@ async function ensureDevLauncher(args: {
   )
   await mkdir(dirname(launcherPath), { recursive: true })
 
-  // Why: packaged Orca ships real platform launchers under resources/bin, but
-  // development builds do not have that stable asset layout. Generating a
-  // launcher in userData lets us validate the shell-command flow without
-  // changing the packaged registration contract.
+  // Why: dev builds lack the packaged resources/bin launcher, so generate one in userData to validate the flow.
   const content =
     args.platform === 'win32'
       ? buildWindowsDevLauncher(args.execPath, args.cliEntryPath, args.userDataPath)
@@ -973,9 +940,7 @@ async function ensureDevLauncher(args: {
     mode: args.platform === 'win32' ? undefined : 0o755
   })
   if (args.commandName === DEV_COMMAND_NAME && args.platform !== 'win32') {
-    // Why: dev PTYs prepend userData/cli/bin to PATH, and product-owned
-    // commands are documented as `orca ...`. Keep that local alias fresh
-    // without claiming the global production command.
+    // Why: 开发 PTY 会把 userData/cli/bin 置于 PATH 前端，因此仅在该目录维护产品命令别名。
     await writeFile(join(dirname(launcherPath), PRODUCT_CLI_COMMAND), content, {
       encoding: 'utf8',
       mode: 0o755
@@ -1061,9 +1026,7 @@ function extractManagedUnixLauncherTarget(content: string): string | null {
     return null
   }
 
-  // Why: older dev installs wrote a generated shell launcher directly to
-  // /usr/local/bin/orca. Treat only Orca's compiled CLI entrypoints as managed;
-  // arbitrary user scripts that happen to launch Electron must stay conflicts.
+  // Why: only Orca's compiled CLI entrypoints count as managed; arbitrary Electron-launching scripts stay conflicts.
   return /(?:^|[/\\])(?:out|app\.asar\.unpacked[/\\]out)[/\\]cli[/\\]index\.js$/.test(cliPath)
     ? cliPath
     : null
@@ -1169,8 +1132,7 @@ function isMissingError(error: unknown): boolean {
   )
 }
 
-// Why: localized permission errors retain these .NET/ACL markers even when
-// their human-readable PowerShell text is mojibake.
+// Why: localized permission errors keep these .NET/ACL markers even when the PowerShell text is mojibake.
 function isWindowsUserPathPermissionError(error: unknown): boolean {
   if (!(error instanceof Error)) {
     return false
@@ -1215,9 +1177,7 @@ async function writeWindowsUserPath(value: string): Promise<void> {
   await runWindowsPathCommand([
     '-NoProfile',
     '-Command',
-    // Why: PATH registration must stay user-scoped on Windows so the Orca
-    // desktop app can manage the public shell command without requiring
-    // elevation or mutating machine-wide environment state.
+    // Why: user-scoped PATH avoids requiring elevation or mutating machine-wide state.
     `[Environment]::SetEnvironmentVariable('Path', ${quotePowerShell(value)}, 'User')`
   ])
 }
@@ -1240,8 +1200,7 @@ function runWindowsPathCommand(args: string[]): Promise<string> {
       resolve(stdout)
     }
 
-    // Why: Windows PATH reads/writes back CLI Settings; wedged PowerShell must
-    // not keep command registration status or install/remove pending forever.
+    // Why: bound wedged PowerShell so PATH reads/writes can't leave CLI registration pending forever.
     const timeout = setTimeout(() => {
       child?.kill()
       finish(new Error(`Windows PATH command timed out after ${WINDOWS_PATH_WRITE_TIMEOUT_MS}ms.`))

@@ -5,6 +5,9 @@ export function getRemoteLinearReadHelp(commandPath: string[]): string | null {
   if (matchesRemoteCommand(commandPath, 'linear', 'issue')) {
     return LINEAR_ISSUE_HELP
   }
+  if (matchesRemoteCommand(commandPath, 'linear', 'list-issues')) {
+    return LINEAR_MCP_ISSUE_LIST_HELP
+  }
   if (matchesRemoteCommand(commandPath, 'linear', 'search')) {
     return LINEAR_SEARCH_HELP
   }
@@ -36,11 +39,15 @@ function matchesRemoteCommand(commandPath: string[], ...command: string[]): bool
   )
 }
 
-const LINEAR_HELP = `orca linear
+const LINEAR_HELP = `sbbgt linear
 
-Usage: orca linear <command> [options]
+Usage: sbbgt linear <command> [options]
 
 Commands:
+  save-issue         Create or update a Linear issue
+  list-issues        List Linear issues with MCP-compatible filters
+  relation add       Add a Linear issue relation
+  relation remove    Remove a Linear issue relation
   issue              Read Linear issue context for agents
   search             Search connected Linear workspaces
   team list          List connected Linear teams
@@ -65,11 +72,11 @@ Commands:
   attach             Attach a link to a Linear issue
   create             Create a Linear issue
 
-Run \`orca linear <command> --help\` for command-specific usage.`
+Run \`sbbgt linear <command> --help\` for command-specific usage.`
 
-const LINEAR_ISSUE_HELP = `orca linear issue
+const LINEAR_ISSUE_HELP = `sbbgt linear issue
 
-Usage: orca linear issue [<id>] [--current] [--comments] [--children] [--depth <n>] [--attachments] [--relations] [--full] [--workspace <id>] [--json]
+Usage: sbbgt linear issue [<id>] [--current] [--comments] [--children] [--depth <n>] [--attachments] [--relations] [--activity] [--full] [--workspace <id>] [--json]
 
 Read Linear issue context for agents
 
@@ -78,24 +85,31 @@ Options:
   --json                 Emit machine-readable JSON
   --pairing-code
   --environment
-  --current              Use the current Orca worktree linked Linear issue
+  --current              Use the current 赛博包工头 worktree linked Linear issue
   --comments             Include threaded Linear comments
   --children             Include recursive child issues
   --depth <n>            Child issue depth for --children/--full
   --attachments          Include attachment metadata and URLs
   --relations            Include blocking, related, and duplicate links
+  --activity             Include issue field-change history
   --full                 Include all supported V1 issue context within caps
   --workspace <id>      Connected Linear workspace id
   --id <id>             Linear issue key, id, or URL
 
 Examples:
-  $ orca linear issue ENG-123
-  $ orca linear issue --current --comments
-  $ orca linear issue https://linear.app/acme/issue/ENG-123 --full --json`
+  $ sbbgt linear issue ENG-123
+  $ sbbgt linear issue --current --comments
+  $ sbbgt linear issue https://linear.app/acme/issue/ENG-123 --full --json`
 
-const LINEAR_SEARCH_HELP = `orca linear search
+const LINEAR_MCP_ISSUE_LIST_HELP = `sbbgt linear list-issues
 
-Usage: orca linear search <query> [--limit <n>] [--workspace <id>|all] [--json]
+Usage: sbbgt linear list-issues [--team <team>] [--cycle <cycle>] [--label <label>] [--limit <n>] [--query <text>] [--state <state>] [--cursor <cursor>] [--order-by createdAt|updatedAt] [--project <project>] [--release <release>] [--assignee <user|me|null>] [--delegate <user|me|null>] [--parent-id <issue|null>] [--priority <0-4>] [--created-at <datetime|duration>] [--updated-at <datetime|duration>] [--include-archived] [--workspace <id>|all] [--json]
+
+List Linear issues with MCP-compatible filters and cursor pagination`
+
+const LINEAR_SEARCH_HELP = `sbbgt linear search
+
+Usage: sbbgt linear search <query> [--limit <n>] [--workspace <id>|all] [--json]
 
 Search connected Linear workspaces
 
@@ -109,41 +123,41 @@ Options:
   --query <text>        Text to search across Linear issues
 
 Examples:
-  $ orca linear search "auth bug"
-  $ orca linear search ENG --workspace all --json`
+  $ sbbgt linear search "auth bug"
+  $ sbbgt linear search ENG --workspace all --json`
 
-const LINEAR_TEAM_LIST_HELP = `orca linear team list
+const LINEAR_TEAM_LIST_HELP = `sbbgt linear team list
 
-Usage: orca linear team list [--workspace <id>|all] [--json]
+Usage: sbbgt linear team list [--workspace <id>|all] [--json]
 
 List connected Linear teams`
 
-const LINEAR_TEAM_MEMBERS_HELP = `orca linear team members
+const LINEAR_TEAM_MEMBERS_HELP = `sbbgt linear team members
 
-Usage: orca linear team members --team <key|id> [--workspace <id>] [--json]
+Usage: sbbgt linear team members --team <key|id> [--workspace <id>] [--json]
 
 List Linear team members`
 
-const LINEAR_TEAM_STATES_HELP = `orca linear team states
+const LINEAR_TEAM_STATES_HELP = `sbbgt linear team states
 
-Usage: orca linear team states --team <key|id> [--workspace <id>] [--json]
+Usage: sbbgt linear team states --team <key|id> [--workspace <id>] [--json]
 
 List Linear team workflow states`
 
-const LINEAR_TEAM_LABELS_HELP = `orca linear team labels
+const LINEAR_TEAM_LABELS_HELP = `sbbgt linear team labels
 
-Usage: orca linear team labels --team <key|id> [--workspace <id>] [--json]
+Usage: sbbgt linear team labels --team <key|id> [--workspace <id>] [--json]
 
 List Linear team labels`
 
-const LINEAR_PROJECT_LIST_HELP = `orca linear project list
+const LINEAR_PROJECT_LIST_HELP = `sbbgt linear project list
 
-Usage: orca linear project list [--query <text>] [--limit <n>] [--workspace <id>|all] [--json]
+Usage: sbbgt linear project list [--query <text>] [--limit <n>] [--workspace <id>|all] [--json]
 
 List connected Linear projects`
 
-const LINEAR_LIST_HELP = `orca linear list
+const LINEAR_LIST_HELP = `sbbgt linear list
 
-Usage: orca linear list [--filter assigned|created|all|completed|open] [--team <key|id>] [--limit <n>] [--workspace <id>|all] [--json]
+Usage: sbbgt linear list [--filter assigned|created|all|completed|open] [--team <key|id>] [--limit <n>] [--workspace <id>|all] [--json]
 
 List Linear issues`

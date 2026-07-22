@@ -19,6 +19,7 @@ export function shouldSuppressDevEducation(args: {
   const env = args.env ?? process.env
   return (
     args.isDev &&
+    env.SBBGT_E2E_USER_DATA_DIR === undefined &&
     env.ORCA_E2E_USER_DATA_DIR === undefined &&
     env[DEV_SHOW_FIRST_RUN_EDUCATION_ENV] !== '1'
   )

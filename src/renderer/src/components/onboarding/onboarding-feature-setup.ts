@@ -229,7 +229,7 @@ export async function runOnboardingFeatureSetup(
       // Why: an unknown registry read cannot safely drive a PATH read-modify-write.
       warnings.push({
         featureId: 'cli',
-      message: status.detail ?? '赛博包工头 could not check your Windows user PATH.'
+        message: status.detail ?? '赛博包工头 could not check your Windows user PATH.'
       })
     } else if (status.state !== 'installed' || status.pathConfigured === false) {
       await deps.showCliRegistrationPrompt?.()

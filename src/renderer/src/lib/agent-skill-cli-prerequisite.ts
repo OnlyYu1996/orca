@@ -115,7 +115,7 @@ function showCliPrerequisiteWarning(status: CliInstallStatus): void {
     toast.warning(
       translate(
         'auto.lib.agent.skill.cli.prerequisite.windowsPathUnknown',
-      '赛博包工头 could not check your Windows user PATH'
+        '赛博包工头 could not check your Windows user PATH'
       ),
       { description: status.detail ?? 'Refresh CLI registration status and try again.' }
     )

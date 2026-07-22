@@ -88,20 +88,20 @@ issues `adb shell input` events; AVD names resolve to running adb serials.
 Use `--json` for agent-friendly output. Coordinates are **normalized 0..1**
 (top-left origin) — never pixels; 赛博包工头 converts using the live screen size.
 
-| Goal                       | Command                                                        | Notes |
-|----------------------------|----------------------------------------------------------------|-------|
-| List devices + AVDs        | `SBBGT emulator devices --json`                                 | Cross-platform; shows iOS + Android with a platform column, booted vs shutdown. |
-| Single tap                 | `SBBGT emulator tap <x> <y> --device <serial>`                  | Normalized 0..1. Preferred for single taps. |
-| Swipe / gesture            | `SBBGT emulator gesture '<json>' --device <serial>`             | adb approximates the path by its endpoints (start→end). |
-| Type text                  | `SBBGT emulator type "user@example.com" --device <serial>`      | US ASCII; spaces handled. No newlines. |
-| Hardware button            | `SBBGT emulator button back --device <serial>`                  | home, back, recents, power, volume_up, volume_down. |
-| Rotate                     | `SBBGT emulator rotate landscape_left --device <serial>`        | Sets user_rotation (disables auto-rotate). |
-| Install an APK             | `SBBGT emulator install ./app-debug.apk --reinstall --device <serial>` | `--reinstall` passes `-r`. |
-| Launch an app              | `SBBGT emulator launch com.acme.app --activity .MainActivity --device <serial>` | Omit `--activity` to launch the default LAUNCHER activity. |
-| Grant a permission         | `SBBGT emulator permissions grant com.acme.app android.permission.CAMERA --device <serial>` | grant / revoke / reset. |
-| Accessibility tree         | `SBBGT emulator ax --device <serial> --json`                    | `uiautomator dump` parsed to a node tree. |
-| Logcat (one-shot)          | `SBBGT emulator logcat --lines 200 --device <serial>`           | Dumps recent lines; parsed to entries. |
-| Raw adb shell              | `SBBGT emulator exec --command "getprop ro.build.version.sdk" --device <serial>` | Runs `adb -s <serial> shell <command>`. |
+| Goal                | Command                                                                                     | Notes                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| List devices + AVDs | `SBBGT emulator devices --json`                                                             | Cross-platform; shows iOS + Android with a platform column, booted vs shutdown. |
+| Single tap          | `SBBGT emulator tap <x> <y> --device <serial>`                                              | Normalized 0..1. Preferred for single taps.                                     |
+| Swipe / gesture     | `SBBGT emulator gesture '<json>' --device <serial>`                                         | adb approximates the path by its endpoints (start→end).                         |
+| Type text           | `SBBGT emulator type "user@example.com" --device <serial>`                                  | US ASCII; spaces handled. No newlines.                                          |
+| Hardware button     | `SBBGT emulator button back --device <serial>`                                              | home, back, recents, power, volume_up, volume_down.                             |
+| Rotate              | `SBBGT emulator rotate landscape_left --device <serial>`                                    | Sets user_rotation (disables auto-rotate).                                      |
+| Install an APK      | `SBBGT emulator install ./app-debug.apk --reinstall --device <serial>`                      | `--reinstall` passes `-r`.                                                      |
+| Launch an app       | `SBBGT emulator launch com.acme.app --activity .MainActivity --device <serial>`             | Omit `--activity` to launch the default LAUNCHER activity.                      |
+| Grant a permission  | `SBBGT emulator permissions grant com.acme.app android.permission.CAMERA --device <serial>` | grant / revoke / reset.                                                         |
+| Accessibility tree  | `SBBGT emulator ax --device <serial> --json`                                                | `uiautomator dump` parsed to a node tree.                                       |
+| Logcat (one-shot)   | `SBBGT emulator logcat --lines 200 --device <serial>`                                       | Dumps recent lines; parsed to entries.                                          |
+| Raw adb shell       | `SBBGT emulator exec --command "getprop ro.build.version.sdk" --device <serial>`            | Runs `adb -s <serial> shell <command>`.                                         |
 
 ## Critical gotchas (teach agents)
 

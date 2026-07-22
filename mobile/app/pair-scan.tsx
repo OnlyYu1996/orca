@@ -24,7 +24,10 @@ import { TextInputModal } from '../src/components/TextInputModal'
 import { ConnectionLog } from '../src/components/ConnectionLog'
 import { useMobileLocale } from '../src/i18n/mobile-locale-context'
 import { PairingStep } from '../src/components/PairingStep'
-import { shouldPresentNotificationOptIn } from '../src/notifications/notification-opt-in-gate'
+import {
+  loadMobileOnboardingSteps,
+  mobileOnboardingDestination
+} from '../src/onboarding/mobile-onboarding-plan'
 
 // Why: see pair-confirm.tsx — cap initial-pair "Connecting…" so a broken
 // route surfaces as a real error with the log visible instead of a
@@ -152,15 +155,11 @@ export default function PairScanScreen() {
       // profile — the removeHost() path already refreshes on re-pair, and a
       // brand-new host has no cached entry so this is a no-op.
       closeHost(hostId)
-      const showNotificationOptIn = await shouldPresentNotificationOptIn()
+      const onboardingSteps = await loadMobileOnboardingSteps()
       if (!mountedRef.current) {
         return
       }
-      router.replace(
-        showNotificationOptIn
-          ? { pathname: '/notification-opt-in', params: { hostId } }
-          : `/h/${hostId}`
-      )
+      router.replace(mobileOnboardingDestination(onboardingSteps, hostId))
     } catch (err) {
       const timedOut = attempt.timedOut
       const attemptIsCurrent = activePairingAttemptRef.current === attempt

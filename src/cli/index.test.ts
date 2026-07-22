@@ -191,7 +191,10 @@ describe('command aliases dispatch to the canonical handler', () => {
 
     await main(['terminal', 'focus', '--terminal', 'term_abc', '--json'], '/tmp/repo')
 
-    expect(callMock).toHaveBeenCalledWith('terminal.focus', expect.objectContaining({}))
+    expect(callMock).toHaveBeenCalledWith(
+      'terminal.focus',
+      expect.objectContaining({ navigation: 'host' })
+    )
   })
 
   it('serves `agent-context --json` without contacting the runtime', async () => {
@@ -367,6 +370,7 @@ describe('orca root help', () => {
     expect(issueHelp).toContain('sbbgt linear issue [<id>]')
     expect(issueHelp).toContain('--comments             包含 Linear 评论线程')
     expect(issueHelp).toContain('--attachments          包含附件元数据和 URL')
+    expect(issueHelp).toContain('--activity             包含 Issue 字段变更历史')
     expect(issueHelp).toContain('--workspace <id>      已连接的 Linear 工作区 ID')
     expect(issueHelp).toContain('--id <id>             Linear Issue 标识、ID 或 URL')
 
@@ -377,6 +381,14 @@ describe('orca root help', () => {
     expect(searchHelp).toContain('sbbgt linear search <query>')
     expect(searchHelp).toContain('--workspace <id|all>  已连接的 Linear 工作区 ID，或 all')
     expect(searchHelp).toContain('--query <text>        在 Linear Issue 中搜索的文本')
+
+    logSpy.mockClear()
+    await main(['linear', 'list-issues', '--help'], '/tmp/repo')
+
+    const listIssuesHelp = String(logSpy.mock.calls[0][0])
+    expect(listIssuesHelp).toContain('--cursor <cursor>      上一页 list-issues 返回的不透明游标')
+    expect(listIssuesHelp).toContain('--workspace <id|all>  已连接的 Linear 工作区 ID，或 all')
+    expect(listIssuesHelp).not.toContain('上次读取返回的行游标')
     expect(callMock).not.toHaveBeenCalled()
   })
 

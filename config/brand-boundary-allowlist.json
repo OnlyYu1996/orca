@@ -517,6 +517,150 @@
       "path": "src/shared/terminal-git-credential-guard.ts",
       "contains": "ORCA_INTERNAL_TERMINAL_GIT_CREDENTIAL_GUARD_POLICY",
       "reason": "跨进程 Git 凭据保护协议写入新变量，并兼容读取升级前子进程携带的旧变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/remote-agent-session-repro-fixture.mjs",
+      "contains": "ORCA_REPRO_",
+      "reason": "远程会话复现器优先读取 SBBGT_REPRO_*，并兼容升级前的测试驱动。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/run-codex-real-account-validation.mjs",
+      "contains": "ORCA_",
+      "reason": "Codex 真账户验证器写入 SBBGT_* 主键，同时清理并兼容读取旧隔离环境变量。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "config/scripts/windows-apphang-repro/electron-dev-session.mjs",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "Windows AppHang 复现器需同时清理新旧 Codex Home 标记，防止泄漏宿主账户。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/codex-accounts/runtime-home-service.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "Codex 运行时 Home 以 SBBGT_CODEX_HOME 为主标记，仍读取旧标记以支持存活 PTY。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/codex/codex-hook-trust-grant.ts",
+      "contains": "ORCA_DISABLE_CODEX_TRUST_RPC",
+      "reason": "Codex Trust RPC 开关优先 SBBGT_*，旧运维脚本仍可使用兼容键停用。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/codex/codex-real-home-flag.ts",
+      "contains": "ORCA_CODEX_SYSTEM_DEFAULT_REAL_HOME",
+      "reason": "Codex 真实 Home 测试开关优先 SBBGT_*，保留旧自动化兼容读取。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/codex/codex-real-home-path.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "Codex 真实 Home 判定优先 SBBGT_CODEX_HOME，旧标记仅用于升级后兼容。"
+    },
+    {
+      "category": "legacy-addition:private-directory",
+      "path": "src/main/codex/codex-wsl-hook-install-plan.ts",
+      "contains": ".orca",
+      "reason": "Codex WSL 信任命令必须与已部署的 agent-hooks 兼容路径一致，迁移需独立的原子升级流程。"
+    },
+    {
+      "category": "legacy-addition:private-directory",
+      "path": "src/main/codex/hook-service.ts",
+      "contains": ".orca/agent-hooks",
+      "reason": "Codex Hook 清理需定位升级前已写入信任账本的脚本路径，不代表新产品目录。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/daemon/pty-subprocess.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "PTY Daemon 以 SBBGT_CODEX_HOME 为主标记，并需识别、传递和清理旧存活会话的标记。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/e2e-config.ts",
+      "contains": "ORCA_E2E_USER_DATA_DIR",
+      "reason": "E2E 配置优先 SBBGT_E2E_USER_DATA_DIR，并允许旧测试启动器继续运行。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/index.ts",
+      "contains": "ORCA_E2E_USER_DATA_DIR",
+      "reason": "主进程优先 SBBGT_E2E_USER_DATA_DIR，旧 E2E 键仅作兼容回退。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/ipc/pty.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "PTY IPC 同时写入 SBBGT_CODEX_HOME 与兼容标记，以支持升级期间的 Shell、WSL 和持久 Daemon。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/pty/wsl-orca-env.ts",
+      "contains": "ORCA_",
+      "reason": "WSLENV 优先传递 SBBGT 工作树键，并保留旧运行时与扩展协议所需的兼容键。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/ssh/ssh-remote-cli-args.ts",
+      "contains": "ORCA_TERMINAL_HANDLE",
+      "reason": "SSH CLI 发送者身份优先 SBBGT_TERMINAL_HANDLE，旧 Relay 传入的句柄仅作兼容。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/main/text-generation/commit-message-agent-environment.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "Commit 文案智能体优先判定 SBBGT_CODEX_HOME，也必须清理父进程遗留的旧标记。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/renderer/src/lib/ai-vault-resume-command.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "AI Vault 恢复命令同时清理新旧 Codex Home 标记，防止误用其他账户。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/shared/ai-vault-types.ts",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "AI Vault 跨运行域删除列表需覆盖新旧 Codex Home 标记。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "src/shared/serve-update-handoff.ts",
+      "contains": "ORCA_SERVE_UPDATE_HANDOFF_PATH",
+      "reason": "Serve 更新交接使用 SBBGT_* 主键，同时传递旧键以支持新旧版本互相接管。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "tools/benchmarks/daemon-coldstart-bench.mjs",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "Daemon 冷启动基准需同时清理新旧 Codex Home 标记，保证测量隔离。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "tools/benchmarks/main-thread-jank-bench.mjs",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "主线程卡顿基准需同时清理新旧 Codex Home 标记，保证测量隔离。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "tools/benchmarks/startup-time-bench.mjs",
+      "contains": "ORCA_CODEX_HOME",
+      "reason": "启动耗时基准需同时清理新旧 Codex Home 标记，保证测量隔离。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "tools/daemon-relocation-spike/README.md",
+      "contains": "ORCA_NODE_PTY_NATIVE_DIR",
+      "reason": "Daemon 搬迁 Spike 记录已回滚的上游补丁环境变量，作为不可变的实验证据。"
+    },
+    {
+      "category": "legacy-addition:environment-variable",
+      "path": "tools/win-update-e2e/app-driver.mjs",
+      "contains": "ORCA_",
+      "reason": "Windows 更新 E2E 写入 SBBGT_* 主键，也需清理所有旧隔离键以防止泄漏宿主状态。"
     }
   ]
 }

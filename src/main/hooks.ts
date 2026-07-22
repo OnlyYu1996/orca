@@ -15,6 +15,7 @@ import {
 } from '../shared/product-identity'
 import { gitExecFileSync, promptGuardShellEnv } from './git/runner'
 import { isWslPath, parseWslPath, toWindowsWslPath, toLinuxPath } from './wsl'
+import { addWorktreeSetupWslInteropEnv } from './pty/wsl-orca-env'
 import type {
   HookCommandSourcePolicy,
   OrcaHooks,
@@ -79,11 +80,7 @@ export function hasHooksFile(repoPath: string): boolean {
   return resolveProjectConfigFile(repoPath).filePath !== null
 }
 
-// Why: when a newer Orca release adds a top-level key to `orca.yaml` (like
-// `issueCommand` was added here), older versions that don't recognise it will
-// return `null` from `parseOrcaYaml` and show a confusing "could not be parsed"
-// error.  Detecting well-formed but unrecognised keys lets the UI suggest an
-// update instead of implying the file is broken.
+// Why: detect unrecognised keys so the UI can suggest an update instead of showing a "could not be parsed" error.
 const RECOGNIZED_ORCA_YAML_KEYS = new Set([
   'scripts',
   'issueCommand',
@@ -91,10 +88,7 @@ const RECOGNIZED_ORCA_YAML_KEYS = new Set([
   'environmentRecipes'
 ])
 
-/**
- * Return true when `orca.yaml` contains at least one top-level key that this
- * version of Orca does not handle.
- */
+/** 当 `sbbgt.yaml` 包含当前版本无法处理的顶层键时返回 true。 */
 export function hasUnrecognizedOrcaYamlKeys(repoPath: string): boolean {
   try {
     const configPath = resolveProjectConfigFile(repoPath).filePath
@@ -103,9 +97,7 @@ export function hasUnrecognizedOrcaYamlKeys(repoPath: string): boolean {
     }
     const content = readFileSync(configPath, 'utf-8')
     for (const line of iterateLfScriptLines(content)) {
-      // Why: bare `key:` at end-of-line (no trailing space) is valid YAML for
-      // a mapping with a block value on the next line. Match both forms so
-      // newer keys like `futureFeature:\n  nested` are still detected.
+      // Why: match bare `key:` at end-of-line too, since a mapping with a block value on the next line is valid YAML.
       const m = line.match(/^([A-Za-z][A-Za-z0-9_-]*):(\s|$)/)
       if (m != null && !RECOGNIZED_ORCA_YAML_KEYS.has(m[1])) {
         return true
@@ -118,9 +110,7 @@ export function hasUnrecognizedOrcaYamlKeys(repoPath: string): boolean {
 }
 
 // ─── Issue command files ────────────────────────────────────────────────
-// Why: `orca.yaml` is the tracked, project-wide defaults surface, while
-// `.orca/issue-command` remains the per-user override. Keeping the local file in
-// `.orca/` lets users customize agent automation without editing committed config.
+// Why: `.sbbgt/issue-command` 是用户覆盖，`sbbgt.yaml` 是可跟踪的项目默认值。
 
 const ISSUE_COMMAND_FILENAME = 'issue-command'
 
@@ -179,10 +169,8 @@ export function readIssueCommand(repoPath: string): ResolvedIssueCommand {
 }
 
 /**
- * Write the per-user issue command override to `{repoRoot}/.orca/issue-command`.
- * Creates `.orca/` and ensures it is in `.gitignore` on first write.
- * If content is empty, deletes only the override so the shared `orca.yaml`
- * command becomes effective again.
+ * 将用户级 Issue 命令覆盖写入 `{repoRoot}/.sbbgt/issue-command`。
+ * 空内容会删除覆盖，重新使用 `sbbgt.yaml` 中的共享命令。
  */
 export function writeIssueCommand(repoPath: string, content: string): void {
   const filePath = getIssueCommandFilePath(repoPath)
@@ -202,16 +190,12 @@ export function writeIssueCommand(repoPath: string, content: string): void {
     writeFileSync(filePath, `${trimmed}\n`, 'utf-8')
   } catch (err) {
     console.error('[hooks] Failed to write issue command:', err)
-    // Why: re-throw so the error propagates through the IPC handler to the
-    // renderer, which already has .catch() ready to surface write failures.
+    // Why: re-throw so the IPC handler surfaces the write failure to the renderer's .catch().
     throw err
   }
 }
 
-/**
- * Ensure `.orca` is listed in the repo's `.gitignore` so the per-user
- * directory is never accidentally committed.
- */
+/** 确保 `.sbbgt` 位于 `.gitignore` 中，避免提交用户级目录。 */
 function ensureOrcaDirIgnored(repoPath: string): void {
   const gitignorePath = join(repoPath, '.gitignore')
   const escapedDirectory = PRODUCT_PRIVATE_DIRECTORY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -271,9 +255,7 @@ export function getEffectiveHooksFromConfig(
     return null
   }
 
-  // Why: committed `orca.yaml` and local Settings commands can intentionally
-  // coexist, but the source policy defines whether the committed file is an
-  // authoritative boundary, local settings are authoritative, or both run.
+  // Why: 已提交的 `sbbgt.yaml` 可与本地设置并存，由来源策略决定权威值。
   return {
     scripts: {
       ...(setup ? { setup } : {}),
@@ -337,8 +319,7 @@ export function getDefaultTabsLaunch(
       hasLocalScript: Boolean(repo.hookSettings?.scripts.setup?.trim())
     }
   )
-  // Why: default tab commands come from committed `orca.yaml`; a repo set to
-  // local-only may still use shared titles/colors, but must not execute them.
+  // Why: 仅本地仓库可共享标签标题和颜色，但不得执行已提交的 sbbgt.yaml 命令。
   const canRunSharedCommands = sharedCommandPolicy !== 'local-only'
   const runCommands =
     hasCommands && canRunSharedCommands ? shouldRunSetupForCreate(repo, decision) : false
@@ -429,8 +410,7 @@ function getHookWslContext(
     return null
   }
 
-  // Why: project runtime can route a normal Windows checkout through WSL; hooks
-  // must cd to the Linux view of that path rather than running in cmd.exe.
+  // Why: project runtime can route a Windows checkout through WSL, so hooks need the Linux view of the path.
   return {
     distro: wslDistro,
     linuxPath: toLinuxPath(cwd)
@@ -447,11 +427,7 @@ export function buildWindowsRunnerScript(script: string): string {
       continue
     }
 
-    // Why: setup commands often invoke `npm`/`pnpm`, which are batch files on
-    // Windows. Calling one batch file from another without `call` never returns
-    // to later lines, and plain newline-separated commands also keep running
-    // after failures. Wrap each line in `call` and bail on non-zero exit codes
-    // so the generated runner matches the fail-fast behavior of `set -e`.
+    // Why: npm/pnpm are Windows batch files; `call` each line and bail on errorlevel for set -e fail-fast behavior.
     runnerScript += `call ${command}\r\nif errorlevel 1 exit /b %errorlevel%\r\n`
   }
 
@@ -494,8 +470,7 @@ export function createSetupRunnerScript(
 export function getSetupRunnerEnvVars(repo: Repo, worktreePath: string): Record<string, string> {
   return {
     ...getSetupEnvVars(repo, worktreePath),
-    // Why: the visible Setup terminal is still unattended automation; user
-    // terminal opt-out must not let its git commands open credential UI.
+    // Why: the Setup terminal is unattended automation, so force the credential guard regardless of user opt-out.
     [TERMINAL_GIT_CREDENTIAL_GUARD_POLICY_ENV]: 'guard'
   }
 }
@@ -531,11 +506,7 @@ export function createIssueCommandRunnerScript(
   command: string,
   projectRuntime?: ProjectExecutionRuntimeResolution | HookRuntimeTarget
 ): WorktreeSetupLaunch {
-  // Why: long issue-automation commands are user-visible shell input when
-  // written directly to the PTY, so terminal line editors can wrap or truncate
-  // them before execution. Writing the real command into a runner script keeps
-  // the shell startup path short and mirrors the already-stable setup runner
-  // flow instead of inventing a second launch mechanism.
+  // Why: writing long commands into a runner script avoids the PTY line editor wrapping/truncating them.
   return createWorktreeRunnerScript(
     repo,
     worktreePath,
@@ -554,19 +525,14 @@ function createWorktreeRunnerScript(
   waitForAgentStartup?: boolean
 ): WorktreeSetupLaunch {
   const envVars = getSetupRunnerEnvVars(repo, worktreePath)
-  // Why: WSL worktrees run on a Linux filesystem even though process.platform
-  // is 'win32'. Use bash scripts for WSL, .cmd for native Windows.
+  // Why: WSL worktrees are Linux fs even though process.platform is 'win32'; use bash for WSL, .cmd for native Windows.
   const wslWorktree = isWslPath(worktreePath) || Boolean(runtimeTarget?.wslDistro)
   const useWindowsFormat = process.platform === 'win32' && !wslWorktree
-  // Why: linked git worktrees use a `.git` file that points at the real gitdir,
-  // so writing under `${worktreePath}/.git/...` fails. `git rev-parse --git-path`
-  // resolves the actual per-worktree git storage path safely across platforms.
+  // Why: linked worktrees use a `.git` file, so resolve the real per-worktree gitdir via git rev-parse --git-path.
   const gitRelPath = useWindowsFormat ? `orca/${runnerBaseName}.cmd` : `orca/${runnerBaseName}.sh`
   let runnerScriptPath = getGitPath(worktreePath, gitRelPath, runtimeTarget)
 
-  // Why: for WSL worktrees, getGitPath returns a Linux path (e.g. /home/user/...)
-  // because git runs inside WSL. Convert it to a Windows UNC path so mkdirSync
-  // and writeFileSync (which run on Windows) can access it.
+  // Why: git runs inside WSL and returns a Linux path; convert to a UNC path so the Windows fs calls can reach it.
   if (wslWorktree) {
     const wslInfo = getHookWslContext(worktreePath, runtimeTarget)
     if (wslInfo?.distro) {
@@ -580,14 +546,11 @@ function createWorktreeRunnerScript(
     writeFileSync(runnerScriptPath, buildWindowsRunnerScript(script), 'utf-8')
   } else {
     writeFileSync(runnerScriptPath, buildPosixRunnerScript(script), 'utf-8')
-    // Why: chmod via UNC paths to WSL filesystem is supported by Windows and
-    // sets the execute bit correctly inside WSL.
+    // Why: chmod over a UNC path to the WSL filesystem sets the execute bit correctly inside WSL.
     chmodSync(runnerScriptPath, 0o755)
   }
 
-  // Why: when the worktree is on WSL, env vars like ORCA_ROOT_PATH and
-  // ORCA_WORKTREE_PATH contain Windows UNC paths. The setup script runs
-  // inside WSL bash, so translate them to Linux paths.
+  // Why: setup script runs inside WSL bash, so translate the Windows UNC env-var paths to Linux paths.
   if (wslWorktree) {
     for (const key of Object.keys(envVars)) {
       envVars[key] = toLinuxPath(envVars[key])
@@ -622,21 +585,20 @@ export function runHook(
   const wslInfo = getHookWslContext(cwd, runtimeTarget)
 
   if (wslInfo) {
-    // Why: use execFile('wsl.exe', [...]) instead of exec() to bypass the
-    // Windows shell (cmd.exe). exec() always routes through a shell, and
-    // cmd.exe doesn't understand single-quote escaping — it would mangle
-    // paths/scripts containing %, ^, &, |, etc.
+    // Why: use execFile to bypass cmd.exe, which mangles single-quote escaping of %, ^, &, |, etc.
     const escapedCwd = wslInfo.linuxPath.replace(/'/g, "'\\''")
     const escapedScript = script.replace(/'/g, "'\\''")
     const bashCmd = `cd '${escapedCwd}' && ${escapedScript}`
-    // Why: translate ORCA_ROOT_PATH / ORCA_WORKTREE_PATH to Linux paths so
-    // hook scripts that reference $ORCA_WORKTREE_PATH get usable paths
-    // inside WSL, not Windows UNC paths.
+    // Why: hook scripts run inside WSL, so translate the ORCA_* Windows UNC paths to Linux paths.
     const envVars = getSetupEnvVars(repo, cwd)
     const wslEnv: Record<string, string> = {}
     for (const [key, value] of Object.entries(envVars)) {
       wslEnv[key] = toLinuxPath(value)
     }
+    const hookEnv: NodeJS.ProcessEnv = { ...process.env, ...wslEnv }
+    // Why: wsl.exe only imports Windows env vars named in WSLENV; without
+    // registering them the setup vars never reach the guest (#9206).
+    addWorktreeSetupWslInteropEnv(hookEnv)
 
     return new Promise((resolve) => {
       let child: ReturnType<typeof execFile> | null = null
@@ -663,8 +625,7 @@ export function runHook(
         }
       }
 
-      // Why: Node's execFile timeout only signals wsl.exe; if no callback
-      // arrives, hook setup/archive must still unblock after HOOK_TIMEOUT.
+      // Why: execFile's timeout only signals wsl.exe; force-unblock after HOOK_TIMEOUT if no callback arrives.
       const timeout = setTimeout(() => {
         child?.kill()
         finish(new Error(`Hook timed out after ${HOOK_TIMEOUT}ms.`))
@@ -681,8 +642,10 @@ export function runHook(
             // Why: same unattended-git guard as the non-WSL branch below
             // (issue #7652) — WSL repos are the likeliest to hit the GCM
             // popup, and the guard's WSLENV registration is what carries it
-            // across the wsl.exe boundary into the distro.
-            env: promptGuardShellEnv({ ...process.env, ...wslEnv })
+            // across the wsl.exe boundary. Wrap hookEnv (not a fresh env) so
+            // the setup-var WSLENV entries registered above (#9206) are kept —
+            // promptGuardShellEnv appends its own keys to the existing WSLENV.
+            env: promptGuardShellEnv(hookEnv)
           },
           (error, stdout, stderr) => {
             finish(error ?? null, stdout, stderr)
@@ -701,11 +664,7 @@ export function runHook(
         cwd,
         timeout: HOOK_TIMEOUT,
         shell: getHookShell(),
-        // Why: setup/archive hooks run unattended, so a `git fetch`/`submodule
-        // update` inside one must never make Git Credential Manager pop its
-        // "Connect to GitHub" OAuth window on Windows and loop when the network
-        // can't complete it (issue #7652). The guard keeps the credential
-        // helper, so cached auth still works; only the interactive prompt dies.
+        // Why: hooks run unattended; block Git Credential Manager's interactive prompt while keeping cached auth (issue #7652).
         env: promptGuardShellEnv({
           ...process.env,
           ...getSetupEnvVars(repo, cwd)

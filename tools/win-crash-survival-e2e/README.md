@@ -75,12 +75,12 @@ node tools/win-crash-survival-e2e/run.mjs --expect survival --exe-path "C:\Users
 
 ### Flags
 
-| Flag                 | Meaning                                                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| `--expect <profile>` | Assertion profile (required): `survival` or `orphaned` (see below)                             |
-| `--exe-path <path>`  | Installed `sbbgt.exe` to drive (default: discovered under `%LOCALAPPDATA%\Programs`)           |
-| `--soak-seconds <n>` | Post-crash observation window before relaunch (default `8`)                                    |
-| `--keep-profile`     | Skip temp-profile cleanup (debugging)                                                          |
+| Flag                 | Meaning                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| `--expect <profile>` | Assertion profile (required): `survival` or `orphaned` (see below)                   |
+| `--exe-path <path>`  | Installed `sbbgt.exe` to drive (default: discovered under `%LOCALAPPDATA%\Programs`) |
+| `--soak-seconds <n>` | Post-crash observation window before relaunch (default `8`)                          |
+| `--keep-profile`     | Skip temp-profile cleanup (debugging)                                                |
 
 ### Profiles
 

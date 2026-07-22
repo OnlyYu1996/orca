@@ -10,7 +10,7 @@ const scriptDir = import.meta.dirname
 const repoRoot = path.resolve(scriptDir, '..', '..')
 const orcaDevScript = path.join(scriptDir, 'orca-dev.mjs')
 const ensureNativeRuntimeScript = path.join(scriptDir, 'ensure-native-runtime.mjs')
-const fixedProfileDir = process.env.ORCA_HEADLESS_PAIRING_PROFILE_DIR
+const fixedProfileDir = process.env.SBBGT_HEADLESS_PAIRING_PROFILE_DIR
 const parsed = parseArgs(process.argv.slice(2))
 
 if (parsed.help) {
@@ -37,6 +37,8 @@ const profileDir =
   fixedProfileDir ?? mkdtempSync(path.join(tmpdir(), 'orca-headless-pairing-profile-'))
 const ownsProfileDir = !fixedProfileDir
 mkdirSync(profileDir, { recursive: true })
+const isolatedHome = path.join(profileDir, 'home')
+mkdirSync(isolatedHome, { recursive: true })
 
 let cleanedUp = false
 let child = null
@@ -44,13 +46,20 @@ let sawPairingUrl = false
 let stopAttempts = 0
 // Why: temp dev worktrees do not have a root-owned chrome-sandbox; this script
 // is only for local headless testing, not packaged production.
-const childEnv = {
-  ...process.env,
-  ORCA_DEV_USER_DATA_PATH: profileDir,
+const childEnv = { ...process.env }
+delete childEnv.CODEX_HOME
+delete childEnv.SBBGT_CODEX_HOME
+Object.assign(childEnv, {
+  // Why: a fresh temporary Orca profile must not make the default Codex lane
+  // read or mutate the developer profile during a pairing smoke test.
+  SBBGT_DEV_USER_DATA_PATH: profileDir,
+  HOME: isolatedHome,
+  USERPROFILE: isolatedHome,
+  SBBGT_CODEX_SYSTEM_DEFAULT_REAL_HOME: '0',
   ...(process.platform === 'linux'
     ? { ELECTRON_DISABLE_SANDBOX: process.env.ELECTRON_DISABLE_SANDBOX ?? '1' }
     : {})
-}
+})
 
 console.error(`[headless-pairing] userData=${profileDir}`)
 console.error(`[headless-pairing] starting: orca-dev serve --json${formatForwardedArgs(serveArgs)}`)
@@ -130,8 +139,8 @@ Forwarded examples:
   node config/scripts/serve-headless-fresh-profile-pairing.mjs --mobile-pairing
 
 Environment:
-  ORCA_HEADLESS_PAIRING_ADDRESS=<host|host:port|ws://...>  Override the auto pairing address.
-  ORCA_HEADLESS_PAIRING_PROFILE_DIR=/path/to/profile       Use a fixed profile directory.
+  SBBGT_HEADLESS_PAIRING_ADDRESS=<host|host:port|ws://...>  Override the auto pairing address.
+  SBBGT_HEADLESS_PAIRING_PROFILE_DIR=/path/to/profile       Use a fixed profile directory.
 `)
 }
 
@@ -169,7 +178,7 @@ function hasForwardedServeFlag(args, name) {
  * Prefers an override, then Tailscale, then the OS hostname over loopback.
  */
 function resolveDefaultPairingAddress() {
-  const configured = process.env.ORCA_HEADLESS_PAIRING_ADDRESS?.trim()
+  const configured = process.env.SBBGT_HEADLESS_PAIRING_ADDRESS?.trim()
   if (configured) {
     return configured
   }
@@ -251,7 +260,7 @@ function printReadyLine(line) {
   if (!payload || payload.type !== 'orca_server_ready') {
     return false
   }
-  console.log(`Orca server ready: ${payload.endpoint ?? 'websocket unavailable'}`)
+  console.log(`赛博包工头 server ready: ${payload.boundEndpoint ?? 'websocket unavailable'}`)
   if (payload.pairing?.endpoint) {
     console.log(`Pairing endpoint: ${payload.pairing.endpoint}`)
   }

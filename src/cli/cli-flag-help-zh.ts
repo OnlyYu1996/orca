@@ -15,6 +15,12 @@ export function formatCommandFlagHelp(flag: string, commandPath: string[]): stri
   if (command === 'linear search' && flag === 'workspace') {
     return '--workspace <id|all>  已连接的 Linear 工作区 ID，或 all'
   }
+  if (command === 'linear list-issues' && flag === 'cursor') {
+    return '--cursor <cursor>      上一页 list-issues 返回的不透明游标'
+  }
+  if (command === 'linear list-issues' && flag === 'workspace') {
+    return '--workspace <id|all>  已连接的 Linear 工作区 ID，或 all'
+  }
   if (command.startsWith('linear ') && flag === 'workspace') {
     return '--workspace <id>      已连接的 Linear 工作区 ID'
   }
@@ -182,6 +188,9 @@ export function formatFlagHelp(flag: string): string {
   }
   if (flag === 'relations') {
     return '--relations            包含阻塞、相关和重复关系链接'
+  }
+  if (flag === 'activity') {
+    return '--activity             包含 Issue 字段变更历史'
   }
   if (flag === 'full') {
     return '--full                 在上限内包含全部受支持的 V1 Issue 上下文'

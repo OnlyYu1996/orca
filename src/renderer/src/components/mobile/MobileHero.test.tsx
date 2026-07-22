@@ -138,9 +138,11 @@ describe('HeroFlow height', () => {
       pairQrDataUrl: 'data:image/png;base64,qr',
       relayDegraded: true
     })
-    expect(screen.getByTestId('relay-degraded-notice')).toHaveTextContent(
-      'only works on your local network'
-    )
+    const notice = screen.getByTestId('relay-degraded-notice')
+    expect(notice).toHaveTextContent('only works on your local network')
+    // Why: 固定宽度的二维码区域需要可收缩文本，否则长文案会溢出。
+    expect(notice.querySelector('.min-w-0')).not.toBeNull()
+    expect(notice.className).toMatch(/\bmin-w-0\b/)
     expect(screen.getByText('赛博包工头 Relay is in beta.')).toBeInTheDocument()
   })
 

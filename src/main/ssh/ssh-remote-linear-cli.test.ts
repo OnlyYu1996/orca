@@ -29,7 +29,6 @@ function createRuntime() {
       meta: {
         requested: {
           current: true,
-          include: { comments: true, children: true, attachments: true, relations: true },
           depth: 2
         },
         resolved: {
@@ -214,7 +213,7 @@ describe('runRemoteOrcaCli Linear commands', () => {
     expect(payload.ok).toBe(true)
     expect(payload.result.request).toMatchObject({
       current: true,
-      include: { comments: true, children: true, attachments: true, relations: true },
+      include: expect.objectContaining({ activity: true }),
       context: {
         remote: true,
         terminalHandle: 'term_ssh',
@@ -241,7 +240,7 @@ describe('runRemoteOrcaCli Linear commands', () => {
     expect(payload.ok).toBe(true)
     expect(payload.result.request).toMatchObject({
       input: 'ENG-123',
-      include: { comments: true, children: true, attachments: true, relations: true }
+      include: expect.objectContaining({ activity: true })
     })
   })
 
@@ -733,7 +732,7 @@ describe('runRemoteOrcaCli Linear commands', () => {
     linearIssueAddComment.mockRejectedValueOnce(
       Object.assign(new Error('Linear may have applied the write.'), {
         code: 'linear_write_unconfirmed',
-        data: { nextSteps: ['Retry once with the pinned command: `orca linear comment add`.'] }
+        data: { nextSteps: ['Retry once with the pinned command: `sbbgt linear comment add`.'] }
       })
     )
 
@@ -762,8 +761,8 @@ describe('runRemoteOrcaCli Linear commands', () => {
     })
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('orca linear issue')
-    expect(result.stdout).toContain('Usage: orca linear issue')
+    expect(result.stdout).toContain('sbbgt linear issue')
+    expect(result.stdout).toContain('Usage: sbbgt linear issue')
     expect(linearIssueContext).not.toHaveBeenCalled()
   })
 
@@ -780,8 +779,8 @@ describe('runRemoteOrcaCli Linear commands', () => {
     })
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('orca linear')
-    expect(result.stdout).toContain('Usage: orca linear <command> [options]')
+    expect(result.stdout).toContain('sbbgt linear')
+    expect(result.stdout).toContain('Usage: sbbgt linear <command> [options]')
     expect(result.stdout).toContain('search')
     expect(result.stdout).toContain('team list')
     expect(result.stdout).toContain('label set')
@@ -807,9 +806,9 @@ describe('runRemoteOrcaCli Linear commands', () => {
     })
 
     expect(group.exitCode).toBe(0)
-    expect(group.stdout).toContain('Usage: orca linear <command> [options]')
+    expect(group.stdout).toContain('Usage: sbbgt linear <command> [options]')
     expect(issue.exitCode).toBe(0)
-    expect(issue.stdout).toContain('Usage: orca linear issue')
+    expect(issue.stdout).toContain('Usage: sbbgt linear issue')
     expect(linearIssueContext).not.toHaveBeenCalled()
   })
 

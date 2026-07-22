@@ -22,28 +22,28 @@ export function concurrentLookupDetail(input: ChecksPanelReviewStateInput): stri
   if (input.reviewLookup === 'positive_unresolved') {
     return translate(
       'auto.components.right.sidebar.checks.panel.review.detail.positive',
-    '赛博包工头 also has saved {{reviewLabel}} information that it could not verify.',
+      '赛博包工头 also has saved {{reviewLabel}} information that it could not verify.',
       { reviewLabel }
     )
   }
   if (isRateLimitRefresh(refresh)) {
     return translate(
       'auto.components.right.sidebar.checks.panel.review.detail.rate_limited',
-    '赛博包工头 also could not check {{reviewLabel}} status because {{provider}} is temporarily limiting requests.',
+      '赛博包工头 also could not check {{reviewLabel}} status because {{provider}} is temporarily limiting requests.',
       { reviewLabel, provider: providerName }
     )
   }
   if (refresh?.errorType === 'network') {
     return translate(
       'auto.components.right.sidebar.checks.panel.review.detail.network',
-    '赛博包工头 also could not check {{reviewLabel}} status because this environment could not reach {{provider}}.',
+      '赛博包工头 also could not check {{reviewLabel}} status because this environment could not reach {{provider}}.',
       { reviewLabel, provider: providerName }
     )
   }
   if (refresh?.status === 'error' || isHardRefreshError(refresh)) {
     return translate(
       'auto.components.right.sidebar.checks.panel.review.detail.untyped',
-    '赛博包工头 also could not confirm whether this branch already has a {{reviewLabel}}.',
+      '赛博包工头 also could not confirm whether this branch already has a {{reviewLabel}}.',
       { reviewLabel }
     )
   }
@@ -180,7 +180,7 @@ const HARD_ERROR_COPY: Record<
     body: {
       key: 'auto.components.right.sidebar.checks.panel.review.cli.body',
       fallback:
-      '赛博包工头 could not run {{provider}} CLI in this environment. Set it up here, then retry.'
+        '赛博包工头 could not run {{provider}} CLI in this environment. Set it up here, then retry.'
     }
   }
 }
@@ -248,7 +248,8 @@ const SKIPPED_COPY: Partial<
     },
     body: {
       key: 'auto.components.right.sidebar.checks.panel.review.skipped.not_git.body',
-      fallback: '赛博包工头 could not treat this folder as a Git repository for {{reviewLabel}} status.'
+      fallback:
+        '赛博包工头 could not treat this folder as a Git repository for {{reviewLabel}} status.'
     },
     recovery: []
   },
@@ -260,7 +261,7 @@ const SKIPPED_COPY: Partial<
     body: {
       key: 'auto.components.right.sidebar.checks.panel.review.skipped.remote.body',
       fallback:
-      '赛博包工头 could not refresh {{reviewLabel}} status for this remote context. Retry after the host is available.'
+        '赛博包工头 could not refresh {{reviewLabel}} status for this remote context. Retry after the host is available.'
     },
     recovery: ['retry']
   }
