@@ -14,7 +14,8 @@ const mocks = vi.hoisted(() => ({
   getConnectionId: vi.fn(),
   getConnectionIdForFile: vi.fn(),
   isWorktreeConnectionResolved: vi.fn(() => true),
-  getState: vi.fn()
+  getState: vi.fn(),
+  authorizeExternalPath: vi.fn()
 }))
 
 vi.mock('@/runtime/runtime-file-client', () => ({
@@ -145,6 +146,12 @@ describe('useEditorPanelContentState', () => {
       openFiles: [],
       setLastKnownDiskSignature: vi.fn()
     })
+    mocks.authorizeExternalPath.mockReset()
+    mocks.authorizeExternalPath.mockResolvedValue(undefined)
+    Object.defineProperty(window, 'api', {
+      configurable: true,
+      value: { fs: { authorizeExternalPath: mocks.authorizeExternalPath } }
+    })
   })
 
   afterEach(() => {
@@ -188,6 +195,84 @@ describe('useEditorPanelContentState', () => {
         connectionId: 'ssh-1'
       })
     )
+  })
+
+  it('loads an external SSH path through its resolved remote connection', async () => {
+    const activeFile = createOpenFile({
+      id: '/tmp/orca-repro.txt',
+      filePath: '/tmp/orca-repro.txt',
+      relativePath: '/tmp/orca-repro.txt',
+      worktreeId: 'repo-ssh::/home/user/project'
+    })
+    mocks.getConnectionIdForFile.mockReturnValue('ssh-1')
+    mocks.readRuntimeFileContent.mockResolvedValue({ content: 'remote report', isBinary: false })
+
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+
+    await act(async () => {
+      root?.render(<HookProbe activeFile={activeFile} openFiles={[activeFile]} />)
+    })
+
+    await vi.waitFor(() => expect(latestFileContents[activeFile.id]?.content).toBe('remote report'))
+    expect(mocks.authorizeExternalPath).not.toHaveBeenCalled()
+    expect(mocks.readRuntimeFileContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filePath: '/tmp/orca-repro.txt',
+        connectionId: 'ssh-1'
+      })
+    )
+  })
+
+  it('reauthorizes an external local path before reading it', async () => {
+    const activeFile = createOpenFile({
+      id: '/tmp/local-report.txt',
+      filePath: '/tmp/local-report.txt',
+      relativePath: '/tmp/local-report.txt'
+    })
+    mocks.readRuntimeFileContent.mockResolvedValue({ content: 'local report', isBinary: false })
+
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+
+    await act(async () => {
+      root?.render(<HookProbe activeFile={activeFile} openFiles={[activeFile]} />)
+    })
+
+    await vi.waitFor(() => expect(latestFileContents[activeFile.id]?.content).toBe('local report'))
+    expect(mocks.authorizeExternalPath).toHaveBeenCalledWith({
+      targetPath: '/tmp/local-report.txt'
+    })
+    expect(mocks.readRuntimeFileContent).toHaveBeenCalledWith(
+      expect.objectContaining({ filePath: '/tmp/local-report.txt', connectionId: undefined })
+    )
+  })
+
+  it('keeps external paths blocked for remote runtime workspaces', async () => {
+    const activeFile = createOpenFile({
+      id: '/tmp/runtime-report.txt',
+      filePath: '/tmp/runtime-report.txt',
+      relativePath: '/tmp/runtime-report.txt',
+      runtimeEnvironmentId: 'runtime-1'
+    })
+
+    container = document.createElement('div')
+    document.body.appendChild(container)
+    root = createRoot(container)
+
+    await act(async () => {
+      root?.render(<HookProbe activeFile={activeFile} openFiles={[activeFile]} />)
+    })
+
+    await vi.waitFor(() =>
+      expect(latestFileContents[activeFile.id]?.loadError).toBe(
+        'External local files are not available for remote workspaces.'
+      )
+    )
+    expect(mocks.authorizeExternalPath).not.toHaveBeenCalled()
+    expect(mocks.readRuntimeFileContent).not.toHaveBeenCalled()
   })
 
   it('loads folder workspace branch diffs through the path-specific SSH connection', async () => {
